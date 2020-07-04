@@ -4,11 +4,20 @@ from exceptions import AlreadyRegistered
 
 
 class User:
-    def __init__(self, media=None, user_id=None, recording=None):
-        if recording:
-            user_elem = recording
+    """
+    Класс представляет собой объект пользователя. В экземпляре класса хранятся все данные о пользователе, которые
+    содержатся в базе данных или данные, которые еше не занесены в базу, но будут помещены туда (формат данных должен
+    совпадать с форматом airtable)
+    """
+    def __init__(self, media=None, user_id=None, record=None):
+        if record:
+            # If there is a record given, we use it
+            user_elem = record
         else:
+            # Otherwise load the data from the base
             user_elem = dataBase.get_user_by_id_in_media(media, user_id)
+
+        # all the fields from airtable-base turn into class object's fields
         self.__dict__ = user_elem['fields']
 
         # Deletion of needless (or inconvenient) fields
@@ -19,7 +28,7 @@ class User:
             if i.name.lower() + '_state' in self.__dict__.keys():
                 del self.__dict__[i.name.lower() + '_state']
 
-        # Adding some other important fields
+        # Adding some other important fields, which were not mentioned in database
         self.user_elem = user_elem
         self.base_id = user_elem['id']
         self.media_id = {}
@@ -33,6 +42,7 @@ class User:
         print(self.__dict__)
 
     def transform_into_record(self):
+        # Creates an airtable record from an object and returns it
         record = {'id': self.base_id}
         fields = self.__dict__.copy()
         keys = list(fields.keys())
@@ -53,15 +63,26 @@ class User:
         return record
 
     def update(self):
+        # updates the state of a user on a server
         record = self.transform_into_record()
         self.user_elem = dataBase.update_user(record)
 
     def set_state(self, media, state):
+        # changes the state parameter and loads the changes on a server
         self.state[media] = state.name
         self.update()
 
     @staticmethod
     def register(media, user_id, password):
+        """
+        This static method is used to register a new user using a unique password given to them by student development
+        department (or any other people that regulate the usage of this service). It loads all the information about the
+        user from the password and add his media-id to an airtable base.
+        :param media:
+        :param user_id:
+        :param password:
+        :return:
+        """
         user = User(dataBase.get_user_by_password(password))
         if user.media_id.get(media, None):
             raise AlreadyRegistered
