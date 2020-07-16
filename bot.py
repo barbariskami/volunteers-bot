@@ -1,8 +1,9 @@
 from user import User
 from message import Message
 from exceptions import UserNotFound, AlreadyRegistered
-from extentions import load_text, form_keyboard
-from enumerates import TextLabels, States, MessageMarks
+from extensions import load_text
+from keyboard import Keyboard
+from enumerates import TextLabels, States, MessageMarks, Media
 
 
 class Bot:
@@ -28,15 +29,16 @@ class Bot:
         :return:
         """
         try:
-            user = User(media, user_id)
+            user = User(media=media, user_id=user_id)
         except UserNotFound:
-            new_message = Message(user_id, text=load_text(TextLabels.REGISTRATION), marks=[MessageMarks.UNREGISTERED])
+            new_message = Message(user_id, text=load_text(TextLabels.REGISTRATION, media=Media.TELEGRAM),
+                                  marks=[MessageMarks.UNREGISTERED])
         else:
             new_message = Message(user_id,
-                                  text=load_text(TextLabels.MAIN_MENU_GREETING),
-                                  keyboard=form_keyboard(user, States.MAIN_MENU))
+                                  text=load_text(TextLabels.MAIN_MENU_GREETING, media=Media.TELEGRAM),
+                                  keyboard=Keyboard(state=States.MAIN_MENU))
             user.set_state(media, States.MAIN_MENU)
-        return new_message
+        return list([new_message])
 
     @staticmethod
     def register(media, user_id, password):
@@ -48,27 +50,29 @@ class Bot:
         снова. Если аккаунт этого человека в системе уже связан с неким аккаунтом в этом медиа, пользователю предлага-
         ется обратиться в аккаунт внеакадема.
         :param media:
-        :param user_id:
-        :param password:
+        :param user_id: is id of the user inside the media, for example in Telegram it is id given to user by telegram
+        :param password: is the password sent by a user to register
         :return:
         """
 
         try:
             User.register(media, user_id, password)
         except UserNotFound:
-            new_message = Message(user_id, text=load_text(TextLabels.WRONG_PASSWORD), marks=(MessageMarks.UNREGISTERED))
+            new_message = Message(user_id, text=load_text(TextLabels.WRONG_PASSWORD, media=Media.TELEGRAM),
+                                  marks=list([MessageMarks.UNREGISTERED]))
         except AlreadyRegistered:
-            new_message = Message(user_id, text=load_text(TextLabels.ALREADY_REGISTERED),
-                                  marks=(MessageMarks.UNREGISTERED))
+            new_message = Message(user_id, text=load_text(TextLabels.ALREADY_REGISTERED, media=Media.TELEGRAM),
+                                  marks=list([MessageMarks.UNREGISTERED]))
         else:
-            user = User(media, user_id)
+            user = User(media=media, user_id=user_id)
             new_message = Message(user_id,
-                                  text=load_text(TextLabels.MAIN_MENU_GREETING_NEW),
-                                  keyboard=form_keyboard(user, States.MAIN_MENU))
-        return new_message
+                                  text=load_text(TextLabels.MAIN_MENU_GREETING_NEW, media=Media.TELEGRAM),
+                                  keyboard=Keyboard(state=States.MAIN_MENU),
+                                  marks=list([MessageMarks.SUCCESSFUL_REGISTRATION]))
+        return list([new_message])
 
-    @staticmethod
-    def handle_message(media, message):
+    @classmethod
+    def handle_message(cls, media, message):
         """
          Метод предполагает быть запущенным при получении некоторого сообщения от пользователя. При получении сообщения
          бот определяет его отправителя, его состояние на этой платформе (его позицию в дереве диалога, например главное
@@ -77,27 +81,38 @@ class Bot:
         :param message:
         :return:
         """
+        new_messages = list()
         try:
             user = User(media, message.user_id)
         except UserNotFound:
-            new_message = Message(message.user_id,
-                                  text=load_text(TextLabels.REGISTRATION),
-                                  marks=(MessageMarks.UNREGISTERED))
+            new_messages.append(Message(message.user_id,
+                                        text=load_text(TextLabels.REGISTRATION, media=Media.TELEGRAM),
+                                        marks=list([MessageMarks.UNREGISTERED]))
+                                )
         else:
-            new_message = None
-        return new_message
+            try:
+                state = user.state
+            except AttributeError:
+                user.state = States.MAIN_MENU
+                state = user.state
+            new_message = cls.state_handlers[state](user, message)
+            new_messages.append(new_message)
+        return new_messages
 
     @staticmethod
     def key_pressed(media, user_id, key):
+        new_messages = list()
         try:
-            user = User(media, user_id)
+            user = User(media=media, user_id=user_id)
         except UserNotFound:
             pass
+        return new_messages
 
     @staticmethod
     def __main_menu_state_handler__(user, message):
+        new_messages = list()
         new_message = None
-        return new_message
+        return new_messages
 
     # Словарь определяет обработчик сообщения для каждого состояния
     state_handlers = {States.MAIN_MENU: __main_menu_state_handler__}

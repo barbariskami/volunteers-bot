@@ -1,0 +1,4 @@
+TELEGRAM_RU
+Главное меню
+Инструкцию по использованию бота можно найти в разделе "Помощь". Чтобы открыть его, воспользуйтесь клавиатурой или командой /help (просто кликните на нее)
+To switch the language, use the command /switch_language or go to settings.

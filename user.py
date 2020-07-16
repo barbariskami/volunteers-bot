@@ -9,6 +9,7 @@ class User:
     содержатся в базе данных или данные, которые еше не занесены в базу, но будут помещены туда (формат данных должен
     совпадать с форматом airtable)
     """
+
     def __init__(self, media=None, user_id=None, record=None):
         if record:
             # If there is a record given, we use it
@@ -19,14 +20,6 @@ class User:
 
         # all the fields from airtable-base turn into class object's fields
         self.__dict__ = user_elem['fields']
-
-        # Deletion of needless (or inconvenient) fields
-        del self.__dict__['id']
-        for i in Media:
-            if i.name.lower() + '_id' in self.__dict__.keys():
-                del self.__dict__[i.name.lower() + '_id']
-            if i.name.lower() + '_state' in self.__dict__.keys():
-                del self.__dict__[i.name.lower() + '_state']
 
         # Adding some other important fields, which were not mentioned in database
         self.user_elem = user_elem
@@ -39,7 +32,13 @@ class User:
         if 'if_moderator' not in self.__dict__.keys():
             self.__dict__['if_moderator'] = False
 
-        print(self.__dict__)
+        # Deletion of needless (or inconvenient) fields
+        del self.__dict__['id']
+        for i in Media:
+            if i.name.lower() + '_id' in self.__dict__.keys():
+                del self.__dict__[i.name.lower() + '_id']
+            if i.name.lower() + '_state' in self.__dict__.keys():
+                del self.__dict__[i.name.lower() + '_state']
 
     def transform_into_record(self):
         # Creates an airtable record from an object and returns it
@@ -83,12 +82,8 @@ class User:
         :param password:
         :return:
         """
-        user = User(dataBase.get_user_by_password(password))
+        user = User(record=dataBase.get_user_by_password(password))
         if user.media_id.get(media, None):
             raise AlreadyRegistered
         user.media_id[media] = user_id
         user.update()
-
-
-
-

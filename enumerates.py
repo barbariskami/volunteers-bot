@@ -21,16 +21,25 @@ class States(enum.Enum):
     """This enumerator lists all the states the user can has. These states are a kind of spots on the tree of a dialog,
     for example main_menu or choosing_task_draft"""
     MAIN_MENU = 1
+    SETTINGS = 2
+    HELP = 3
 
 
 class MessageMarks(enum.Enum):
     """This is a list of all markers that can be applied to a message for giving an external program some special
     information about it."""
     UNREGISTERED = 1
+    SUCCESSFUL_REGISTRATION = 2
 
 
 class KeyboardTypes(enum.Enum):
     """Here are two types of a keyboard. They are taken from Telegram api and the info about it can be found in
     python-telegram-bot library docs"""
-    INLINE = 1
-    REPLY = 2
+    INLINE = 1  # appears inside a message
+    REPLY = 2  # is not connected with a message
+
+
+class Languages(enum.Enum):
+    """All the languages that are available in the bot"""
+    RU = 1
+    EN = 2

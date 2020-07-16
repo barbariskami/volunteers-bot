@@ -1,0 +1,50 @@
+{
+  "pattern": {
+    "STATE_NAME": {
+      "type": "TYPE",
+      "buttons": [
+        {
+          "Language_code1": "Text",
+          "Language_code2": "Text",
+          "Following_State"
+        },
+        {}
+      ]
+    }
+  },
+  "keyboards": {
+    "MAIN_MENU": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Создать просьбу",
+            "EN": "New request",
+            "state": ""
+          }
+        ],
+        [
+          {
+            "RU": "Мои просьбы",
+            "EN": "My requests",
+            "state": ""
+          }
+        ],
+        [
+          {
+            "RU": "Настройки",
+            "EN": "Settings",
+            "state": "SETTINGS"
+          }
+        ],
+        [
+          {
+            "RU": "Помощь",
+            "EN": "Help",
+            "state": "HELP"
+          }
+        ]
+      ]
+    }
+  }
+}

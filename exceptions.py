@@ -19,3 +19,10 @@ class AlreadyRegistered(RegistrationException):
     # A child class of RegistrationException, that is raised if someone has already registered his media-account for
     # a certain record in the system-database.
     pass
+
+class LoadingException(Exception):
+    pass
+
+
+class MessageTextNotFoundInFile(LoadingException):
+    pass
