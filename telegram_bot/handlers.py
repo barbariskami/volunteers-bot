@@ -2,6 +2,7 @@ import traceback
 import random
 from telegram import ParseMode
 from bot import Bot
+from message import Message
 from enumerates import Media, MessageMarks
 from telegram_bot.useful_additions import send_message
 
@@ -13,6 +14,8 @@ def start(update, context):
         for message in new_messages:
             if MessageMarks.UNREGISTERED in message.marks:
                 context.user_data['registered'] = False
+            if MessageMarks.KEYBOARD in message.marks:
+                context.user_data['keyboard'] = message.keyboard
             send_message(update, context, message)
     except:
         traceback.print_exc()
@@ -22,8 +25,17 @@ def text_message_handler(update, context):
     try:
         if not context.user_data['registered']:
             new_messages = Bot.register(Media.TELEGRAM, update.effective_user.id, update.message.text)
+        elif context.user_data.get('keyboard', None) and \
+                update.message.text in context.user_data['keyboard'].get_buttons():
+            new_messages = Bot.button_pressed(media=Media.TELEGRAM,
+                                              user_id=update.effective_user.id,
+                                              button=context.user_data['keyboard'].get_button(update.message.text))
         else:
-            new_messages = Bot.handle_message(media=Media.TELEGRAM, message=update.message.text)
+            new_messages = Bot.handle_message(media=Media.TELEGRAM,
+                                              message=Message(user_id=update.effective_user.id,
+                                                              text=update.message.text,
+                                                              message_id=update.message.message_id,
+                                                              media=Media.TELEGRAM))
         for message in new_messages:
             if MessageMarks.UNREGISTERED in message.marks:
                 context.user_data['registered'] = False

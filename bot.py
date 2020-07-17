@@ -35,8 +35,10 @@ class Bot:
                                   marks=[MessageMarks.UNREGISTERED])
         else:
             new_message = Message(user_id,
-                                  text=load_text(TextLabels.MAIN_MENU_GREETING, media=Media.TELEGRAM),
-                                  keyboard=Keyboard(state=States.MAIN_MENU))
+                                  text=load_text(TextLabels.MAIN_MENU_GREETING,
+                                                 media=Media.TELEGRAM),
+                                  keyboard=Keyboard(state=States.MAIN_MENU),
+                                  marks=[MessageMarks.KEYBOARD])
             user.set_state(media, States.MAIN_MENU)
         return list([new_message])
 
@@ -100,7 +102,7 @@ class Bot:
         return new_messages
 
     @staticmethod
-    def key_pressed(media, user_id, key):
+    def button_pressed(media, user_id, button):
         new_messages = list()
         try:
             user = User(media=media, user_id=user_id)

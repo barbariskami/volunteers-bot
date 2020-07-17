@@ -4,7 +4,9 @@ import os
 
 
 def load_text(label, media, language=Languages.RU):
-    os.chdir('/Users/barbara/PycharmProjects/volunteers-bot')
+    cwd = os.getcwd().split('/')
+    if cwd[-1] == 'telegram_bot':
+        os.chdir('/'.join(cwd[:-1]))
     DIRECTIRY_NAME = 'text_labels/'
     file_name = label.name + '.txt'
     text_heading = media.name + '_' + language.name

@@ -6,7 +6,7 @@
         {
           "Language_code1": "Text",
           "Language_code2": "Text",
-          "Following_State"
+          "Following_State": "STATE"
         },
         {}
       ]

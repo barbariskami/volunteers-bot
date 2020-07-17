@@ -1,10 +1,11 @@
 import json
-from enumerates import KeyboardTypes
+import os
+from enumerates import KeyboardTypes, Languages
 
 
 class Keyboard:
-    def __init__(self, buttons=None, board_type=None, language=None, state=None, json_set=None):
-        if buttons and board_type and language:
+    def __init__(self, buttons=None, board_type=None, language=Languages.RU, state=None, json_set=None):
+        if buttons and board_type:
             self.buttons = buttons
             self.type = board_type
         elif state or json_set:
@@ -22,12 +23,23 @@ class Keyboard:
 
     def get_buttons(self):
         res = list()
-        for button in self.buttons:
-            res.append(button.text)
+        for line in self.buttons:
+            for button in line:
+                res.append(button.text)
         return res
+
+    def get_button(self, text):
+        res_button = None
+        for line in self.buttons:
+            for button in line:
+                if button.text == text:
+                    res_button = button
 
     @staticmethod
     def load_keyboard(state_name):
+        cwd = os.getcwd().split('/')
+        if cwd[-1] == 'telegram_bot':
+            os.chdir('/'.join(cwd[:-1]))
         FILE_PATH = 'possible_keyboards.json'
         file = open(FILE_PATH, mode='r')
         data = json.load(file)

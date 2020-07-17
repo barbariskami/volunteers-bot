@@ -6,7 +6,7 @@ def send_message(update, context, message):
     context.bot.send_message(chat_id=update.effective_user.id,
                              text=message.text + '\nКод сообщений не дописан! Дописать! '
                                                  '(Если вы видите эту приписку, обратитей к программисту)',
-                             keyboard=convert_keyboard(message.keyboard))
+                             reply_markup=convert_keyboard(message.keyboard))
 
 
 def convert_keyboard(keyboard):

@@ -30,6 +30,7 @@ class MessageMarks(enum.Enum):
     information about it."""
     UNREGISTERED = 1
     SUCCESSFUL_REGISTRATION = 2
+    KEYBOARD = 3
 
 
 class KeyboardTypes(enum.Enum):
