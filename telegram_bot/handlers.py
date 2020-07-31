@@ -1,6 +1,4 @@
 import traceback
-import random
-from telegram import ParseMode
 from bot import Bot
 from message import Message
 from enumerates import Media, MessageMarks
@@ -14,7 +12,7 @@ def start(update, context):
         for message in new_messages:
             if MessageMarks.UNREGISTERED in message.marks:
                 context.user_data['registered'] = False
-            if MessageMarks.KEYBOARD in message.marks:
+            if message.keyboard:
                 context.user_data['keyboard'] = message.keyboard
             send_message(update, context, message)
     except:
@@ -41,6 +39,8 @@ def text_message_handler(update, context):
                 context.user_data['registered'] = False
             elif MessageMarks.SUCCESSFUL_REGISTRATION in message.marks:
                 context.user_data['registered'] = True
+            if message.keyboard:
+                context.user_data['keyboard'] = message.keyboard
             send_message(update, context, message)
     except Exception:
         traceback.print_exc()

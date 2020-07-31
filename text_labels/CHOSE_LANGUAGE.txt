@@ -1,0 +1,5 @@
+TELEGRAM_RU
+Выберите язык
+
+TELEGRAM_EN
+Chose language

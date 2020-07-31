@@ -3,6 +3,7 @@ from enumerates import KeyboardTypes
 
 
 def send_message(update, context, message):
+    print(message.keyboard.buttons)
     context.bot.send_message(chat_id=update.effective_user.id,
                              text=message.text + '\nКод сообщений не дописан! Дописать! '
                                                  '(Если вы видите эту приписку, обратитей к программисту)',

@@ -3,7 +3,7 @@ from message import Message
 from exceptions import UserNotFound, AlreadyRegistered
 from extensions import load_text
 from keyboard import Keyboard
-from enumerates import TextLabels, States, MessageMarks, Media
+from enumerates import TextLabels, States, MessageMarks, Media, Languages
 
 
 class Bot:
@@ -31,14 +31,14 @@ class Bot:
         try:
             user = User(media=media, user_id=user_id)
         except UserNotFound:
-            new_message = Message(user_id, text=load_text(TextLabels.REGISTRATION, media=Media.TELEGRAM),
+            new_message = Message(user_id, text=load_text(TextLabels.REGISTRATION, media=media),
                                   marks=[MessageMarks.UNREGISTERED])
         else:
             new_message = Message(user_id,
                                   text=load_text(TextLabels.MAIN_MENU_GREETING,
-                                                 media=Media.TELEGRAM),
-                                  keyboard=Keyboard(state=States.MAIN_MENU),
-                                  marks=[MessageMarks.KEYBOARD])
+                                                 media=media,
+                                                 language=user.language[media]),
+                                  keyboard=Keyboard(state=States.MAIN_MENU))
             user.set_state(media, States.MAIN_MENU)
         return list([new_message])
 
@@ -60,15 +60,17 @@ class Bot:
         try:
             User.register(media, user_id, password)
         except UserNotFound:
-            new_message = Message(user_id, text=load_text(TextLabels.WRONG_PASSWORD, media=Media.TELEGRAM),
+            new_message = Message(user_id, text=load_text(TextLabels.WRONG_PASSWORD, media=media),
                                   marks=list([MessageMarks.UNREGISTERED]))
         except AlreadyRegistered:
-            new_message = Message(user_id, text=load_text(TextLabels.ALREADY_REGISTERED, media=Media.TELEGRAM),
+            new_message = Message(user_id, text=load_text(TextLabels.ALREADY_REGISTERED, media=media),
                                   marks=list([MessageMarks.UNREGISTERED]))
         else:
             user = User(media=media, user_id=user_id)
             new_message = Message(user_id,
-                                  text=load_text(TextLabels.MAIN_MENU_GREETING_NEW, media=Media.TELEGRAM),
+                                  text=load_text(TextLabels.MAIN_MENU_GREETING_NEW,
+                                                 media=media,
+                                                 language=user.language[media]),
                                   keyboard=Keyboard(state=States.MAIN_MENU),
                                   marks=list([MessageMarks.SUCCESSFUL_REGISTRATION]))
         return list([new_message])
@@ -88,33 +90,61 @@ class Bot:
             user = User(media, message.user_id)
         except UserNotFound:
             new_messages.append(Message(message.user_id,
-                                        text=load_text(TextLabels.REGISTRATION, media=Media.TELEGRAM),
+                                        text=load_text(TextLabels.REGISTRATION, media=media),
                                         marks=list([MessageMarks.UNREGISTERED]))
                                 )
         else:
             try:
-                state = user.state
+                state = user.state[media]
             except AttributeError:
                 user.state = States.MAIN_MENU
                 state = user.state
-            new_message = cls.state_handlers[state](user, message)
-            new_messages.append(new_message)
+            new_messages_from_handler = cls.state_handlers[state](user, media, message)
+            for message in new_messages_from_handler:
+                new_messages.append(message)
         return new_messages
 
-    @staticmethod
-    def button_pressed(media, user_id, button):
+    @classmethod
+    def button_pressed(cls, media, user_id, button):
         new_messages = list()
         try:
             user = User(media=media, user_id=user_id)
         except UserNotFound:
-            pass
+            new_messages.append(Message(user_id=user_id,
+                                        text=load_text(TextLabels.REGISTRATION, media=media),
+                                        marks=list([MessageMarks.UNREGISTERED]))
+                                )
+        else:
+            new_messages_from_button = cls.buttons_methods[button.following_state](user, media, button)
+            for message in new_messages_from_button:
+                new_messages.append(message)
+            user.set_state(media, button.following_state)
         return new_messages
 
     @staticmethod
-    def __main_menu_state_handler__(user, message):
+    def __ignore_handler__(user, media, message):
         new_messages = list()
-        new_message = None
+        return new_messages
+
+    @staticmethod
+    def __standard_button__(user, media, button):
+        # Обработчик для тех кнопок, которые не выполняют особых действий, а просто переводят в состояние, в
+        # котором юзеру отправляется только одно соощение
+        new_messages = list()
+        new_message = Message(user_id=user.media_id[media],
+                              text=load_text(TextLabels[button.following_state.name], media,
+                                             user.language.get(media, Languages.RU)),
+                              keyboard=Keyboard(state=button.following_state))
+
+        new_messages.append(new_message)
         return new_messages
 
     # Словарь определяет обработчик сообщения для каждого состояния
-    state_handlers = {States.MAIN_MENU: __main_menu_state_handler__}
+    state_handlers = {States.MAIN_MENU: __ignore_handler__.__get__(object),
+                      States.SETTINGS: __ignore_handler__.__get__(object),
+                      States.HELP: __ignore_handler__.__get__(object)}
+
+    buttons_methods = {States.HELP: __standard_button__.__get__(object),
+                       States.MAIN_MENU: __standard_button__.__get__(object),
+                       States.SETTINGS: __standard_button__.__get__(object),
+                       States.CHOSE_LANGUAGE: __standard_button__.__get__(object)}

@@ -6,7 +6,8 @@
         {
           "Language_code1": "Text",
           "Language_code2": "Text",
-          "Following_State": "STATE"
+          "Following_State": "STATE",
+          "Info": {}
         },
         {}
       ]
@@ -18,30 +19,89 @@
       "buttons": [
         [
           {
-            "RU": "Создать просьбу",
-            "EN": "New request",
-            "state": ""
-          }
-        ],
-        [
-          {
-            "RU": "Мои просьбы",
-            "EN": "My requests",
-            "state": ""
-          }
-        ],
-        [
-          {
             "RU": "Настройки",
             "EN": "Settings",
-            "state": "SETTINGS"
+            "state": "SETTINGS",
+            "info": {}
           }
         ],
         [
           {
             "RU": "Помощь",
             "EN": "Help",
-            "state": "HELP"
+            "state": "HELP",
+            "info": {}
+          }
+        ]
+      ]
+    },
+    "HELP": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Главное Меню",
+            "EN": "Main menu",
+            "state": "MAIN_MENU",
+            "info": {}
+          }
+        ]
+      ]
+    },
+    "SETTINGS": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Язык",
+            "EN": "Language",
+            "state": "CHOSE_LANGUAGE",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Игнор лист",
+            "EN": "Ignore list",
+            "state": "IGNORE_SETTINGS",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Главное Меню",
+            "EN": "Main menu",
+            "state": "MAIN_MENU",
+            "info": {}
+          }
+        ]
+      ]
+    },
+    "CHOSE_LANGUAGE": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "RU\uD83C\uDDF7\uD83C\uDDFA",
+            "EN": "RU\uD83C\uDDF7\uD83C\uDDFA",
+            "state": "SETTINGS",
+            "info": {"actions": ["change_language"]}
+          }
+        ],
+        [
+          {
+            "RU": "EN\uD83C\uDDEC\uD83C\uDDE7",
+            "EN": "EN\uD83C\uDDEC\uD83C\uDDE7",
+            "state": "SETTINGS",
+            "info": {"actions": ["change_language"]}
+          }
+        ],
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "SETTINGS",
+            "info": {}
           }
         ]
       ]

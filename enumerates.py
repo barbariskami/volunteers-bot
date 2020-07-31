@@ -15,6 +15,9 @@ class TextLabels(enum.Enum):
     REGISTRATION = 4
     WRONG_PASSWORD = 5
     ALREADY_REGISTERED = 6
+    HELP = 7
+    SETTINGS = 8
+    CHOSE_LANGUAGE = 9
 
 
 class States(enum.Enum):
@@ -23,6 +26,8 @@ class States(enum.Enum):
     MAIN_MENU = 1
     SETTINGS = 2
     HELP = 3
+    CHOSE_LANGUAGE = 4
+    IGNORE_SETTINGS = 5
 
 
 class MessageMarks(enum.Enum):
@@ -30,7 +35,6 @@ class MessageMarks(enum.Enum):
     information about it."""
     UNREGISTERED = 1
     SUCCESSFUL_REGISTRATION = 2
-    KEYBOARD = 3
 
 
 class KeyboardTypes(enum.Enum):

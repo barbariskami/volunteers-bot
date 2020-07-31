@@ -1,6 +1,6 @@
 import json
 import os
-from enumerates import KeyboardTypes, Languages
+from enumerates import KeyboardTypes, Languages, States
 
 
 class Keyboard:
@@ -16,7 +16,8 @@ class Keyboard:
                 self.buttons.append(list())
                 for button in line:
                     self.buttons[-1].append(
-                        KeyboardButton(text=button.get(language.name, button['RU']), following_state=button['state']))
+                        KeyboardButton(text=button.get(language.name, button['RU']),
+                                       following_state=States[button['state']]))
             self.type = KeyboardTypes[json_set['type']]
         else:
             raise ValueError
@@ -34,6 +35,7 @@ class Keyboard:
             for button in line:
                 if button.text == text:
                     res_button = button
+        return res_button
 
     @staticmethod
     def load_keyboard(state_name):
