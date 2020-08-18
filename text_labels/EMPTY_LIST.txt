@@ -1,6 +1,5 @@
 TELEGRAM_RU
-Выберите язык
-
+Список пуст
 ++++++++++++++++
 TELEGRAM_EN
-Chose language
+The list is empty

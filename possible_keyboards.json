@@ -40,9 +40,51 @@
       "buttons": [
         [
           {
+            "RU": "FAQ",
+            "EN": "FAQ",
+            "state": "HELP_FAQ",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Все про просьбу",
+            "EN": "Everything about requests",
+            "state": "HELP_ABOUT_REQUEST",
+            "info": {}
+          }
+        ],
+        [
+          {
             "RU": "Главное Меню",
             "EN": "Main menu",
             "state": "MAIN_MENU",
+            "info": {}
+          }
+        ]
+      ]
+    },
+    "HELP_FAQ": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "HELP",
+            "info": {}
+          }
+        ]
+      ]
+    },
+    "HELP_ABOUT_REQUEST": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "HELP",
             "info": {}
           }
         ]
@@ -64,7 +106,13 @@
             "RU": "Игнор лист",
             "EN": "Ignore list",
             "state": "IGNORE_SETTINGS",
-            "info": {}
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "IGNORE_SETTINGS",
+              "ignore_standard_action": true
+            }
           }
         ],
         [
@@ -85,7 +133,12 @@
             "RU": "RU\uD83C\uDDF7\uD83C\uDDFA",
             "EN": "RU\uD83C\uDDF7\uD83C\uDDFA",
             "state": "SETTINGS",
-            "info": {"actions": ["change_language"]}
+            "info": {
+              "actions": [
+                "SWITCH_LANGUAGE"
+              ],
+              "language": "RU"
+            }
           }
         ],
         [
@@ -93,7 +146,12 @@
             "RU": "EN\uD83C\uDDEC\uD83C\uDDE7",
             "EN": "EN\uD83C\uDDEC\uD83C\uDDE7",
             "state": "SETTINGS",
-            "info": {"actions": ["change_language"]}
+            "info": {
+              "actions": [
+                "SWITCH_LANGUAGE"
+              ],
+              "language": "EN"
+            }
           }
         ],
         [
@@ -102,6 +160,168 @@
             "EN": "Back",
             "state": "SETTINGS",
             "info": {}
+          }
+        ]
+      ]
+    },
+    "IGNORE_SETTINGS": {
+      "type": "REPLY",
+      "to_be_formed": true,
+      "buttons": [
+        [
+          {
+            "RU": "Добавить тэг в игнор",
+            "EN": "Add tag to ignore",
+            "state": "CHOSE_TAG_ADDING",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "page": 0,
+              "message_type": "CHOSE_TAG_ADDING",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Удалить тэг из игнора",
+            "EN": "Delete tag from ignore",
+            "state": "CHOSE_TAG_DELETION",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "page": 0,
+              "message_type": "CHOSE_TAG_DELETION",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "SETTINGS",
+            "info": {}
+          }
+        ]
+      ]
+    },
+    "CHOSE_TAG_ADDING": {
+      "type": "REPLY",
+      "to_be_formed": true,
+      "buttons": [
+        [
+          {
+            "RU": "тэг",
+            "EN": "tag",
+            "state": "CHOSE_TAG_ADDING",
+            "info": {
+              "actions": [
+                "ADD_TAG", "FORM_MESSAGE"
+              ],
+              "tag": "HASHTAG.TAG_NAME",
+              "message_type": "TAG_ADDED_INTO_IGNORE",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "<---",
+            "EN": "<---",
+            "state": "CHOSE_TAG_ADDING",
+            "info": {
+              "actions": [
+                "PREVIOUS_PAGE"
+              ],
+              "ignore_standard_action": true
+            }
+          },
+          {
+            "RU": "--->",
+            "EN": "--->",
+            "state": "CHOSE_TAG_ADDING",
+            "info": {
+              "actions": [
+                "NEXT_PAGE"
+              ],
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "IGNORE_SETTINGS",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "IGNORE_SETTINGS",
+              "ignore_standard_action": true
+            }
+          }
+        ]
+      ]
+    },
+    "CHOSE_TAG_DELETION": {
+      "type": "REPLY",
+      "to_be_formed": true,
+      "buttons": [
+        [
+          {
+            "RU": "тэг",
+            "EN": "tag",
+            "state": "CHOSE_TAG_DELETION",
+            "info": {
+              "actions": [
+                "DELETE_TAG", "FORM_MESSAGE"
+              ],
+              "tag": "HASHTAG.TAG_NAME",
+              "message_type": "TAG_DELETED_FROM_IGNORE",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "<---",
+            "EN": "<---",
+            "state": "CHOSE_TAG_DELETION",
+            "info": {
+              "actions": [
+                "PREVIOUS_PAGE"
+              ],
+              "ignore_standard_action": true
+            }
+          },
+          {
+            "RU": "--->",
+            "EN": "--->",
+            "state": "CHOSE_TAG_DELETION",
+            "info": {
+              "actions": [
+                "NEXT_PAGE"
+              ],
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "IGNORE_SETTINGS",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "IGNORE_SETTINGS",
+              "ignore_standard_action": true
+            }
           }
         ]
       ]

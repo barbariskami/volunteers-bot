@@ -1,6 +1,8 @@
 import dataBase
-from enumerates import Media, States, Languages
+from enumerates import Media, States, Languages, HashTags
 from exceptions import AlreadyRegistered
+from extensions import transform_tags_into_text
+from copy import deepcopy
 
 
 class User:
@@ -19,9 +21,9 @@ class User:
             user_elem = dataBase.get_user_by_id_in_media(media, user_id)
 
         # all the fields from airtable-base turn into class object's fields
-        self.__dict__ = user_elem['fields']
+        self.__dict__ = deepcopy(user_elem['fields'])
 
-        # Adding some other important fields, which were not mentioned in database
+        # Adding some other important fields, which were not mentioned in database or changing format
         self.user_elem = user_elem
         self.base_id = user_elem['id']
         self.media_id = {}
@@ -35,6 +37,9 @@ class User:
             self.creative_state[i] = States[user_elem['fields'].get(i.name.lower() + '_creative_state', 'MAIN_MENU')]
         if 'if_moderator' not in self.__dict__.keys():
             self.__dict__['if_moderator'] = False
+        self.ignored_tags = list()
+        for tag in user_elem['fields'].get('ignored_tags', tuple()):
+            self.ignored_tags.append(HashTags[tag])
 
         # Deletion of needless (or inconvenient) fields
         del self.__dict__['id']
@@ -51,7 +56,7 @@ class User:
     def transform_into_record(self):
         # Creates an airtable record from an object and returns it
         record = {'id': self.base_id}
-        fields = self.__dict__.copy()
+        fields = deepcopy(self.__dict__)
         keys = list(fields.keys())
         for key in keys:
             if key == 'user_elem' or key == 'base_id' or fields[key] is None:
@@ -76,6 +81,8 @@ class User:
                 for media in self.state.keys():
                     if not self.state[media] is None:
                         fields[media.name.lower() + '_language'] = self.language[media].name
+            elif key == 'ignored_tags':
+                fields['ignored_tags'] = list(map(lambda x: x.name, fields['ignored_tags']))
         record['fields'] = fields
         return record
 
@@ -87,6 +94,43 @@ class User:
     def set_state(self, media, state):
         # changes the state parameter and loads the changes on a server
         self.state[media] = state
+        self.update()
+
+    def set_language(self, media, language):
+        self.language[media] = language
+        self.update()
+
+    def get_ignored_hashtags_text(self, media):
+        ignored = self.ignored_tags
+        return transform_tags_into_text(ignored, self.language[media])
+
+    def get_subscription_hashtags_text(self, media):
+        all_tags = list(HashTags)
+        ignored = self.ignored_tags
+        for tag in ignored:
+            index = all_tags.index(tag)
+            if index >= 0:
+                del all_tags[index]
+        return transform_tags_into_text(all_tags, self.language[media])
+
+    def subscription_hashtags(self):
+        all_tags = list(HashTags)
+        ignored = self.ignored_tags
+        for tag in ignored:
+            index = all_tags.index(tag)
+            if index >= 0:
+                del all_tags[index]
+        return all_tags
+
+    def delete_tag_from_ignore(self, tag):
+        index = self.ignored_tags.index(tag)
+        if index >= 0:
+            del self.ignored_tags[index]
+        self.update()
+
+    def add_tag_into_ignore(self, tag):
+        if tag not in self.ignored_tags:
+            self.ignored_tags.append(tag)
         self.update()
 
     @staticmethod

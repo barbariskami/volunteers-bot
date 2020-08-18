@@ -1,6 +1,6 @@
 TELEGRAM_RU
-Выберите язык
+Язык изменен
 
 ++++++++++++++++
 TELEGRAM_EN
-Chose language
+Language switched

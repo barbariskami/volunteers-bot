@@ -1,6 +1,7 @@
 from enumerates import Languages
 from exceptions import MessageTextNotFoundInFile
 import os
+import json
 
 
 def load_text(label, media, language=Languages.RU):
@@ -30,8 +31,9 @@ def cut_out_message_text(file, media, language):
         starting_point = file.find(heading)
 
         apologies_text = load_language_apologies(language)
-    text = apologies_text + file[starting_point:].split('\n\n')[0]
-    text = '\n'.join(text.split('\n')[1:])
+    split_line_between_texts = '++++++++++++++++\n'
+    text = file[starting_point:].split(split_line_between_texts)[0]
+    text = apologies_text + '\n' + '\n'.join(text.split('\n')[1:])
     return text
 
 
@@ -43,6 +45,28 @@ def load_language_apologies(language):
     position = text.find(language.name)
     if position < 0:
         raise FileNotFoundError
-    text = text[position].split('\n\n')[0]
+    text = text[position:].split('\n\n')[0]
     text = '\n'.join(text.split('\n')[1:])
     return text
+
+
+def load_hashtags_json():
+    FILE_PATH = "hashtags.json"
+    cwd = os.getcwd().split('/')
+    if cwd[-1] == 'telegram_bot':
+        os.chdir('/'.join(cwd[:-1]))
+    file = open(FILE_PATH)
+    data = json.load(file)
+    return data
+
+
+def transform_tags_into_text(tags_list, language):
+    tags_json = load_hashtags_json()
+    res_list = list()
+    for tag in tags_list:
+        tag_id = tag.value
+        list_copy = list(tags_json['hashtags']).copy()
+        list_copy = list(filter(lambda x: x['id'] == tag_id, list_copy))
+        tag_translation = list_copy[0][language.name]
+        res_list.append(tag_translation)
+    return res_list

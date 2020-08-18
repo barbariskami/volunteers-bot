@@ -1,9 +1,10 @@
 from user import User
 from message import Message
 from exceptions import UserNotFound, AlreadyRegistered
-from extensions import load_text
+from extensions import load_text, transform_tags_into_text
 from keyboard import Keyboard
-from enumerates import TextLabels, States, MessageMarks, Media, Languages
+from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions
+import copy
 
 
 class Bot:
@@ -38,7 +39,8 @@ class Bot:
                                   text=load_text(TextLabels.MAIN_MENU_GREETING,
                                                  media=media,
                                                  language=user.language[media]),
-                                  keyboard=Keyboard(state=States.MAIN_MENU))
+                                  keyboard=Keyboard(state=States.MAIN_MENU,
+                                                    language=user.language.get(media, Languages.RU)))
             user.set_state(media, States.MAIN_MENU)
         return list([new_message])
 
@@ -71,7 +73,8 @@ class Bot:
                                   text=load_text(TextLabels.MAIN_MENU_GREETING_NEW,
                                                  media=media,
                                                  language=user.language[media]),
-                                  keyboard=Keyboard(state=States.MAIN_MENU),
+                                  keyboard=Keyboard(state=States.MAIN_MENU,
+                                                    language=user.language.get(media, Languages.RU)),
                                   marks=list([MessageMarks.SUCCESSFUL_REGISTRATION]))
         return list([new_message])
 
@@ -115,9 +118,9 @@ class Bot:
                                         marks=list([MessageMarks.UNREGISTERED]))
                                 )
         else:
-            new_messages_from_button = cls.buttons_methods[button.following_state](user, media, button)
-            for message in new_messages_from_button:
-                new_messages.append(message)
+            for action in button.actions:
+                new_messages_from_button = cls.buttons_methods[action](user, media, button)
+                new_messages.extend(new_messages_from_button)
             user.set_state(media, button.following_state)
         return new_messages
 
@@ -127,15 +130,140 @@ class Bot:
         return new_messages
 
     @staticmethod
-    def __standard_button__(user, media, button):
+    def __button_standard__(user, media, button):
         # Обработчик для тех кнопок, которые не выполняют особых действий, а просто переводят в состояние, в
         # котором юзеру отправляется только одно соощение
         new_messages = list()
         new_message = Message(user_id=user.media_id[media],
                               text=load_text(TextLabels[button.following_state.name], media,
                                              user.language.get(media, Languages.RU)),
-                              keyboard=Keyboard(state=button.following_state))
+                              keyboard=Keyboard(state=button.following_state,
+                                                language=user.language.get(media, Languages.RU)))
 
+        new_messages.append(new_message)
+        return new_messages
+
+    @staticmethod
+    def __button_switch_language__(user, media, button):
+        language = Languages[button.info['language']]
+        user.set_language(media, language)
+        new_messages = list()
+        new_message = Message(user_id=user.media_id[media],
+                              text=load_text(TextLabels.LANGUAGE_SWITCHED_SUCCESSFULLY,
+                                             media,
+                                             user.language.get(media, Languages.RU)))
+        new_messages.append(new_message)
+        return new_messages
+
+    @staticmethod
+    def __button_form_message__(user, media, button):
+
+        def ignore_lists_messages(_user, _media, _button):
+            ignored = _user.get_ignored_hashtags_text(_media)
+            subscription = _user.get_subscription_hashtags_text(_media)
+
+            keyboard_data = Keyboard.load_keyboard(_button.following_state.name)
+
+            if ignored:
+                ignored = '\n'.join(map(lambda x: '- ' + x, ignored))
+            else:
+                ignored = load_text(TextLabels.EMPTY_LIST, _media, language=_user.language[_media]).strip()
+                del keyboard_data['buttons'][1]
+            if subscription:
+                subscription = '\n'.join(map(lambda x: '- ' + x, subscription))
+            else:
+                subscription = load_text(TextLabels.EMPTY_LIST, _media, language=user.language[_media]).strip()
+                del keyboard_data['buttons'][0]
+
+            keyboard = Keyboard(language=_user.language.get(_media, Languages.RU), json_set=keyboard_data)
+
+            res = {'text': {'ignored': ignored, 'subscription': subscription}, 'keyboard': keyboard}
+            return res
+
+        def chose_tag_to_edit(_user, _media, _button):
+            new_button_state = ''
+            tags = list()
+            if _button.following_state == States.CHOSE_TAG_ADDING:
+                new_button_state = 'CHOSE_TAG_ADDING'
+                tags = _user.subscription_hashtags()
+            elif _button.following_state == States.CHOSE_TAG_DELETION:
+                new_button_state = 'CHOSE_TAG_DELETION'
+                tags = _user.ignored_tags
+
+            keyboard = Keyboard.load_keyboard(_button.following_state.name)
+            if len(tags) > 10:
+                right_border = (_button.info['page'] + 1) * 7
+                if right_border > len(tags):
+                    right_border = len(tags)
+                left_border = (_button.info['page'] * 7)
+                tags = tags[left_border:right_border]
+                keyboard['buttons'][1][0]['info']['page'] = _button.info['page'] - 1
+                keyboard['buttons'][1][1]['info']['page'] = _button.info['page'] + 1
+                if _button.info['page'] == 0:
+                    del keyboard['buttons'][1][0]
+                    keyboard['buttons'][1][0]['info']['page'] = 1
+                elif _button.info['page'] * 7 >= len(tags):
+                    del keyboard['buttons'][1][1]
+            else:
+                del keyboard['buttons'][1]
+            button_template = keyboard['buttons'][0][0]
+            del keyboard['buttons'][0][0]
+            for tag in tags:
+                new_button = copy.deepcopy(button_template)
+                for l in list(Languages):
+                    new_button[l.name] = '–' + transform_tags_into_text([tag], l)[0] + '–'
+                new_button['state'] = new_button_state
+                new_button['info']['tag'] = tag
+                keyboard['buttons'].insert(0, [new_button])
+
+            res = {'text': {},
+                   'keyboard': Keyboard(language=_user.language.get(_media, Languages.RU),
+                                        json_set=keyboard)}
+            return res
+
+        functions_for_formation = {TextLabels.IGNORE_SETTINGS: ignore_lists_messages,
+                                   TextLabels.CHOSE_TAG_DELETION: chose_tag_to_edit,
+                                   TextLabels.CHOSE_TAG_ADDING: chose_tag_to_edit,
+                                   TextLabels.TAG_ADDED_INTO_IGNORE: chose_tag_to_edit,
+                                   TextLabels.TAG_DELETED_FROM_IGNORE: chose_tag_to_edit}
+
+        message_type = TextLabels[button.info['message_type']]
+        data = functions_for_formation[message_type](user, media, button)
+        message_text = load_text(message_type,
+                                 media,
+                                 user.language.get(media, Languages.RU))
+        message_text = message_text.format(**data['text'])
+
+        new_messages = list()
+        new_message = Message(user_id=user.media_id[media],
+                              text=message_text if not button.info.get('no_text', False) else '',
+                              keyboard=data['keyboard'] if data['keyboard'] else Keyboard(state=button.following_state,
+                                                                                          language=user.language.get(
+                                                                                              media, Languages.RU)))
+        new_messages.append(new_message)
+        return new_messages
+
+    @staticmethod
+    def __button_delete_tag_from_ignore__(user, media, button):
+        tag = button.info['tag']
+        user.delete_tag_from_ignore(tag)
+        new_messages = list()
+        # new_message = Message(user_id=user.media_id[media],
+        #                       text=load_text(TextLabels.TAG_DELETED_FROM_IGNORE,
+        #                                      media,
+        #                                      user.language.get(media, Languages.RU)))
+        # new_messages.append(new_message)
+        return new_messages
+
+    @staticmethod
+    def __button_add_tag_into_ignore__(user, media, button):
+        tag = button.info['tag']
+        user.add_tag_into_ignore(tag)
+        new_messages = list()
+        new_message = Message(user_id=user.media_id[media],
+                              text=load_text(TextLabels.TAG_ADDED_INTO_IGNORE,
+                                             media,
+                                             user.language.get(media, Languages.RU)))
         new_messages.append(new_message)
         return new_messages
 
@@ -144,7 +272,9 @@ class Bot:
                       States.SETTINGS: __ignore_handler__.__get__(object),
                       States.HELP: __ignore_handler__.__get__(object)}
 
-    buttons_methods = {States.HELP: __standard_button__.__get__(object),
-                       States.MAIN_MENU: __standard_button__.__get__(object),
-                       States.SETTINGS: __standard_button__.__get__(object),
-                       States.CHOSE_LANGUAGE: __standard_button__.__get__(object)}
+    # Словарь определяет обработчик для каждого дейстаия, предусмотренного какой-то кнопкой
+    buttons_methods = {ButtonActions.LOAD_STATE: __button_standard__.__get__(object),
+                       ButtonActions.SWITCH_LANGUAGE: __button_switch_language__.__get__(object),
+                       ButtonActions.FORM_MESSAGE: __button_form_message__.__get__(object),
+                       ButtonActions.ADD_TAG: __button_add_tag_into_ignore__.__get__(object),
+                       ButtonActions.DELETE_TAG: __button_delete_tag_from_ignore__.__get__(object)}

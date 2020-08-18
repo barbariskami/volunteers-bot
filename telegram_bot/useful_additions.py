@@ -3,11 +3,12 @@ from enumerates import KeyboardTypes
 
 
 def send_message(update, context, message):
-    print(message.keyboard.buttons)
-    context.bot.send_message(chat_id=update.effective_user.id,
-                             text=message.text + '\nКод сообщений не дописан! Дописать! '
-                                                 '(Если вы видите эту приписку, обратитей к программисту)',
-                             reply_markup=convert_keyboard(message.keyboard))
+    message = context.bot.send_message(chat_id=update.effective_user.id,
+                                           text=message.text,
+                                           reply_markup=convert_keyboard(
+                                               message.keyboard) if message.keyboard else None)
+    context.user_data['last_message_id'] = message.message_id
+    return context
 
 
 def convert_keyboard(keyboard):

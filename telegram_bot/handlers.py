@@ -14,14 +14,14 @@ def start(update, context):
                 context.user_data['registered'] = False
             if message.keyboard:
                 context.user_data['keyboard'] = message.keyboard
-            send_message(update, context, message)
+            context = send_message(update, context, message)
     except:
         traceback.print_exc()
 
 
 def text_message_handler(update, context):
     try:
-        if not context.user_data['registered']:
+        if not context.user_data.get('registered', None):
             new_messages = Bot.register(Media.TELEGRAM, update.effective_user.id, update.message.text)
         elif context.user_data.get('keyboard', None) and \
                 update.message.text in context.user_data['keyboard'].get_buttons():
@@ -41,7 +41,7 @@ def text_message_handler(update, context):
                 context.user_data['registered'] = True
             if message.keyboard:
                 context.user_data['keyboard'] = message.keyboard
-            send_message(update, context, message)
+            context = send_message(update, context, message)
     except Exception:
         traceback.print_exc()
 

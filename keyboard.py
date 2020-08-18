@@ -1,10 +1,10 @@
 import json
 import os
-from enumerates import KeyboardTypes, Languages, States
+from enumerates import KeyboardTypes, States, ButtonActions
 
 
 class Keyboard:
-    def __init__(self, buttons=None, board_type=None, language=Languages.RU, state=None, json_set=None):
+    def __init__(self, language, buttons=None, board_type=None, state=None, json_set=None):
         if buttons and board_type:
             self.buttons = buttons
             self.type = board_type
@@ -17,7 +17,8 @@ class Keyboard:
                 for button in line:
                     self.buttons[-1].append(
                         KeyboardButton(text=button.get(language.name, button['RU']),
-                                       following_state=States[button['state']]))
+                                       following_state=States[button['state']],
+                                       info=button.get('info', dict())))
             self.type = KeyboardTypes[json_set['type']]
         else:
             raise ValueError
@@ -51,6 +52,12 @@ class Keyboard:
 
 
 class KeyboardButton:
-    def __init__(self, text, following_state):
+    def __init__(self, text, following_state, info):
         self.text = text
         self.following_state = following_state
+        self.info = info
+        self.actions = info.get('actions', list())
+        for i in range(len(self.actions)):
+            self.actions[i] = ButtonActions[self.actions[i]]
+        if not self.info.get('ignore_standard_action', False):
+            self.actions.append(ButtonActions.LOAD_STATE)
