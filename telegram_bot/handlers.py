@@ -46,5 +46,18 @@ def text_message_handler(update, context):
         traceback.print_exc()
 
 
-def image_message_handler(update, context):
-    pass
+def switch_language(update, context):
+    try:
+        if not context.user_data.get('registered', None):
+            new_messages = Bot.unregistered(Media.TELEGRAM, update.effective_user.id)
+        else:
+            new_messages = Bot.switch_language_command(update.effective_user.id, Media.TELEGRAM)
+
+        for message in new_messages:
+            if MessageMarks.UNREGISTERED in message.marks:
+                context.user_data['registered'] = False
+            if message.keyboard:
+                context.user_data['keyboard'] = message.keyboard
+            context = send_message(update, context, message)
+    except Exception:
+        traceback.print_exc()

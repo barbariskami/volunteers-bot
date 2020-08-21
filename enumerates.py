@@ -27,6 +27,7 @@ class TextLabels(enum.Enum):
     TAG_ADDED_INTO_IGNORE = 16
     HELP_FAQ = 17
     HELP_ABOUT_REQUEST = 18
+    UNREGISTERED = 19
 
 
 class States(enum.Enum):

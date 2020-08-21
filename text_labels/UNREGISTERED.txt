@@ -1,0 +1,6 @@
+TELEGRAM_RU
+Вы должны зарегистрироваться, чтобы иметь возможность использовать эту команду
+
+++++++++++++++++
+TELEGRAM_EN
+You should first register to be able to use this command.

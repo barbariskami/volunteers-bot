@@ -1,5 +1,5 @@
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
-from telegram_bot.handlers import start, text_message_handler, image_message_handler
+from telegram_bot.handlers import start, text_message_handler, switch_language
 
 
 def main():
@@ -9,8 +9,8 @@ def main():
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler('start', start))
+    dp.add_handler(CommandHandler('switch_language', switch_language))
     dp.add_handler(MessageHandler(Filters.text, text_message_handler))
-    dp.add_handler(MessageHandler(Filters.photo, image_message_handler))
 
     updater.start_polling()
 

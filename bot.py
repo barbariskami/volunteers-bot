@@ -62,10 +62,12 @@ class Bot:
         try:
             User.register(media, user_id, password)
         except UserNotFound:
-            new_message = Message(user_id, text=load_text(TextLabels.WRONG_PASSWORD, media=media),
+            new_message = Message(user_id,
+                                  text=load_text(TextLabels.WRONG_PASSWORD, media=media),
                                   marks=list([MessageMarks.UNREGISTERED]))
         except AlreadyRegistered:
-            new_message = Message(user_id, text=load_text(TextLabels.ALREADY_REGISTERED, media=media),
+            new_message = Message(user_id,
+                                  text=load_text(TextLabels.ALREADY_REGISTERED, media=media),
                                   marks=list([MessageMarks.UNREGISTERED]))
         else:
             user = User(media=media, user_id=user_id)
@@ -77,6 +79,34 @@ class Bot:
                                                     language=user.language.get(media, Languages.RU)),
                                   marks=list([MessageMarks.SUCCESSFUL_REGISTRATION]))
         return list([new_message])
+
+    @staticmethod
+    def unregistered(media, user_id):
+        new_message = Message(user_id,
+                              text=load_text(TextLabels.UNREGISTERED, media=media),
+                              marks=list([MessageMarks.UNREGISTERED]))
+        return list([new_message])
+
+    @staticmethod
+    def switch_language_command(user_id, media):
+        new_messages = list()
+        try:
+            user = User(media, user_id)
+        except UserNotFound:
+            new_messages.append(Message(user_id,
+                                        text=load_text(TextLabels.REGISTRATION, media=media),
+                                        marks=list([MessageMarks.UNREGISTERED])))
+        else:
+            new_message = Message(user_id=user.media_id[media],
+                                  text=load_text(TextLabels.CHOSE_LANGUAGE, media,
+                                                 user.language.get(media, Languages.RU)),
+                                  keyboard=Keyboard(state=States.CHOSE_LANGUAGE,
+                                                    language=user.language.get(media, Languages.RU)))
+            new_messages.append(new_message)
+
+            user.set_state(media, States.CHOSE_LANGUAGE)
+
+        return new_messages
 
     @classmethod
     def handle_message(cls, media, message):
@@ -175,11 +205,6 @@ class Bot:
         tag = button.info['tag']
         user.delete_tag_from_ignore(tag)
         new_messages = list()
-        # new_message = Message(user_id=user.media_id[media],
-        #                       text=load_text(TextLabels.TAG_DELETED_FROM_IGNORE,
-        #                                      media,
-        #                                      user.language.get(media, Languages.RU)))
-        # new_messages.append(new_message)
         return new_messages
 
     @staticmethod
@@ -187,11 +212,6 @@ class Bot:
         tag = button.info['tag']
         user.add_tag_into_ignore(tag)
         new_messages = list()
-        new_message = Message(user_id=user.media_id[media],
-                              text=load_text(TextLabels.TAG_ADDED_INTO_IGNORE,
-                                             media,
-                                             user.language.get(media, Languages.RU)))
-        new_messages.append(new_message)
         return new_messages
 
     # Словарь определяет обработчик сообщения для каждого состояния
@@ -220,7 +240,7 @@ class FormingProducer:
                                         TextLabels.TAG_DELETED_FROM_IGNORE: self.chose_tag_to_edit}
 
     def form_message(self, text_label):
-        data = self.functions_for_formation[text_label](self.user, self.media, self.button)
+        data = self.functions_for_formation[text_label]()
         message_text = load_text(text_label,
                                  self.media,
                                  self.user.language.get(self.media, Languages.RU))

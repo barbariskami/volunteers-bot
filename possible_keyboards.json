@@ -156,8 +156,8 @@
         ],
         [
           {
-            "RU": "Назад",
-            "EN": "Back",
+            "RU": "Назад в настройки",
+            "EN": "Back to Settings",
             "state": "SETTINGS",
             "info": {}
           }
@@ -200,8 +200,8 @@
         ],
         [
           {
-            "RU": "Назад",
-            "EN": "Back",
+            "RU": "Назад в настройки",
+            "EN": "Back to settings",
             "state": "SETTINGS",
             "info": {}
           }
