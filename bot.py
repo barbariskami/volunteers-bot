@@ -157,89 +157,16 @@ class Bot:
 
     @staticmethod
     def __button_form_message__(user, media, button):
-
-        def ignore_lists_messages(_user, _media, _button):
-            ignored = _user.get_ignored_hashtags_text(_media)
-            subscription = _user.get_subscription_hashtags_text(_media)
-
-            keyboard_data = Keyboard.load_keyboard(_button.following_state.name)
-
-            if ignored:
-                ignored = '\n'.join(map(lambda x: '- ' + x, ignored))
-            else:
-                ignored = load_text(TextLabels.EMPTY_LIST, _media, language=_user.language[_media]).strip()
-                del keyboard_data['buttons'][1]
-            if subscription:
-                subscription = '\n'.join(map(lambda x: '- ' + x, subscription))
-            else:
-                subscription = load_text(TextLabels.EMPTY_LIST, _media, language=user.language[_media]).strip()
-                del keyboard_data['buttons'][0]
-
-            keyboard = Keyboard(language=_user.language.get(_media, Languages.RU), json_set=keyboard_data)
-
-            res = {'text': {'ignored': ignored, 'subscription': subscription}, 'keyboard': keyboard}
-            return res
-
-        def chose_tag_to_edit(_user, _media, _button):
-            new_button_state = ''
-            tags = list()
-            if _button.following_state == States.CHOSE_TAG_ADDING:
-                new_button_state = 'CHOSE_TAG_ADDING'
-                tags = _user.subscription_hashtags()
-            elif _button.following_state == States.CHOSE_TAG_DELETION:
-                new_button_state = 'CHOSE_TAG_DELETION'
-                tags = _user.ignored_tags
-
-            keyboard = Keyboard.load_keyboard(_button.following_state.name)
-            if len(tags) > 10:
-                right_border = (_button.info['page'] + 1) * 7
-                if right_border > len(tags):
-                    right_border = len(tags)
-                left_border = (_button.info['page'] * 7)
-                tags = tags[left_border:right_border]
-                keyboard['buttons'][1][0]['info']['page'] = _button.info['page'] - 1
-                keyboard['buttons'][1][1]['info']['page'] = _button.info['page'] + 1
-                if _button.info['page'] == 0:
-                    del keyboard['buttons'][1][0]
-                    keyboard['buttons'][1][0]['info']['page'] = 1
-                elif _button.info['page'] * 7 >= len(tags):
-                    del keyboard['buttons'][1][1]
-            else:
-                del keyboard['buttons'][1]
-            button_template = keyboard['buttons'][0][0]
-            del keyboard['buttons'][0][0]
-            for tag in tags:
-                new_button = copy.deepcopy(button_template)
-                for l in list(Languages):
-                    new_button[l.name] = '–' + transform_tags_into_text([tag], l)[0] + '–'
-                new_button['state'] = new_button_state
-                new_button['info']['tag'] = tag
-                keyboard['buttons'].insert(0, [new_button])
-
-            res = {'text': {},
-                   'keyboard': Keyboard(language=_user.language.get(_media, Languages.RU),
-                                        json_set=keyboard)}
-            return res
-
-        functions_for_formation = {TextLabels.IGNORE_SETTINGS: ignore_lists_messages,
-                                   TextLabels.CHOSE_TAG_DELETION: chose_tag_to_edit,
-                                   TextLabels.CHOSE_TAG_ADDING: chose_tag_to_edit,
-                                   TextLabels.TAG_ADDED_INTO_IGNORE: chose_tag_to_edit,
-                                   TextLabels.TAG_DELETED_FROM_IGNORE: chose_tag_to_edit}
-
+        producer = FormingProducer(user, media, button)
         message_type = TextLabels[button.info['message_type']]
-        data = functions_for_formation[message_type](user, media, button)
-        message_text = load_text(message_type,
-                                 media,
-                                 user.language.get(media, Languages.RU))
-        message_text = message_text.format(**data['text'])
+        message_data = producer.form_message(message_type)
 
         new_messages = list()
         new_message = Message(user_id=user.media_id[media],
-                              text=message_text if not button.info.get('no_text', False) else '',
-                              keyboard=data['keyboard'] if data['keyboard'] else Keyboard(state=button.following_state,
-                                                                                          language=user.language.get(
-                                                                                              media, Languages.RU)))
+                              text=message_data['text'] if not button.info.get('no_text', False) else '',
+                              keyboard=message_data['keyboard'] if message_data['keyboard']
+                              else Keyboard(state=button.following_state,
+                                            language=user.language.get(media, Languages.RU)))
         new_messages.append(new_message)
         return new_messages
 
@@ -278,3 +205,87 @@ class Bot:
                        ButtonActions.FORM_MESSAGE: __button_form_message__.__get__(object),
                        ButtonActions.ADD_TAG: __button_add_tag_into_ignore__.__get__(object),
                        ButtonActions.DELETE_TAG: __button_delete_tag_from_ignore__.__get__(object)}
+
+
+class FormingProducer:
+    def __init__(self, user, media, button):
+        self.user = user
+        self.media = media
+        self.button = button
+
+        self.functions_for_formation = {TextLabels.IGNORE_SETTINGS: self.ignore_lists_messages,
+                                        TextLabels.CHOSE_TAG_DELETION: self.chose_tag_to_edit,
+                                        TextLabels.CHOSE_TAG_ADDING: self.chose_tag_to_edit,
+                                        TextLabels.TAG_ADDED_INTO_IGNORE: self.chose_tag_to_edit,
+                                        TextLabels.TAG_DELETED_FROM_IGNORE: self.chose_tag_to_edit}
+
+    def form_message(self, text_label):
+        data = self.functions_for_formation[text_label](self.user, self.media, self.button)
+        message_text = load_text(text_label,
+                                 self.media,
+                                 self.user.language.get(self.media, Languages.RU))
+        res_message_text = message_text.format(**data['text'])
+        return {'text': res_message_text, 'keyboard': data['keyboard']}
+
+    def ignore_lists_messages(self):
+        ignored = self.user.get_ignored_hashtags_text(self.media)
+        subscription = self.user.get_subscription_hashtags_text(self.media)
+
+        keyboard_data = Keyboard.load_keyboard(self.button.following_state.name)
+
+        if ignored:
+            ignored = '\n'.join(map(lambda x: '- ' + x, ignored))
+        else:
+            ignored = load_text(TextLabels.EMPTY_LIST, self.media, language=self.user.language[self.media]).strip()
+            del keyboard_data['buttons'][1]
+        if subscription:
+            subscription = '\n'.join(map(lambda x: '- ' + x, subscription))
+        else:
+            subscription = load_text(TextLabels.EMPTY_LIST, self.media, language=self.user.language[self.media]).strip()
+            del keyboard_data['buttons'][0]
+
+        keyboard = Keyboard(language=self.user.language.get(self.media, Languages.RU), json_set=keyboard_data)
+
+        res = {'text': {'ignored': ignored, 'subscription': subscription}, 'keyboard': keyboard}
+        return res
+
+    def chose_tag_to_edit(self):
+        new_button_state = ''
+        tags = list()
+        if self.button.following_state == States.CHOSE_TAG_ADDING:
+            new_button_state = 'CHOSE_TAG_ADDING'
+            tags = self.user.subscription_hashtags()
+        elif self.button.following_state == States.CHOSE_TAG_DELETION:
+            new_button_state = 'CHOSE_TAG_DELETION'
+            tags = self.user.ignored_tags
+
+        keyboard = Keyboard.load_keyboard(self.button.following_state.name)
+        if len(tags) > 10:
+            right_border = (self.button.info['page'] + 1) * 7
+            if right_border > len(tags):
+                right_border = len(tags)
+            left_border = (self.button.info['page'] * 7)
+            tags = tags[left_border:right_border]
+            keyboard['buttons'][1][0]['info']['page'] = self.button.info['page'] - 1
+            keyboard['buttons'][1][1]['info']['page'] = self.button.info['page'] + 1
+            if self.button.info['page'] == 0:
+                del keyboard['buttons'][1][0]
+                keyboard['buttons'][1][0]['info']['page'] = 1
+            elif self.button.info['page'] * 7 >= len(tags):
+                del keyboard['buttons'][1][1]
+        else:
+            del keyboard['buttons'][1]
+        button_template = keyboard['buttons'][0][0]
+        del keyboard['buttons'][0][0]
+        for tag in tags:
+            new_button = copy.deepcopy(button_template)
+            for l in list(Languages):
+                new_button[l.name] = '–' + transform_tags_into_text([tag], l)[0] + '–'
+            new_button['state'] = new_button_state
+            new_button['info']['tag'] = tag
+            keyboard['buttons'].insert(0, [new_button])
+
+        res = {'text': {},
+               'keyboard': Keyboard(language=self.user.language.get(self.media, Languages.RU),
+                                    json_set=keyboard)}
+        return res
