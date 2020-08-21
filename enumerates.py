@@ -29,6 +29,11 @@ class TextLabels(enum.Enum):
     HELP_ABOUT_REQUEST = 18
     UNREGISTERED = 19
 
+    CREATION_MAIN_MENU = 101
+    CREATION_MAIN_MENU_GREETING = 102
+    CREATION_MAIN_MENU_GREETING_NEW = 103
+    CREATION_UNREGISTERED = 104
+
 
 class States(enum.Enum):
     """This enumerator lists all the states the user can has. These states are a kind of spots on the tree of a dialog,
@@ -42,6 +47,11 @@ class States(enum.Enum):
     CHOSE_TAG_DELETION = 7
     HELP_FAQ = 8
     HELP_ABOUT_REQUEST = 9
+
+    CREATION_MAIN_MENU = 101
+    CREATION_NEW_REQUEST = 102
+    CREATION_MY_REQUESTS = 103
+    CREATION_UNREGISTERED = 104
 
 
 class MessageMarks(enum.Enum):
@@ -81,3 +91,4 @@ class HashTags(enum.Enum):
     BOARDING = 5
     SCHOOL_OPEN_DAY = 6
     SELF_GOVERNANCE = 7
+

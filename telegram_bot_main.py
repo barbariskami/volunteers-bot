@@ -3,7 +3,7 @@ from telegram_bot.handlers import start, text_message_handler, switch_language
 
 
 def main():
-    token = open('token.txt').read()
+    token = open('telegram_bot/token.txt').read()
     updater = Updater(token, use_context=True)
 
     dp = updater.dispatcher

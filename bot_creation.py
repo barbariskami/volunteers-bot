@@ -1,3 +1,4 @@
+from bot import Bot
 from user import User
 from message import Message
 from exceptions import UserNotFound, AlreadyRegistered
@@ -7,7 +8,7 @@ from enumerates import TextLabels, States, MessageMarks, Languages, ButtonAction
 import copy
 
 
-class Bot:
+class CreationBot(Bot):
     """
     Класс Bot представляет собой основной класс проекта, который содержит в себе все базовые функции.
     Класс используется для отделения механики бота от платформы, на которой он будет использоваться.
@@ -32,58 +33,23 @@ class Bot:
         try:
             user = User(media=media, user_id=user_id)
         except UserNotFound:
-            new_message = Message(user_id, text=load_text(TextLabels.REGISTRATION, media=media),
+            new_message = Message(user_id, text=load_text(TextLabels.CREATION_UNREGISTERED, media=media),
                                   marks=[MessageMarks.UNREGISTERED])
         else:
             new_message = Message(user_id,
-                                  text=load_text(TextLabels.MAIN_MENU_GREETING,
+                                  text=load_text(TextLabels.CREATION_MAIN_MENU_GREETING,
                                                  media=media,
                                                  language=user.language[media]),
-                                  keyboard=Keyboard(state=States.MAIN_MENU,
+                                  keyboard=Keyboard(state=States.CREATION_MAIN_MENU,
                                                     language=user.language.get(media, Languages.RU)))
-            user.set_state(media, States.MAIN_MENU)
+            user.set_state(media, States.CREATION_MAIN_MENU, creation=True)
         return list([new_message])
 
-    @staticmethod
-    def register(media, user_id, password):
-        """
-        Метод получает на вход объект media, который является экземпляром класса enumerates.Media, id пользователя на
-        этой платформе, и пароль, который он должен получить через инфе каналы связи от департамента внеакадема или
-        других лиц, отвечающих за регистрацию учеников в системе ресурса. Метод пытается зарегистрировать пользователя
-        (связать аккаунт в медиа с аккаунтом в системе) При несовпадении пароля предлагается попробовать ввести его
-        снова. Если аккаунт этого человека в системе уже связан с неким аккаунтом в этом медиа, пользователю предлага-
-        ется обратиться в аккаунт внеакадема.
-        :param media:
-        :param user_id: is id of the user inside the media, for example in Telegram it is id given to user by telegram
-        :param password: is the password sent by a user to register
-        :return:
-        """
-
-        try:
-            User.register(media, user_id, password)
-        except UserNotFound:
-            new_message = Message(user_id,
-                                  text=load_text(TextLabels.WRONG_PASSWORD, media=media),
-                                  marks=list([MessageMarks.UNREGISTERED]))
-        except AlreadyRegistered:
-            new_message = Message(user_id,
-                                  text=load_text(TextLabels.ALREADY_REGISTERED, media=media),
-                                  marks=list([MessageMarks.UNREGISTERED]))
-        else:
-            user = User(media=media, user_id=user_id)
-            new_message = Message(user_id,
-                                  text=load_text(TextLabels.MAIN_MENU_GREETING_NEW,
-                                                 media=media,
-                                                 language=user.language[media]),
-                                  keyboard=Keyboard(state=States.MAIN_MENU,
-                                                    language=user.language.get(media, Languages.RU)),
-                                  marks=list([MessageMarks.SUCCESSFUL_REGISTRATION]))
-        return list([new_message])
 
     @staticmethod
     def unregistered(media, user_id):
         new_message = Message(user_id,
-                              text=load_text(TextLabels.UNREGISTERED, media=media),
+                              text=load_text(TextLabels.CREATION_UNREGISTERED, media=media),
                               marks=list([MessageMarks.UNREGISTERED]))
         return list([new_message])
 
@@ -128,10 +94,10 @@ class Bot:
                                 )
         else:
             try:
-                state = user.get_state(media)
+                state = user.state[media]
             except AttributeError:
-                user.set_state(media, States.MAIN_MENU)
-                state = user.get_state(media)
+                user.state = States.MAIN_MENU
+                state = user.state
             new_messages_from_handler = cls.state_handlers[state](user, media, message)
             for message in new_messages_from_handler:
                 new_messages.append(message)
@@ -225,87 +191,3 @@ class Bot:
                        ButtonActions.FORM_MESSAGE: __button_form_message__.__get__(object),
                        ButtonActions.ADD_TAG: __button_add_tag_into_ignore__.__get__(object),
                        ButtonActions.DELETE_TAG: __button_delete_tag_from_ignore__.__get__(object)}
-
-
-class FormingProducer:
-    def __init__(self, user, media, button):
-        self.user = user
-        self.media = media
-        self.button = button
-
-        self.functions_for_formation = {TextLabels.IGNORE_SETTINGS: self.ignore_lists_messages,
-                                        TextLabels.CHOSE_TAG_DELETION: self.chose_tag_to_edit,
-                                        TextLabels.CHOSE_TAG_ADDING: self.chose_tag_to_edit,
-                                        TextLabels.TAG_ADDED_INTO_IGNORE: self.chose_tag_to_edit,
-                                        TextLabels.TAG_DELETED_FROM_IGNORE: self.chose_tag_to_edit}
-
-    def form_message(self, text_label):
-        data = self.functions_for_formation[text_label]()
-        message_text = load_text(text_label,
-                                 self.media,
-                                 self.user.language.get(self.media, Languages.RU))
-        res_message_text = message_text.format(**data['text'])
-        return {'text': res_message_text, 'keyboard': data['keyboard']}
-
-    def ignore_lists_messages(self):
-        ignored = self.user.get_ignored_hashtags_text(self.media)
-        subscription = self.user.get_subscription_hashtags_text(self.media)
-
-        keyboard_data = Keyboard.load_keyboard(self.button.following_state.name)
-
-        if ignored:
-            ignored = '\n'.join(map(lambda x: '- ' + x, ignored))
-        else:
-            ignored = load_text(TextLabels.EMPTY_LIST, self.media, language=self.user.language[self.media]).strip()
-            del keyboard_data['buttons'][1]
-        if subscription:
-            subscription = '\n'.join(map(lambda x: '- ' + x, subscription))
-        else:
-            subscription = load_text(TextLabels.EMPTY_LIST, self.media, language=self.user.language[self.media]).strip()
-            del keyboard_data['buttons'][0]
-
-        keyboard = Keyboard(language=self.user.language.get(self.media, Languages.RU), json_set=keyboard_data)
-
-        res = {'text': {'ignored': ignored, 'subscription': subscription}, 'keyboard': keyboard}
-        return res
-
-    def chose_tag_to_edit(self):
-        new_button_state = ''
-        tags = list()
-        if self.button.following_state == States.CHOSE_TAG_ADDING:
-            new_button_state = 'CHOSE_TAG_ADDING'
-            tags = self.user.subscription_hashtags()
-        elif self.button.following_state == States.CHOSE_TAG_DELETION:
-            new_button_state = 'CHOSE_TAG_DELETION'
-            tags = self.user.ignored_tags
-
-        keyboard = Keyboard.load_keyboard(self.button.following_state.name)
-        if len(tags) > 10:
-            right_border = (self.button.info['page'] + 1) * 7
-            if right_border > len(tags):
-                right_border = len(tags)
-            left_border = (self.button.info['page'] * 7)
-            tags = tags[left_border:right_border]
-            keyboard['buttons'][1][0]['info']['page'] = self.button.info['page'] - 1
-            keyboard['buttons'][1][1]['info']['page'] = self.button.info['page'] + 1
-            if self.button.info['page'] == 0:
-                del keyboard['buttons'][1][0]
-                keyboard['buttons'][1][0]['info']['page'] = 1
-            elif self.button.info['page'] * 7 >= len(tags):
-                del keyboard['buttons'][1][1]
-        else:
-            del keyboard['buttons'][1]
-        button_template = keyboard['buttons'][0][0]
-        del keyboard['buttons'][0][0]
-        for tag in tags:
-            new_button = copy.deepcopy(button_template)
-            for l in list(Languages):
-                new_button[l.name] = '–' + transform_tags_into_text([tag], l)[0] + '–'
-            new_button['state'] = new_button_state
-            new_button['info']['tag'] = tag
-            keyboard['buttons'].insert(0, [new_button])
-
-        res = {'text': {},
-               'keyboard': Keyboard(language=self.user.language.get(self.media, Languages.RU),
-                                    json_set=keyboard)}
-        return res

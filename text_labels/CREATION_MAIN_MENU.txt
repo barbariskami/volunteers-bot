@@ -1,0 +1,12 @@
+TELEGRAM_RU
+Главное Меню
+Со мной вы можете создать свою собстенную просьбу и опубликовать ее для школьного сообщества.
+Как создать задачу? Можете узнать это в разделе "Помощь".
+Подробности о ресурсе вы можете узнать в основном боте @letovo_volunteers_bot
+
+++++++++++++++++
+TELEGRAM_EN
+Main menu
+With me you can create your own request and post it for the school society.
+How can I create a request? You can find this out in the "Help" section.
+You can read more about the resource in the main bot @letovo_volunteers_bot

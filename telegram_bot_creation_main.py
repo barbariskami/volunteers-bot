@@ -1,10 +1,9 @@
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
-from telegram_bot.handlers import start
-from telegram_bot.handlers_creative import text_message_handler, image_message_handler
+from telegram_bot.handlers_creation import start, text_message_handler, image_message_handler
 
 
 def main():
-    token = open('token_creative.txt').read()
+    token = open('telegram_bot/token_creation.txt').read()
     updater = Updater(token, use_context=True)
 
     dp = updater.dispatcher

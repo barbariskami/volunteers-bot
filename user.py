@@ -28,13 +28,13 @@ class User:
         self.base_id = user_elem['id']
         self.media_id = {}
         self.state = {}
-        self.creative_state = {}
+        self.creation_state = {}
         self.language = {}
         for i in Media:
             self.media_id[i] = user_elem['fields'].get(i.name.lower() + '_id', None)
             self.state[i] = States[user_elem['fields'].get(i.name.lower() + '_state', 'MAIN_MENU')]
+            self.creation_state[i] = States[user_elem['fields'].get(i.name.lower() + '_creation_state', 'MAIN_MENU')]
             self.language[i] = Languages[user_elem['fields'].get(i.name.lower() + '_language', 'RU')]
-            self.creative_state[i] = States[user_elem['fields'].get(i.name.lower() + '_creative_state', 'MAIN_MENU')]
         if 'if_moderator' not in self.__dict__.keys():
             self.__dict__['if_moderator'] = False
         self.ignored_tags = list()
@@ -50,8 +50,8 @@ class User:
                 del self.__dict__[i.name.lower() + '_state']
             if i.name.lower() + '_language' in self.__dict__.keys():
                 del self.__dict__[i.name.lower() + '_language']
-            if i.name.lower() + '_creative_state' in self.__dict__.keys():
-                del self.__dict__[i.name.lower() + '_creative_state']
+            if i.name.lower() + '_creation_state' in self.__dict__.keys():
+                del self.__dict__[i.name.lower() + '_creation_state']
 
     def transform_into_record(self):
         # Creates an airtable record from an object and returns it
@@ -69,13 +69,13 @@ class User:
             elif key == 'state':
                 del fields[key]
                 for media in self.state.keys():
-                    if not self.state[media] is None:
+                    if self.state[media]:
                         fields[media.name.lower() + '_state'] = self.state[media].name
-            elif key == 'creative_state':
+            elif key == 'creation_state':
                 del fields[key]
-                for media in self.state.keys():
-                    if not self.state[media] is None:
-                        fields[media.name.lower() + '_creative_state'] = self.creative_state[media].name
+                for media in self.creation_state.keys():
+                    if self.creation_state[media]:
+                        fields[media.name.lower() + '_creation_state'] = self.creation_state[media].name
             elif key == 'language':
                 del fields[key]
                 for media in self.state.keys():
@@ -91,9 +91,19 @@ class User:
         record = self.transform_into_record()
         self.user_elem = dataBase.update_user(record)
 
-    def set_state(self, media, state):
+    def get_state(self, media, creation=False):
+        if creation:
+            state = self.creation_state[media]
+        else:
+            state = self.state[media]
+        return state
+
+    def set_state(self, media, state, creation=False):
         # changes the state parameter and loads the changes on a server
-        self.state[media] = state
+        if creation:
+            self.creation_state[media] = state
+        else:
+            self.state[media] = state
         self.update()
 
     def set_language(self, media, language):

@@ -325,6 +325,35 @@
           }
         ]
       ]
+    },
+    "CREATION_MAIN_MENU": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Новая просьба",
+            "EN": "New request",
+            "state": "CREATION_NEW_REQUEST",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Мои просьбы",
+            "EN": "My requests",
+            "state": "CREATION_MY_REQUESTS",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Помощь",
+            "EN": "Help",
+            "state": "HELP",
+            "info": {}
+          }
+        ]
+      ]
     }
   }
 }
