@@ -33,6 +33,12 @@ class TextLabels(enum.Enum):
     CREATION_MAIN_MENU_GREETING = 102
     CREATION_MAIN_MENU_GREETING_NEW = 103
     CREATION_UNREGISTERED = 104
+    CREATION_NEW_REQUEST = 105
+    CREATION_TYPE_TEXT = 106
+    CREATION_MY_REQUESTS = 107
+    CREATION_DRAFT_DELETED_SUCCESSFULLY = 108
+    CREATION_CHOSE_DATE_TYPE = 109
+    CREATION_SET_DATE = 110
 
 
 class States(enum.Enum):
@@ -52,6 +58,9 @@ class States(enum.Enum):
     CREATION_NEW_REQUEST = 102
     CREATION_MY_REQUESTS = 103
     CREATION_UNREGISTERED = 104
+    CREATION_TYPE_TEXT = 105
+    CREATION_CHOSE_DATE_TYPE = 106
+    CREATION_SET_DATE = 107
 
 
 class MessageMarks(enum.Enum):
@@ -80,6 +89,8 @@ class ButtonActions(enum.Enum):
     FORM_MESSAGE = 3
     ADD_TAG = 4
     DELETE_TAG = 5
+    DELETE_CURRENT_EDITED_DRAFT = 6
+    SET_DATE_TYPE = 7
 
 
 class HashTags(enum.Enum):
@@ -92,3 +103,8 @@ class HashTags(enum.Enum):
     SCHOOL_OPEN_DAY = 6
     SELF_GOVERNANCE = 7
 
+
+class DateType(enum.Enum):
+    DATE = 1
+    DEADLINE = 2
+    PERIOD = 3

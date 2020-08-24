@@ -1,0 +1,5 @@
+TELEGRAM_RU
+Шаблон успешно удален.
+++++++++++++++++
+TELEGRAM_EN
+Draft is successfully deleted.

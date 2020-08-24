@@ -1,12 +1,13 @@
-from telegram import ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton, ParseMode
 from enumerates import KeyboardTypes
 
 
 def send_message(update, context, message):
     message = context.bot.send_message(chat_id=update.effective_user.id,
-                                           text=message.text,
-                                           reply_markup=convert_keyboard(
-                                               message.keyboard) if message.keyboard else None)
+                                       text=message.text,
+                                       reply_markup=convert_keyboard(
+                                           message.keyboard) if message.keyboard else None,
+                                       parse_mode=ParseMode.MARKDOWN)
     context.user_data['last_message_id'] = message.message_id
     return context
 

@@ -3,7 +3,8 @@ from message import Message
 from exceptions import UserNotFound, AlreadyRegistered
 from extensions import load_text, transform_tags_into_text
 from keyboard import Keyboard
-from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions
+from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, Media
+from request import Request
 import copy
 
 
@@ -109,13 +110,14 @@ class Bot:
         return new_messages
 
     @classmethod
-    def handle_message(cls, media, message):
+    def handle_message(cls, media, message, creation=False):
         """
          Метод предполагает быть запущенным при получении некоторого сообщения от пользователя. При получении сообщения
          бот определяет его отправителя, его состояние на этой платформе (его позицию в дереве диалога, например главное
          меню или меню выбора шаблона задачи) и запускает обработчик сообщения, соответствующий состоянию пользователя
         :param media:
         :param message:
+        :param creation:
         :return:
         """
         new_messages = list()
@@ -128,17 +130,17 @@ class Bot:
                                 )
         else:
             try:
-                state = user.get_state(media)
+                state = user.get_state(media, creation=creation)
             except AttributeError:
                 user.set_state(media, States.MAIN_MENU)
-                state = user.get_state(media)
-            new_messages_from_handler = cls.state_handlers[state](user, media, message)
-            for message in new_messages_from_handler:
-                new_messages.append(message)
+                state = user.get_state(media, creation=creation)
+
+            message_handler = MessageHandler(user, media)
+            new_messages = message_handler.handle(state, message)
         return new_messages
 
-    @classmethod
-    def button_pressed(cls, media, user_id, button):
+    @staticmethod
+    def button_pressed(media, user_id, button, creation=False):
         new_messages = list()
         try:
             user = User(media=media, user_id=user_id)
@@ -148,83 +150,93 @@ class Bot:
                                         marks=list([MessageMarks.UNREGISTERED]))
                                 )
         else:
+            button_handler = ButtonHandler(user, media, button)
             for action in button.actions:
-                new_messages_from_button = cls.buttons_methods[action](user, media, button)
+                new_messages_from_button = button_handler.handle(action)
                 new_messages.extend(new_messages_from_button)
-            user.set_state(media, button.following_state)
+            user.set_state(media, button.following_state, creation=creation)
         return new_messages
 
-    @staticmethod
-    def __ignore_handler__(user, media, message):
-        new_messages = list()
-        return new_messages
 
-    @staticmethod
-    def __button_standard__(user, media, button):
+class ButtonHandler:
+    def __init__(self, user, media, button):
+        self.user = user
+        self.media = media
+        self.button = button
+
+        self.button_action_methods = {ButtonActions.LOAD_STATE: self.standard,
+                                      ButtonActions.SWITCH_LANGUAGE: self.switch_language,
+                                      ButtonActions.FORM_MESSAGE: self.form_message,
+                                      ButtonActions.ADD_TAG: self.add_tag_into_ignore,
+                                      ButtonActions.DELETE_TAG: self.delete_tag_from_ignore,
+                                      ButtonActions.DELETE_CURRENT_EDITED_DRAFT: self.delete_current_draft}
+
+    def handle(self, action):
+        res = self.button_action_methods[action]()
+        return res
+
+    def standard(self):
         # Обработчик для тех кнопок, которые не выполняют особых действий, а просто переводят в состояние, в
         # котором юзеру отправляется только одно соощение
         new_messages = list()
-        new_message = Message(user_id=user.media_id[media],
-                              text=load_text(TextLabels[button.following_state.name], media,
-                                             user.language.get(media, Languages.RU)),
-                              keyboard=Keyboard(state=button.following_state,
-                                                language=user.language.get(media, Languages.RU)))
+        new_message = Message(user_id=self.user.media_id[self.media],
+                              text=load_text(TextLabels[self.button.following_state.name], self.media,
+                                             self.user.language.get(self.media, Languages.RU)),
+                              keyboard=Keyboard(state=self.button.following_state,
+                                                language=self.user.language.get(self.media, Languages.RU)))
 
         new_messages.append(new_message)
         return new_messages
 
-    @staticmethod
-    def __button_switch_language__(user, media, button):
-        language = Languages[button.info['language']]
-        user.set_language(media, language)
+    def switch_language(self):
+        language = Languages[self.button.info['language']]
+        self.user.set_language(self.media, language)
         new_messages = list()
-        new_message = Message(user_id=user.media_id[media],
+        new_message = Message(user_id=self.user.media_id[self.media],
                               text=load_text(TextLabels.LANGUAGE_SWITCHED_SUCCESSFULLY,
-                                             media,
-                                             user.language.get(media, Languages.RU)))
+                                             self.media,
+                                             self.user.language.get(self.media, Languages.RU)))
         new_messages.append(new_message)
         return new_messages
 
-    @staticmethod
-    def __button_form_message__(user, media, button):
-        producer = FormingProducer(user, media, button)
-        message_type = TextLabels[button.info['message_type']]
+    def form_message(self):
+        producer = FormingProducer(self.user, self.media, self.button)
+        message_type = TextLabels[self.button.info['message_type']]
         message_data = producer.form_message(message_type)
 
         new_messages = list()
-        new_message = Message(user_id=user.media_id[media],
-                              text=message_data['text'] if not button.info.get('no_text', False) else '',
+        new_message = Message(user_id=self.user.media_id[self.media],
+                              text=message_data['text'] if not self.button.info.get('no_text', False) else '',
                               keyboard=message_data['keyboard'] if message_data['keyboard']
-                              else Keyboard(state=button.following_state,
-                                            language=user.language.get(media, Languages.RU)))
+                              else Keyboard(state=self.button.following_state,
+                                            language=self.user.language.get(self.media, Languages.RU)))
         new_messages.append(new_message)
         return new_messages
 
-    @staticmethod
-    def __button_delete_tag_from_ignore__(user, media, button):
-        tag = button.info['tag']
-        user.delete_tag_from_ignore(tag)
+    def delete_tag_from_ignore(self):
+        tag = self.button.info['tag']
+        self.user.delete_tag_from_ignore(tag)
         new_messages = list()
         return new_messages
 
-    @staticmethod
-    def __button_add_tag_into_ignore__(user, media, button):
-        tag = button.info['tag']
-        user.add_tag_into_ignore(tag)
+    def add_tag_into_ignore(self):
+        tag = self.button.info['tag']
+        self.user.add_tag_into_ignore(tag)
         new_messages = list()
         return new_messages
 
-    # Словарь определяет обработчик сообщения для каждого состояния
-    state_handlers = {States.MAIN_MENU: __ignore_handler__.__get__(object),
-                      States.SETTINGS: __ignore_handler__.__get__(object),
-                      States.HELP: __ignore_handler__.__get__(object)}
+    def delete_current_draft(self):
+        draft = self.user.get_edited_draft(self.media)
+        draft.delete()
 
-    # Словарь определяет обработчик для каждого дейстаия, предусмотренного какой-то кнопкой
-    buttons_methods = {ButtonActions.LOAD_STATE: __button_standard__.__get__(object),
-                       ButtonActions.SWITCH_LANGUAGE: __button_switch_language__.__get__(object),
-                       ButtonActions.FORM_MESSAGE: __button_form_message__.__get__(object),
-                       ButtonActions.ADD_TAG: __button_add_tag_into_ignore__.__get__(object),
-                       ButtonActions.DELETE_TAG: __button_delete_tag_from_ignore__.__get__(object)}
+        message = Message(user_id=self.user.media_id[self.media],
+                          text=load_text(TextLabels.CREATION_DRAFT_DELETED_SUCCESSFULLY,
+                                         self.media,
+                                         self.user.language.get(self.media, Languages.RU))
+                          )
+        new_messages = list()
+        new_messages.append(message)
+        return new_messages
 
 
 class FormingProducer:
@@ -309,3 +321,63 @@ class FormingProducer:
                'keyboard': Keyboard(language=self.user.language.get(self.media, Languages.RU),
                                     json_set=keyboard)}
         return res
+
+
+class MessageHandler:
+    def __init__(self, user, media):
+        self.user = user
+        self.media = media
+
+        self.message_handlers = {States.MAIN_MENU: self.ignore_handler,
+                                 States.CREATION_NEW_REQUEST: self.create_new_request,
+                                 States.CREATION_TYPE_TEXT: self.edit_text}
+
+    def handle(self, state, message):
+        handler = self.message_handlers.get(state, None)
+        if not handler:
+            handler = self.ignore_handler
+        res = handler(message)
+        return res
+
+    def ignore_handler(self, message):
+        new_messages = list()
+        return new_messages
+
+    def create_new_request(self, message):
+        name = message.text
+        print(self.user.base_id)
+        request = Request.new(name, self.user.base_id)
+        self.user.connect_request(request)
+
+        new_messages = list()
+
+        next_state = States.CREATION_TYPE_TEXT
+        new_message = Message(self.user.media_id[self.media],
+                              text=load_text(TextLabels[next_state.name],
+                                             media=self.media,
+                                             language=self.user.language[self.media]),
+                              keyboard=Keyboard(state=next_state,
+                                                language=self.user.language.get(self.media, Languages.RU)))
+
+        new_messages.append(new_message)
+        self.user.set_state(self.media, next_state, creation=True)
+        self.user.set_edited_draft(self.media, request.base_id)
+        return new_messages
+
+    def edit_text(self, message):
+        text = message.text
+        request = self.user.get_edited_draft(self.media)
+        request.change_text(text)
+
+        new_messages = list()
+
+        next_state = States.CREATION_CHOSE_DATE_TYPE
+        new_message = Message(self.user.media_id[self.media],
+                              text=load_text(TextLabels[next_state.name],
+                                             media=self.media,
+                                             language=self.user.language[self.media]),
+                              keyboard=Keyboard(state=next_state,
+                                                language=self.user.language.get(self.media, Languages.RU)))
+        new_messages.append(new_message)
+        self.user.set_state(self.media, next_state, creation=True)
+        return new_messages

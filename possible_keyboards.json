@@ -354,6 +354,113 @@
           }
         ]
       ]
+    },
+    "CREATION_NEW_REQUEST": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Отменить",
+            "EN": "Cancel",
+            "state": "CREATION_MAIN_MENU",
+            "info": {}
+          }
+        ]
+      ]
+    },
+    "CREATION_TYPE_TEXT": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Отменить и удалить шаблон",
+            "EN": "Cancel and delete the draft",
+            "state": "CREATION_MAIN_MENU",
+            "info": {
+              "actions": [
+                "DELETE_CURRENT_EDITED_DRAFT"
+              ],
+              "ignore_standard_action": false
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Сохранить",
+            "EN": "Save",
+            "state": "CREATION_MAIN_MENU",
+            "info": {}
+          }
+        ]
+      ]
+    },
+    "CREATION_CHOSE_DATE_TYPE": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Конкретная дата",
+            "EN": "Date",
+            "state": "CREATION_SET_DATE",
+            "info": {
+              "actions": [
+                "SET_DATE_TYPE"
+              ],
+              "date_type": "DATE",
+              "ignore_standard_action": false
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Дэдлайн",
+            "EN": "Deadline",
+            "state": "CREATION_SET_DATE",
+            "info": {
+              "actions": [
+                "SET_DATE_TYPE"
+              ],
+              "date_type": "DEADLINE",
+              "ignore_standard_action": false
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Период",
+            "EN": "Period",
+            "state": "CREATION_SET_DATE",
+            "info": {
+              "actions": [
+                "SET_DATE_TYPE"
+              ],
+              "date_type": "Period",
+              "ignore_standard_action": false
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Отменить и удалить шаблон",
+            "EN": "Cancel and delete the draft",
+            "state": "CREATION_MAIN_MENU",
+            "info": {
+              "actions": [
+                "DELETE_CURRENT_EDITED_DRAFT"
+              ],
+              "ignore_standard_action": false
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Сохранить",
+            "EN": "Save",
+            "state": "CREATION_MAIN_MENU",
+            "info": {}
+          }
+        ]
+      ]
     }
   }
 }
