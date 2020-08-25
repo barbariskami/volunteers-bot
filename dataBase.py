@@ -3,7 +3,8 @@ from exceptions import UserNotFound
 import os
 
 BASE_ID = 'apphvG4aTncmmmVPv'
-API_KEY = 'keym557M67PXieeCa'
+API_KEY_PATH = 'api_key.txt'
+API_KEY = open(API_KEY_PATH).read()
 REQUESTS_TABLE_NAME = 'Requests'
 USERS_TABLE_NAME = 'Users'
 
