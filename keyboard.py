@@ -1,6 +1,6 @@
 import json
 import os
-from enumerates import KeyboardTypes, States, ButtonActions
+from enumerates import KeyboardTypes, States, ButtonActions, DateType
 
 
 class Keyboard:
@@ -61,3 +61,5 @@ class KeyboardButton:
             self.actions[i] = ButtonActions[self.actions[i]]
         if not self.info.get('ignore_standard_action', False):
             self.actions.append(ButtonActions.LOAD_STATE)
+        if 'date_type' in self.info.keys():
+            self.info['date_type'] = DateType[self.info['date_type']]

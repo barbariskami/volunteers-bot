@@ -404,10 +404,12 @@
             "state": "CREATION_SET_DATE",
             "info": {
               "actions": [
-                "SET_DATE_TYPE"
+                "SET_DATE_TYPE",
+                "FORM_MESSAGE"
               ],
               "date_type": "DATE",
-              "ignore_standard_action": false
+              "message_type": "CREATION_SET_DATE",
+              "ignore_standard_action": true
             }
           }
         ],
@@ -418,10 +420,12 @@
             "state": "CREATION_SET_DATE",
             "info": {
               "actions": [
-                "SET_DATE_TYPE"
+                "SET_DATE_TYPE",
+                "FORM_MESSAGE"
               ],
               "date_type": "DEADLINE",
-              "ignore_standard_action": false
+              "message_type": "CREATION_SET_DATE",
+              "ignore_standard_action": true
             }
           }
         ],
@@ -432,13 +436,41 @@
             "state": "CREATION_SET_DATE",
             "info": {
               "actions": [
-                "SET_DATE_TYPE"
+                "SET_DATE_TYPE",
+                "FORM_MESSAGE"
               ],
-              "date_type": "Period",
+              "date_type": "PERIOD",
+              "message_type": "CREATION_SET_DATE",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Отменить и удалить шаблон",
+            "EN": "Cancel and delete the draft",
+            "state": "CREATION_MAIN_MENU",
+            "info": {
+              "actions": [
+                "DELETE_CURRENT_EDITED_DRAFT"
+              ],
               "ignore_standard_action": false
             }
           }
         ],
+        [
+          {
+            "RU": "Сохранить",
+            "EN": "Save",
+            "state": "CREATION_MAIN_MENU",
+            "info": {}
+          }
+        ]
+      ]
+    },
+    "CREATION_SET_DATE": {
+      "type": "REPLY",
+      "buttons": [
         [
           {
             "RU": "Отменить и удалить шаблон",

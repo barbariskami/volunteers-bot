@@ -3,9 +3,10 @@ from message import Message
 from exceptions import UserNotFound, AlreadyRegistered
 from extensions import load_text, transform_tags_into_text
 from keyboard import Keyboard
-from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, Media
+from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, DateType
 from request import Request
 import copy
+import json
 
 
 class Bot:
@@ -169,7 +170,8 @@ class ButtonHandler:
                                       ButtonActions.FORM_MESSAGE: self.form_message,
                                       ButtonActions.ADD_TAG: self.add_tag_into_ignore,
                                       ButtonActions.DELETE_TAG: self.delete_tag_from_ignore,
-                                      ButtonActions.DELETE_CURRENT_EDITED_DRAFT: self.delete_current_draft}
+                                      ButtonActions.DELETE_CURRENT_EDITED_DRAFT: self.delete_current_draft,
+                                      ButtonActions.SET_DATE_TYPE: self.set_date_type}
 
     def handle(self, action):
         res = self.button_action_methods[action]()
@@ -238,6 +240,13 @@ class ButtonHandler:
         new_messages.append(message)
         return new_messages
 
+    def set_date_type(self):
+        date_type = self.button.info['date_type']
+        request = self.user.get_edited_draft(self.media)
+        request.change_date_type(date_type)
+
+        return list()
+
 
 class FormingProducer:
     def __init__(self, user, media, button):
@@ -245,14 +254,21 @@ class FormingProducer:
         self.media = media
         self.button = button
 
-        self.functions_for_formation = {TextLabels.IGNORE_SETTINGS: self.ignore_lists_messages,
+        self.FEATURES_PATH = 'features_for_formation.json'
+        self.FUNCTIONS_FOR_FORMATION = {TextLabels.IGNORE_SETTINGS: self.ignore_lists_messages,
                                         TextLabels.CHOSE_TAG_DELETION: self.chose_tag_to_edit,
                                         TextLabels.CHOSE_TAG_ADDING: self.chose_tag_to_edit,
                                         TextLabels.TAG_ADDED_INTO_IGNORE: self.chose_tag_to_edit,
-                                        TextLabels.TAG_DELETED_FROM_IGNORE: self.chose_tag_to_edit}
+                                        TextLabels.TAG_DELETED_FROM_IGNORE: self.chose_tag_to_edit,
+                                        TextLabels.CREATION_SET_DATE: self.creation_set_date}
+
+    def load_features_for_formation(self, type_of_features):
+        file = open(self.FEATURES_PATH)
+        data = json.load(file)
+        return data[type_of_features]
 
     def form_message(self, text_label):
-        data = self.functions_for_formation[text_label]()
+        data = self.FUNCTIONS_FOR_FORMATION[text_label]()
         message_text = load_text(text_label,
                                  self.media,
                                  self.user.language.get(self.media, Languages.RU))
@@ -322,6 +338,16 @@ class FormingProducer:
                                     json_set=keyboard)}
         return res
 
+    def creation_set_date(self):
+        request = self.user.get_edited_draft(self.media)
+        features = self.load_features_for_formation('CREATION_SET_DATE')
+        res = {'text': dict()}
+        res['text']['date_word'] = features['date_word'][request.date_type.name][self.user.language[self.media].name]
+
+        res['keyboard'] = Keyboard(state=self.button.following_state, language=self.user.language[self.media])
+
+        return res
+
 
 class MessageHandler:
     def __init__(self, user, media):
@@ -345,7 +371,6 @@ class MessageHandler:
 
     def create_new_request(self, message):
         name = message.text
-        print(self.user.base_id)
         request = Request.new(name, self.user.base_id)
         self.user.connect_request(request)
 
@@ -361,7 +386,7 @@ class MessageHandler:
 
         new_messages.append(new_message)
         self.user.set_state(self.media, next_state, creation=True)
-        self.user.set_edited_draft(self.media, request.base_id)
+        self.user.set_edited_draft(self.media, request.id)
         return new_messages
 
     def edit_text(self, message):

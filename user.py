@@ -167,7 +167,7 @@ class User:
         self.update()
 
     def get_edited_draft(self, media):
-        draft = Request(request_base_id=self.edited_drafts[media])
+        draft = Request(request_id=self.edited_drafts[media])
         return draft
 
     def connect_request(self, request):

@@ -1,0 +1,19 @@
+{
+  "CREATION_SET_DATE": {
+    "date_word": {
+      "DATE": {
+        "RU": "дату",
+        "EN": "date"
+      },
+      "DEADLINE":
+      {
+        "RU": "дату дэдлайна",
+        "EN": "the date of the deadline"
+      },
+      "PERIOD": {
+        "RU": "дату начала и дату окончания периода в одном сообщении через пробел",
+        "EN": "the date of the beginning and the date of the ending of the period in a single message with a space"
+      }
+    }
+  }
+}

@@ -31,6 +31,12 @@ def update_user(record):
     return user_elem
 
 
+def update_request(record):
+    table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
+    request_elem = table.update(record['id'], record['fields'])
+    return request_elem
+
+
 def get_request_by_id(request_id):
     table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
     request_elem = table.match('id', request_id)
@@ -44,15 +50,9 @@ def get_request_by_base_id(request_base_id):
 
 
 def new_request(name, creator_record_id):
-    cur_dir = os.getcwd()
     table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
-    print(creator_record_id, type(creator_record_id))
-    creator = list()
-    creator.append(creator_record_id)
-    record = {'creator': creator, 'name': name, 'published_by': creator}
+    record = {'creator': [creator_record_id], 'name': name}
     res_record = table.insert(record)
-    del res_record['fields']['id']
-    table.update(record_id=res_record['id'], fields={'creator': creator})
     return res_record
 
 
