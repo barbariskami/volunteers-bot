@@ -1,0 +1,5 @@
+TELEGRAM_RU
+Дата не может быть раньше сегодняшнего дня. Введите ее снова (формат: дд.мм.гг)
+++++++++++++++++
+TELEGRAM_EN
+The date can't be earlier than today. Please, enter it again (the format: dd.mm.yy)

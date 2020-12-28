@@ -493,6 +493,32 @@
           }
         ]
       ]
+    },
+    "CREATION_SET_PEOPLE_NUMBER": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Отменить и удалить шаблон",
+            "EN": "Cancel and delete the draft",
+            "state": "CREATION_MAIN_MENU",
+            "info": {
+              "actions": [
+                "DELETE_CURRENT_EDITED_DRAFT"
+              ],
+              "ignore_standard_action": false
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Сохранить",
+            "EN": "Save",
+            "state": "CREATION_MAIN_MENU",
+            "info": {}
+          }
+        ]
+      ]
     }
   }
 }

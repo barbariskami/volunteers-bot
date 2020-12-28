@@ -1,0 +1,5 @@
+TELEGRAM_RU
+Сколько примерно людей вам нужно? Отправьте число.
+++++++++++++++++
+TELEGRAM_EN
+Approximately how many people do you need? Send a number.

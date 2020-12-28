@@ -1,12 +1,13 @@
 from user import User
 from message import Message
-from exceptions import UserNotFound, AlreadyRegistered
+from exceptions import UserNotFound, AlreadyRegistered, DateFormatError, EarlyDate, WrongDateOrder
 from extensions import load_text, transform_tags_into_text
 from keyboard import Keyboard
 from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, DateType
 from request import Request
 import copy
 import json
+from datetime import datetime
 
 
 class Bot:
@@ -356,7 +357,8 @@ class MessageHandler:
 
         self.message_handlers = {States.MAIN_MENU: self.ignore_handler,
                                  States.CREATION_NEW_REQUEST: self.create_new_request,
-                                 States.CREATION_TYPE_TEXT: self.edit_text}
+                                 States.CREATION_TYPE_TEXT: self.edit_text,
+                                 States.CREATION_SET_DATE: self.set_date}
 
     def handle(self, state, message):
         handler = self.message_handlers.get(state, None)
@@ -405,4 +407,45 @@ class MessageHandler:
                                                 language=self.user.language.get(self.media, Languages.RU)))
         new_messages.append(new_message)
         self.user.set_state(self.media, next_state, creation=True)
+        return new_messages
+
+    def set_date(self, message):
+        print('Adding date', message)
+        text = message.text
+        request = self.user.get_edited_draft(self.media)
+        new_messages = list()
+        try:
+            request.set_date(text)
+        except DateFormatError:
+            new_message = Message(self.user.media_id[self.media],
+                                  text=load_text(TextLabels.CREATION_SET_DATE_FORMAT_ERROR,
+                                                 media=self.media,
+                                                 language=self.user.language[self.media]),
+                                  keyboard=Keyboard(state=self.user.state[self.media],
+                                                    language=self.user.language.get(self.media, Languages.RU)))
+        except EarlyDate:
+            new_message = Message(self.user.media_id[self.media],
+                                  text=load_text(TextLabels.CREATION_SET_DATE_EARLY_DATE,
+                                                 media=self.media,
+                                                 language=self.user.language[self.media]),
+                                  keyboard=Keyboard(state=self.user.state[self.media],
+                                                    language=self.user.language.get(self.media, Languages.RU)))
+        except WrongDateOrder:
+            new_message = Message(self.user.media_id[self.media],
+                                  text=load_text(TextLabels.CREATION_SET_DATE_WRONG_DATE_ORDER,
+                                                 media=self.media,
+                                                 language=self.user.language[self.media]),
+                                  keyboard=Keyboard(state=self.user.state[self.media],
+                                                    language=self.user.language.get(self.media, Languages.RU)))
+        else:
+            next_state = States.CREATION_SET_PEOPLE_NUMBER
+            new_message = Message(self.user.media_id[self.media],
+                                  text=load_text(TextLabels[next_state.name],
+                                                 media=self.media,
+                                                 language=self.user.language[self.media]),
+                                  keyboard=Keyboard(state=next_state,
+                                                    language=self.user.language.get(self.media, Languages.RU)))
+            new_messages.append(new_message)
+            self.user.set_state(self.media, next_state, creation=True)
+        new_messages.append(new_message)
         return new_messages

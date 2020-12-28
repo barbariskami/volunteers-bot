@@ -2,6 +2,9 @@ from dataBase import get_request_by_id, get_request_by_base_id, new_request, del
 import dataBase
 from copy import deepcopy
 from enumerates import DateType
+import exceptions
+from datetime import datetime, date
+from traceback import print_exc
 
 
 class Request:
@@ -17,6 +20,8 @@ class Request:
         self.base_id = record['id']
         if 'date_type' in self.__dict__.keys():
             self.date_type = DateType[self.date_type]
+        if 'date1' in self.__dict__.keys():
+            print(type(self.date1))
 
     def into_record(self):
         record = {'id': self.base_id}
@@ -30,6 +35,8 @@ class Request:
                 fields[key] = self.date_type.name
             elif key == 'id':
                 del fields[key]
+            elif key == 'date1' or key == 'date2':
+                fields[key] = str(fields[key])
 
         record['fields'] = fields
         return record
@@ -48,6 +55,36 @@ class Request:
     def change_date_type(self, date_type):
         self.date_type = date_type
         self.update()
+
+    def set_date(self, date_string):
+        def transform_date_str_into_date(date_str):
+            try:
+                res_date = datetime.strptime(date_str, '%d.%m.%y').date()
+            except ValueError:
+                print_exc()
+                raise exceptions.DateFormatError
+            return res_date
+
+        if self.date_type == DateType.DATE or self.date_type == DateType.DEADLINE:
+            new_date = transform_date_str_into_date(date_string)
+            today = date.today()
+            if new_date <= today:
+                raise exceptions.EarlyDate
+            self.date1 = new_date
+            self.update()
+
+        elif self.date_type == DateType.PERIOD:
+            date1, date2 = date_string.split()
+            date1 = transform_date_str_into_date(date1)
+            date2 = transform_date_str_into_date(date2)
+            today = date.today()
+            if date1 > date2:
+                raise exceptions.WrongDateOrder
+            elif date1 < today:
+                raise exceptions.EarlyDate
+            self.date1 = date1
+            self.date2 = date2
+            self.update()
 
     @classmethod
     def new(cls, name, creator_base_id):

@@ -20,9 +20,26 @@ class AlreadyRegistered(RegistrationException):
     # a certain record in the system-database.
     pass
 
+
 class LoadingException(Exception):
     pass
 
 
 class MessageTextNotFoundInFile(LoadingException):
+    pass
+
+
+class DateError(Exception):
+    pass
+
+
+class DateFormatError(DateError):
+    pass
+
+
+class EarlyDate(DateError):
+    pass
+
+
+class WrongDateOrder(DateError):
     pass

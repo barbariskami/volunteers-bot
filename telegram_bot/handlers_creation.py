@@ -15,6 +15,7 @@ def start(update, context):
             if message.keyboard:
                 context.user_data['keyboard'] = message.keyboard
             context = send_message(update, context, message)
+        context.user_data['previous_buttons'] = set()
     except:
         traceback.print_exc()
 
@@ -30,6 +31,9 @@ def text_message_handler(update, context):
                                                       button=context.user_data['keyboard'].get_button(
                                                           update.message.text),
                                                       creation=True)
+        elif context.user_data.get('previous_buttons', None) and \
+                update.message.text in context.user_data['previous_buttons']:
+            pass
         else:
             new_messages = CreationBot.handle_message(media=Media.TELEGRAM,
                                                       message=Message(user_id=update.effective_user.id,
@@ -44,6 +48,7 @@ def text_message_handler(update, context):
                 context.user_data['registered'] = True
             if message.keyboard:
                 context.user_data['keyboard'] = message.keyboard
+                context.user_data['previous_buttons'].update(message.keyboard.get_buttons())
             context = send_message(update, context, message)
     except Exception:
         traceback.print_exc()

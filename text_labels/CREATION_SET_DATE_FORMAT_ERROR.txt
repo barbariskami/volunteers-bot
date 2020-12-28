@@ -1,0 +1,5 @@
+TELEGRAM_RU
+Вы ошиблись в формате или ввели несуществующую дату. Попробуйте еще раз (формат: дд.мм.гг)
+++++++++++++++++
+TELEGRAM_EN
+You made a mistake in the format or entered an invalid date. Try again (format: dd.mm.yy)
