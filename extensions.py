@@ -60,7 +60,7 @@ def load_hashtags_json():
     return data
 
 
-def transform_tags_into_text(tags_list, language):
+def tag_into_text(tags_list, language):
     tags_json = load_hashtags_json()
     res_list = list()
     for tag in tags_list:
@@ -70,3 +70,16 @@ def transform_tags_into_text(tags_list, language):
         tag_translation = list_copy[0][language.name]
         res_list.append(tag_translation)
     return res_list
+
+
+def load_features_for_formation():
+    FILE_PATH = 'features_for_formation.json'
+    file = open(FILE_PATH)
+    data = json.load(file)
+    return data
+
+
+def get_action_text_for_creation():
+    features = load_features_for_formation()
+    data = features['CREATION_SET_TAGS']
+    return data

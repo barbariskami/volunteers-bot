@@ -1,0 +1,9 @@
+TELEGRAM_RU
+Черновик успешно сохранен.
+Вы перемещены в главное меню.
+Чтобы продолжить создание запроса, перейдите в раздел "Мои просьбы".
+++++++++++++++++
+TELEGRAM_EN
+The draft is successfully saved.
+You are now in the main menu.
+To continue editing of your draft go to "My requests" section.

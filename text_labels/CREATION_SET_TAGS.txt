@@ -1,0 +1,5 @@
+TELEGRAM_RU
+Выберите на клавиатуре тэги, которые вы хотели бы присвоить своей просьбе
+++++++++++++++++
+TELEGRAM_EN
+Chose tags, you want to assign to your request

@@ -1,12 +1,13 @@
 from user import User
 from message import Message
 from exceptions import UserNotFound, AlreadyRegistered, DateFormatError, EarlyDate, WrongDateOrder
-from extensions import load_text, transform_tags_into_text
+from extensions import load_text, tag_into_text, load_features_for_formation, get_action_text_for_creation
 from keyboard import Keyboard
-from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, DateType
+from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, HashTags
 from request import Request
 import copy
 import json
+from traceback import print_exc
 from datetime import datetime
 
 
@@ -45,6 +46,7 @@ class Bot:
                                   keyboard=Keyboard(state=States.MAIN_MENU,
                                                     language=user.language.get(media, Languages.RU)))
             user.set_state(media, States.MAIN_MENU)
+            user.clear_current_editing(media)
         return list([new_message])
 
     @staticmethod
@@ -172,7 +174,10 @@ class ButtonHandler:
                                       ButtonActions.ADD_TAG: self.add_tag_into_ignore,
                                       ButtonActions.DELETE_TAG: self.delete_tag_from_ignore,
                                       ButtonActions.DELETE_CURRENT_EDITED_DRAFT: self.delete_current_draft,
-                                      ButtonActions.SET_DATE_TYPE: self.set_date_type}
+                                      ButtonActions.SET_DATE_TYPE: self.set_date_type,
+                                      ButtonActions.ADD_TAG_TO_DRAFT: self.add_tag_to_draft,
+                                      ButtonActions.DELETE_TAG_FROM_DRAFT: self.delete_tag_from_draft,
+                                      ButtonActions.SEND_SAVING_CONFIRMATION: self.send_saving_confirmation}
 
     def handle(self, action):
         res = self.button_action_methods[action]()
@@ -203,13 +208,12 @@ class ButtonHandler:
         return new_messages
 
     def form_message(self):
-        producer = FormingProducer(self.user, self.media, self.button)
-        message_type = TextLabels[self.button.info['message_type']]
-        message_data = producer.form_message(message_type)
+        producer = MessageBuildingProducer(self.user, self.media)
+        message_data = producer.build_message(button=self.button)
 
         new_messages = list()
         new_message = Message(user_id=self.user.media_id[self.media],
-                              text=message_data['text'] if not self.button.info.get('no_text', False) else '',
+                              text=message_data['text'],
                               keyboard=message_data['keyboard'] if message_data['keyboard']
                               else Keyboard(state=self.button.following_state,
                                             language=self.user.language.get(self.media, Languages.RU)))
@@ -245,42 +249,71 @@ class ButtonHandler:
         date_type = self.button.info['date_type']
         request = self.user.get_edited_draft(self.media)
         request.change_date_type(date_type)
-
         return list()
 
+    def add_tag_to_draft(self):
+        tag = self.button.info['tag']
+        request = self.user.get_edited_draft(self.media)
+        request.add_tag(tag)
+        return list()
 
-class FormingProducer:
-    def __init__(self, user, media, button):
+    def delete_tag_from_draft(self):
+        tag = self.button.info['tag']
+        request = self.user.get_edited_draft(self.media)
+        request.delete_tag(tag)
+        return list()
+
+    def send_saving_confirmation(self):
+        self.user.clear_current_editing(self.media)
+
+        new_messages = list()
+        new_message = Message(user_id=self.user.media_id[self.media],
+                              text=load_text(TextLabels.SAVING_CONFIRMATION, self.media,
+                                             self.user.language.get(self.media, Languages.RU)))
+        new_messages.append(new_message)
+        return new_messages
+
+
+class MessageBuildingProducer:
+    def __init__(self, user, media):
         self.user = user
         self.media = media
-        self.button = button
 
-        self.FEATURES_PATH = 'features_for_formation.json'
         self.FUNCTIONS_FOR_FORMATION = {TextLabels.IGNORE_SETTINGS: self.ignore_lists_messages,
                                         TextLabels.CHOSE_TAG_DELETION: self.chose_tag_to_edit,
                                         TextLabels.CHOSE_TAG_ADDING: self.chose_tag_to_edit,
                                         TextLabels.TAG_ADDED_INTO_IGNORE: self.chose_tag_to_edit,
                                         TextLabels.TAG_DELETED_FROM_IGNORE: self.chose_tag_to_edit,
-                                        TextLabels.CREATION_SET_DATE: self.creation_set_date}
+                                        TextLabels.CREATION_SET_DATE: self.creation_set_date,
+                                        TextLabels.CREATION_SET_TAGS: self.creation_set_tags,
+                                        TextLabels.CREATION_TAG_ADDED_TO_DRAFT: self.creation_tag_added_or_deleted,
+                                        TextLabels.CREATION_TAG_DELETED_FROM_DRAFT: self.creation_tag_added_or_deleted}
 
-    def load_features_for_formation(self, type_of_features):
-        file = open(self.FEATURES_PATH)
-        data = json.load(file)
+    def get_features_for_formation(self, type_of_features):
+        data = load_features_for_formation()
         return data[type_of_features]
 
-    def form_message(self, text_label):
-        data = self.FUNCTIONS_FOR_FORMATION[text_label]()
-        message_text = load_text(text_label,
-                                 self.media,
-                                 self.user.language.get(self.media, Languages.RU))
-        res_message_text = message_text.format(**data['text'])
+    def build_message(self, button=None, following_state=None):
+        text_label = None
+        if button:
+            text_label = TextLabels[button.info['message_type']]
+        elif following_state:
+            text_label = TextLabels[following_state.name]
+        data = self.FUNCTIONS_FOR_FORMATION[text_label](button=button, following_state=following_state)
+        if button and not button.info.get('no_text', False):
+            message_text = load_text(text_label,
+                                     self.media,
+                                     self.user.language.get(self.media, Languages.RU))
+            res_message_text = message_text.format(**data['text'])
+        else:
+            res_message_text = ''
         return {'text': res_message_text, 'keyboard': data['keyboard']}
 
-    def ignore_lists_messages(self):
+    def ignore_lists_messages(self, button=None, **kwargs):
         ignored = self.user.get_ignored_hashtags_text(self.media)
         subscription = self.user.get_subscription_hashtags_text(self.media)
 
-        keyboard_data = Keyboard.load_keyboard(self.button.following_state.name)
+        keyboard_data = Keyboard.load_keyboard(button.following_state.name)
 
         if ignored:
             ignored = '\n'.join(map(lambda x: '- ' + x, ignored))
@@ -298,38 +331,38 @@ class FormingProducer:
         res = {'text': {'ignored': ignored, 'subscription': subscription}, 'keyboard': keyboard}
         return res
 
-    def chose_tag_to_edit(self):
+    def chose_tag_to_edit(self, button=None, **kwargs):
         new_button_state = ''
         tags = list()
-        if self.button.following_state == States.CHOSE_TAG_ADDING:
+        if button.following_state == States.CHOSE_TAG_ADDING:
             new_button_state = 'CHOSE_TAG_ADDING'
             tags = self.user.subscription_hashtags()
-        elif self.button.following_state == States.CHOSE_TAG_DELETION:
+        elif button.following_state == States.CHOSE_TAG_DELETION:
             new_button_state = 'CHOSE_TAG_DELETION'
             tags = self.user.ignored_tags
-
-        keyboard = Keyboard.load_keyboard(self.button.following_state.name)
+        keyboard = Keyboard.load_keyboard(button.following_state.name)
         if len(tags) > 10:
-            right_border = (self.button.info['page'] + 1) * 7
+            right_border = (button.info['page'] + 1) * 7
             if right_border > len(tags):
                 right_border = len(tags)
-            left_border = (self.button.info['page'] * 7)
+            left_border = (button.info['page'] * 7)
             tags = tags[left_border:right_border]
-            keyboard['buttons'][1][0]['info']['page'] = self.button.info['page'] - 1
-            keyboard['buttons'][1][1]['info']['page'] = self.button.info['page'] + 1
-            if self.button.info['page'] == 0:
+            keyboard['buttons'][1][0]['info']['page'] = button.info['page'] - 1
+            keyboard['buttons'][1][1]['info']['page'] = button.info['page'] + 1
+            if button.info['page'] == 0:
                 del keyboard['buttons'][1][0]
                 keyboard['buttons'][1][0]['info']['page'] = 1
-            elif self.button.info['page'] * 7 >= len(tags):
+            elif button.info['page'] * 7 >= len(tags):
                 del keyboard['buttons'][1][1]
         else:
             del keyboard['buttons'][1]
         button_template = keyboard['buttons'][0][0]
-        del keyboard['buttons'][0][0]
+        del keyboard['buttons'][0]
         for tag in tags:
             new_button = copy.deepcopy(button_template)
+
             for l in list(Languages):
-                new_button[l.name] = '–' + transform_tags_into_text([tag], l)[0] + '–'
+                new_button[l.name] = '–' + tag_into_text([tag], l)[0] + '–'
             new_button['state'] = new_button_state
             new_button['info']['tag'] = tag
             keyboard['buttons'].insert(0, [new_button])
@@ -339,15 +372,72 @@ class FormingProducer:
                                     json_set=keyboard)}
         return res
 
-    def creation_set_date(self):
+    def creation_set_date(self, button=None, **kwargs):
         request = self.user.get_edited_draft(self.media)
-        features = self.load_features_for_formation('CREATION_SET_DATE')
+        features = self.get_features_for_formation('CREATION_SET_DATE')
         res = {'text': dict()}
         res['text']['date_word'] = features['date_word'][request.date_type.name][self.user.language[self.media].name]
 
-        res['keyboard'] = Keyboard(state=self.button.following_state, language=self.user.language[self.media])
+        res['keyboard'] = Keyboard(state=button.following_state, language=self.user.language[self.media])
 
         return res
+
+    def creation_set_tags(self, button=None, following_state=None):
+        request = self.user.get_edited_draft(self.media)
+        tags = list(HashTags)
+        tags.sort(key=lambda x: (x in request.tags))
+
+        if button:
+            keyboard = Keyboard.load_keyboard(button.following_state.name)
+        elif following_state:
+            keyboard = Keyboard.load_keyboard(following_state.name)
+        else:
+            keyboard = None  # This should never happen, but just in case
+        if len(tags) > 10:
+            if button:
+                page = button.info['page']
+            else:
+                page = 0
+            right_border = (page + 1) * 7
+            if right_border > len(tags):
+                right_border = len(tags)
+            left_border = (page * 7)
+            tags = tags[left_border:right_border]
+            keyboard['buttons'][2][0]['info']['page'] = page - 1
+            keyboard['buttons'][2][1]['info']['page'] = page + 1
+
+            if page == 0:
+                del keyboard['buttons'][2][0]
+            elif page * 7 >= len(tags):
+                del keyboard['buttons'][2][1]
+        else:
+            del keyboard['buttons'][2]
+        button_addition_template = keyboard['buttons'][0][0]
+        button_deletion_template = keyboard['buttons'][1][0]
+        del keyboard['buttons'][0:2]
+        action_texts = get_action_text_for_creation()
+        for tag in tags:
+            if tag in request.tags:
+                new_button = copy.deepcopy(button_deletion_template)
+            else:
+                new_button = copy.deepcopy(button_addition_template)
+            for l in list(Languages):
+                action_text = action_texts[new_button['info']['actions'][0]][l.name]
+                new_button[l.name] = '–- ' + action_text + '"' + tag_into_text([tag], l)[0] + '"' + ' -–'
+            new_button['info']['tag'] = tag
+            keyboard['buttons'].insert(0, [new_button])
+
+        res = {'text': {},
+               'keyboard': Keyboard(language=self.user.language.get(self.media, Languages.RU),
+                                    json_set=keyboard)}
+        return res
+
+    def creation_tag_added_or_deleted(self, button=None, **kwargs):
+        tag = button.info['tag']
+        tag_text = tag_into_text([tag], self.user.language[self.media])[0]
+        text = {'tag': tag_text}
+        keyboard = self.creation_set_tags(button=button)['keyboard']
+        return {'text': text, 'keyboard': keyboard}
 
 
 class MessageHandler:
@@ -358,7 +448,8 @@ class MessageHandler:
         self.message_handlers = {States.MAIN_MENU: self.ignore_handler,
                                  States.CREATION_NEW_REQUEST: self.create_new_request,
                                  States.CREATION_TYPE_TEXT: self.edit_text,
-                                 States.CREATION_SET_DATE: self.set_date}
+                                 States.CREATION_SET_DATE: self.set_date,
+                                 States.CREATION_SET_PEOPLE_NUMBER: self.set_people_number}
 
     def handle(self, state, message):
         handler = self.message_handlers.get(state, None)
@@ -410,7 +501,6 @@ class MessageHandler:
         return new_messages
 
     def set_date(self, message):
-        print('Adding date', message)
         text = message.text
         request = self.user.get_edited_draft(self.media)
         new_messages = list()
@@ -445,7 +535,33 @@ class MessageHandler:
                                                  language=self.user.language[self.media]),
                                   keyboard=Keyboard(state=next_state,
                                                     language=self.user.language.get(self.media, Languages.RU)))
-            new_messages.append(new_message)
+            self.user.set_state(self.media, next_state, creation=True)
+        new_messages.append(new_message)
+        return new_messages
+
+    def set_people_number(self, message):
+        text = message.text
+        request = self.user.get_edited_draft(self.media)
+        new_messages = list()
+        try:
+            request.set_people_number(int(text))
+        except ValueError:
+            print_exc()
+            new_message = Message(self.user.media_id[self.media],
+                                  text=load_text(States.CREATION_SET_PEOPLE_NUMBER,
+                                                 media=self.media,
+                                                 language=self.user.language[self.media]),
+                                  keyboard=Keyboard(state=States.CREATION_SET_PEOPLE_NUMBER,
+                                                    language=self.user.language.get(self.media, Languages.RU)))
+        else:
+            next_state = States.CREATION_SET_TAGS
+            building_producer = MessageBuildingProducer(self.user, self.media)
+            message_data = building_producer.build_message(following_state=next_state)
+            new_message = Message(self.user.media_id[self.media],
+                                  text=load_text(TextLabels[next_state.name],
+                                                 media=self.media,
+                                                 language=self.user.language[self.media]),
+                                  keyboard=message_data['keyboard'])
             self.user.set_state(self.media, next_state, creation=True)
         new_messages.append(new_message)
         return new_messages

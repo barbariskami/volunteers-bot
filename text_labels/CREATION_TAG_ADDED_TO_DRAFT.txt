@@ -1,0 +1,7 @@
+TELEGRAM_RU
+Тэг "{tag}" присвоен этой просьбе
+(Чтобы завершить добавление тэгов, пролистайте их список до конца и нажмите кнопку "Сохранить")
+++++++++++++++++
+TELEGRAM_EN
+Tag {tag} is now assigned to this draft
+(To finish adding tags, scroll down the keyboard and press "Save")

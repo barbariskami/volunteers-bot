@@ -2,7 +2,7 @@ from bot import Bot, ButtonHandler, MessageHandler
 from user import User
 from message import Message
 from exceptions import UserNotFound, AlreadyRegistered
-from extensions import load_text, transform_tags_into_text
+from extensions import load_text, tag_into_text
 from keyboard import Keyboard
 from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions
 import copy

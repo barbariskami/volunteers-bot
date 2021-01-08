@@ -1,7 +1,7 @@
 from dataBase import get_request_by_id, get_request_by_base_id, new_request, delete_request
 import dataBase
 from copy import deepcopy
-from enumerates import DateType
+from enumerates import DateType, HashTags
 import exceptions
 from datetime import datetime, date
 from traceback import print_exc
@@ -21,7 +21,11 @@ class Request:
         if 'date_type' in self.__dict__.keys():
             self.date_type = DateType[self.date_type]
         if 'date1' in self.__dict__.keys():
-            print(type(self.date1))
+            self.date1 = datetime.strptime(self.date1, '%Y-%m-%d').date()
+        if 'tags' not in self.__dict__.keys():
+            self.tags = list()
+        else:
+            self.tags = [HashTags[i] for i in self.tags]
 
     def into_record(self):
         record = {'id': self.base_id}
@@ -36,7 +40,9 @@ class Request:
             elif key == 'id':
                 del fields[key]
             elif key == 'date1' or key == 'date2':
-                fields[key] = str(fields[key])
+                fields[key] = fields[key].strftime('%Y-%m-%d')
+            elif key == 'tags':
+                fields[key] = [i.name for i in fields[key]]
 
         record['fields'] = fields
         return record
@@ -85,6 +91,21 @@ class Request:
             self.date1 = date1
             self.date2 = date2
             self.update()
+
+    def set_people_number(self, number):
+        self.people_number = number
+        self.update()
+
+    def add_tag(self, tag):
+        self.tags.append(tag)
+        self.update()
+
+    def delete_tag(self, tag):
+        try:
+            self.tags.remove(tag)
+        except ValueError:
+            pass
+        self.update()
 
     @classmethod
     def new(cls, name, creator_base_id):

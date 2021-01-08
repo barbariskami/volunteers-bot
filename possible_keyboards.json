@@ -170,7 +170,7 @@
       "buttons": [
         [
           {
-            "RU": "Добавить тэг в игнор",
+            "RU": "Добавить тэги в игнор",
             "EN": "Add tag to ignore",
             "state": "CHOSE_TAG_ADDING",
             "info": {
@@ -185,7 +185,7 @@
         ],
         [
           {
-            "RU": "Удалить тэг из игнора",
+            "RU": "Удалить тэги из игнора",
             "EN": "Delete tag from ignore",
             "state": "CHOSE_TAG_DELETION",
             "info": {
@@ -219,7 +219,8 @@
             "state": "CHOSE_TAG_ADDING",
             "info": {
               "actions": [
-                "ADD_TAG", "FORM_MESSAGE"
+                "ADD_TAG",
+                "FORM_MESSAGE"
               ],
               "tag": "HASHTAG.TAG_NAME",
               "message_type": "TAG_ADDED_INTO_IGNORE",
@@ -278,7 +279,8 @@
             "state": "CHOSE_TAG_DELETION",
             "info": {
               "actions": [
-                "DELETE_TAG", "FORM_MESSAGE"
+                "DELETE_TAG",
+                "FORM_MESSAGE"
               ],
               "tag": "HASHTAG.TAG_NAME",
               "message_type": "TAG_DELETED_FROM_IGNORE",
@@ -389,7 +391,9 @@
             "RU": "Сохранить",
             "EN": "Save",
             "state": "CREATION_MAIN_MENU",
-            "info": {}
+            "info": {
+              "actions": ["SEND_SAVING_CONFIRMATION"]
+            }
           }
         ]
       ]
@@ -463,7 +467,9 @@
             "RU": "Сохранить",
             "EN": "Save",
             "state": "CREATION_MAIN_MENU",
-            "info": {}
+            "info": {
+              "actions": ["SEND_SAVING_CONFIRMATION"]
+            }
           }
         ]
       ]
@@ -489,7 +495,9 @@
             "RU": "Сохранить",
             "EN": "Save",
             "state": "CREATION_MAIN_MENU",
-            "info": {}
+            "info": {
+              "actions": ["SEND_SAVING_CONFIRMATION"]
+            }
           }
         ]
       ]
@@ -497,6 +505,91 @@
     "CREATION_SET_PEOPLE_NUMBER": {
       "type": "REPLY",
       "buttons": [
+        [
+          {
+            "RU": "Отменить и удалить шаблон",
+            "EN": "Cancel and delete the draft",
+            "state": "CREATION_MAIN_MENU",
+            "info": {
+              "actions": [
+                "DELETE_CURRENT_EDITED_DRAFT"
+              ],
+              "ignore_standard_action": false
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Сохранить",
+            "EN": "Save",
+            "state": "CREATION_MAIN_MENU",
+            "info": {"actions": ["SEND_SAVING_CONFIRMATION"]}
+          }
+        ]
+      ]
+    },
+    "CREATION_SET_TAGS": {
+      "type": "REPLY",
+      "to_be_formed": true,
+      "buttons": [
+        [
+          {
+            "RU": "добавить тэг",
+            "EN": "add tag",
+            "state": "CREATION_SET_TAGS",
+            "info": {
+              "actions": [
+                "ADD_TAG_TO_DRAFT",
+                "FORM_MESSAGE"
+              ],
+              "tag": "HASHTAG.TAG_NAME",
+              "page": 0,
+              "message_type": "CREATION_TAG_ADDED_TO_DRAFT",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "удалить тэг",
+            "EN": "delete tag",
+            "state": "CREATION_SET_TAGS",
+            "info": {
+              "actions": [
+                "DELETE_TAG_FROM_DRAFT",
+                "FORM_MESSAGE"
+              ],
+              "tag": "HASHTAG.TAG_NAME",
+              "page": 0,
+              "message_type": "CREATION_TAG_DELETED_FROM_DRAFT",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "<---",
+            "EN": "<---",
+            "state": "CHOSE_TAG_DELETION",
+            "info": {
+              "actions": [
+                "PREVIOUS_PAGE"
+              ],
+              "ignore_standard_action": true
+            }
+          },
+          {
+            "RU": "--->",
+            "EN": "--->",
+            "state": "CHOSE_TAG_DELETION",
+            "info": {
+              "actions": [
+                "NEXT_PAGE"
+              ],
+              "ignore_standard_action": true
+            }
+          }
+        ],
         [
           {
             "RU": "Отменить и удалить шаблон",

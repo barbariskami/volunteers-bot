@@ -5,8 +5,7 @@
         "RU": "дату",
         "EN": "date"
       },
-      "DEADLINE":
-      {
+      "DEADLINE": {
         "RU": "дату дэдлайна",
         "EN": "the date of the deadline"
       },
@@ -14,6 +13,16 @@
         "RU": "дату начала и дату окончания периода в одном сообщении через пробел",
         "EN": "the date of the beginning and the date of the ending of the period in a single message with a space"
       }
+    }
+  },
+  "CREATION_SET_TAGS": {
+    "ADD_TAG_TO_DRAFT": {
+      "RU": "Добавить: ",
+      "EN": "Add: "
+    },
+    "DELETE_TAG_FROM_DRAFT": {
+      "RU": "Удалить: ",
+      "EN": "Delete: "
     }
   }
 }

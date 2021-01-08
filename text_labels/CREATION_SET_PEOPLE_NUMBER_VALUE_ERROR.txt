@@ -1,0 +1,5 @@
+TELEGRAM_RU
+Пожалуйста, введите число
+++++++++++++++++
+TELEGRAM_EN
+Please enter a number

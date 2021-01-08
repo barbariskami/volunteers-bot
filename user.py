@@ -1,7 +1,7 @@
 import dataBase
 from enumerates import Media, States, Languages, HashTags
 from exceptions import AlreadyRegistered
-from extensions import transform_tags_into_text
+from extensions import tag_into_text
 from copy import deepcopy
 from request import Request
 
@@ -131,7 +131,7 @@ class User:
 
     def get_ignored_hashtags_text(self, media):
         ignored = self.ignored_tags
-        return transform_tags_into_text(ignored, self.language[media])
+        return tag_into_text(ignored, self.language[media])
 
     def get_subscription_hashtags_text(self, media):
         all_tags = list(HashTags)
@@ -140,7 +140,7 @@ class User:
             index = all_tags.index(tag)
             if index >= 0:
                 del all_tags[index]
-        return transform_tags_into_text(all_tags, self.language[media])
+        return tag_into_text(all_tags, self.language[media])
 
     def subscription_hashtags(self):
         all_tags = list(HashTags)
@@ -176,6 +176,9 @@ class User:
                 tag = self.REQUEST_COLUMNS_CONNECTION[key]
                 self.__dict__[tag] = self.__dict__.get(tag, list())
                 self.__dict__[tag].append(request.base_id)
+
+    def clear_current_editing(self, media):
+        self.edited_drafts[media] = None
 
     @staticmethod
     def register(media, user_id, password):
