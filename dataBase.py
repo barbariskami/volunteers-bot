@@ -17,6 +17,14 @@ def get_user_by_id_in_media(media, user_id):
     return user
 
 
+def get_user_by_base_id(base_id):
+    users_table = Airtable(BASE_ID, USERS_TABLE_NAME, api_key=API_KEY)
+    user = users_table.get(base_id)
+    if not user:
+        raise UserNotFound
+    return user
+
+
 def get_user_by_password(password):
     users_table = Airtable(BASE_ID, USERS_TABLE_NAME, api_key=API_KEY)
     user = users_table.match('password', password)
@@ -25,7 +33,7 @@ def get_user_by_password(password):
     return user
 
 
-def update_user(record):
+def update_user_on_server(record):
     table = Airtable(BASE_ID, USERS_TABLE_NAME, api_key=API_KEY)
     user_elem = table.update(record['id'], record['fields'])
     return user_elem

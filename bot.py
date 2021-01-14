@@ -1,10 +1,10 @@
+from request import Request
 from user import User
 from message import Message
 from exceptions import UserNotFound, AlreadyRegistered, DateFormatError, EarlyDate, WrongDateOrder
 from extensions import load_text, tag_into_text, load_features_for_formation, get_action_text_for_creation
 from keyboard import Keyboard
-from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, HashTags
-from request import Request
+from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, HashTags, DateType
 import copy
 import json
 from traceback import print_exc
@@ -177,7 +177,8 @@ class ButtonHandler:
                                       ButtonActions.SET_DATE_TYPE: self.set_date_type,
                                       ButtonActions.ADD_TAG_TO_DRAFT: self.add_tag_to_draft,
                                       ButtonActions.DELETE_TAG_FROM_DRAFT: self.delete_tag_from_draft,
-                                      ButtonActions.SEND_SAVING_CONFIRMATION: self.send_saving_confirmation}
+                                      ButtonActions.CREATION_SEND_SAVING_CONFIRMATION: self.send_saving_confirmation,
+                                      ButtonActions.CREATION_SHOW_REQUEST_DRAFT: self.creation_show_request_draft}
 
     def handle(self, action):
         res = self.button_action_methods[action]()
@@ -264,12 +265,26 @@ class ButtonHandler:
         return list()
 
     def send_saving_confirmation(self):
-        self.user.clear_current_editing(self.media)
-
         new_messages = list()
         new_message = Message(user_id=self.user.media_id[self.media],
-                              text=load_text(TextLabels.SAVING_CONFIRMATION, self.media,
+                              text=load_text(TextLabels.CREATION_SAVING_CONFIRMATION, self.media,
                                              self.user.language.get(self.media, Languages.RU)))
+        new_messages.append(new_message)
+        return new_messages
+
+    def creation_show_request_draft(self):
+        new_messages = list()
+        message_builder = MessageBuildingProducer(self.user, self.media)
+
+        draft_type = self.button.info.get('draft_to_show', 'CURRENT_EDITED')
+        draft = None
+        if draft_type == 'CURRENT_EDITED':
+            draft = self.user.get_edited_draft(self.media)
+        message_text = message_builder.build_message(text_label=TextLabels.CREATION_SHOW_REQUEST_DRAFT,
+                                                     request=draft,
+                                                     text_without_button=True)['text']
+        new_message = Message(user_id=self.user.media_id[self.media],
+                              text=message_text)
         new_messages.append(new_message)
         return new_messages
 
@@ -287,20 +302,21 @@ class MessageBuildingProducer:
                                         TextLabels.CREATION_SET_DATE: self.creation_set_date,
                                         TextLabels.CREATION_SET_TAGS: self.creation_set_tags,
                                         TextLabels.CREATION_TAG_ADDED_TO_DRAFT: self.creation_tag_added_or_deleted,
-                                        TextLabels.CREATION_TAG_DELETED_FROM_DRAFT: self.creation_tag_added_or_deleted}
+                                        TextLabels.CREATION_TAG_DELETED_FROM_DRAFT: self.creation_tag_added_or_deleted,
+                                        TextLabels.CREATION_SHOW_REQUEST_DRAFT: self.creation_show_request_draft}
 
-    def get_features_for_formation(self, type_of_features):
+    @staticmethod
+    def get_features_for_formation(type_of_features):
         data = load_features_for_formation()
         return data[type_of_features]
 
-    def build_message(self, button=None, following_state=None):
-        text_label = None
+    def build_message(self, button=None, following_state=None, text_label=None, no_text=False, **kwargs):
         if button:
             text_label = TextLabels[button.info['message_type']]
         elif following_state:
             text_label = TextLabels[following_state.name]
-        data = self.FUNCTIONS_FOR_FORMATION[text_label](button=button, following_state=following_state)
-        if button and not button.info.get('no_text', False):
+        data = self.FUNCTIONS_FOR_FORMATION[text_label](button=button, following_state=following_state, **kwargs)
+        if button and not button.info.get('no_text', False) or not no_text:
             message_text = load_text(text_label,
                                      self.media,
                                      self.user.language.get(self.media, Languages.RU))
@@ -374,7 +390,7 @@ class MessageBuildingProducer:
 
     def creation_set_date(self, button=None, **kwargs):
         request = self.user.get_edited_draft(self.media)
-        features = self.get_features_for_formation('CREATION_SET_DATE')
+        features = self.__class__.get_features_for_formation('CREATION_SET_DATE')
         res = {'text': dict()}
         res['text']['date_word'] = features['date_word'][request.date_type.name][self.user.language[self.media].name]
 
@@ -438,6 +454,22 @@ class MessageBuildingProducer:
         text = {'tag': tag_text}
         keyboard = self.creation_set_tags(button=button)['keyboard']
         return {'text': text, 'keyboard': keyboard}
+
+    def creation_show_request_draft(self, request=None, **kwargs):
+        lines = list()
+        lines.append(request.name)
+        lines.append(request.text)
+        date_types_names = self.__class__.get_features_for_formation('DateType')
+        lines.append(date_types_names[request.date_type.name][self.user.language[self.media].name].format(
+            date1=str(request.date1), date2=str(request.date2)))
+        features = self.__class__.get_features_for_formation('RequestText')
+        lines.append(features['people_number'][self.user.language[self.media].name].format(
+            people_number=str(request.people_number)))
+        hashtags_list = tag_into_text(request.tags, self.user.language[self.media])
+        if hashtags_list:
+            lines.append(features['tags'][self.user.language[self.media].name].format(tags=', '.join(hashtags_list)))
+        res_text = '\n'.join(lines)
+        return {'text': {'request': res_text}, 'keyboard': None}
 
 
 class MessageHandler:

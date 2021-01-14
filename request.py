@@ -1,9 +1,10 @@
-from dataBase import get_request_by_id, get_request_by_base_id, new_request, delete_request
+from dataBase import get_request_by_id, get_request_by_base_id
 import dataBase
 from copy import deepcopy
 from enumerates import DateType, HashTags
 import exceptions
 from datetime import datetime, date
+from user import User
 from traceback import print_exc
 
 
@@ -22,6 +23,12 @@ class Request:
             self.date_type = DateType[self.date_type]
         if 'date1' in self.__dict__.keys():
             self.date1 = datetime.strptime(self.date1, '%Y-%m-%d').date()
+        else:
+            self.date1 = None
+        if 'date2' in self.__dict__.keys():
+            self.date2 = datetime.strptime(self.date1, '%Y-%m-%d').date()
+        else:
+            self.date2 = None
         if 'tags' not in self.__dict__.keys():
             self.tags = list()
         else:
@@ -39,7 +46,7 @@ class Request:
                 fields[key] = self.date_type.name
             elif key == 'id':
                 del fields[key]
-            elif key == 'date1' or key == 'date2':
+            elif (key == 'date1' or key == 'date2') and fields[key]:
                 fields[key] = fields[key].strftime('%Y-%m-%d')
             elif key == 'tags':
                 fields[key] = [i.name for i in fields[key]]
@@ -52,7 +59,7 @@ class Request:
         self.request_elem = dataBase.update_request(record)
 
     def delete(self):
-        delete_request(self.base_id)
+        dataBase.delete_request(self.base_id)
 
     def change_text(self, text):
         self.text = text

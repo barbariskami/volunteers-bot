@@ -1,0 +1,8 @@
+TELEGRAM_RU
+У вас нет доступа к этому боту.
+Если вы считаете, что произошла ошибка, пожалуйста, обратитесь во внеакаджемический департамент.
+
+++++++++++++++++
+TELEGRAM_EN
+You do not have access to this bot.
+If you think that there is a mistake, please contact the student development department.

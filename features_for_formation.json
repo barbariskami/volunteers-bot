@@ -24,5 +24,30 @@
       "RU": "Удалить: ",
       "EN": "Delete: "
     }
+  },
+  "DateType": {
+    "DATE": {
+      "RU": "Дата выполнения: {date1}",
+      "EN": "Date: {date1}"
+    },
+    "DEADLINE": {
+      "RU": "Крайний срок выполнения: {date1}",
+      "EN": "Deadline: {date1}"
+    },
+    "PERIOD": {
+      "RU": "Период выполнения с {date1} по {date2}",
+      "EN": "The execution period is from {date1} to {date2}"
+    }
+  },
+  "RequestText":
+  {
+    "people_number": {
+      "RU": "Сколько человек необходимо: {people_number}",
+      "EN": "How many volunteers is needed: {people_number}"
+    },
+    "tags": {
+      "RU": "Хэш-тэги: {tags}",
+      "EN": "Hashtags: {tags}"
+    }
   }
 }

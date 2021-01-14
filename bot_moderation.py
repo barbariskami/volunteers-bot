@@ -1,4 +1,4 @@
-from bot import Bot
+from bot import Bot, ButtonHandler, MessageHandler
 from user import User
 from message import Message
 from exceptions import UserNotFound
@@ -7,7 +7,7 @@ from keyboard import Keyboard
 from enumerates import TextLabels, States, MessageMarks, Languages
 
 
-class CreationBot(Bot):
+class ModerationBot(Bot):
     """
     Класс Bot представляет собой основной класс проекта, который содержит в себе все базовые функции.
     Класс используется для отделения механики бота от платформы, на которой он будет использоваться.
@@ -32,21 +32,34 @@ class CreationBot(Bot):
         try:
             user = User(media=media, user_id=user_id)
         except UserNotFound:
-            new_message = Message(user_id, text=load_text(TextLabels.CREATION_UNREGISTERED, media=media),
+            new_message = Message(user_id, text=load_text(TextLabels.MODERATION_UNREGISTERED, media=media),
                                   marks=[MessageMarks.UNREGISTERED])
         else:
-            new_message = Message(user_id,
-                                  text=load_text(TextLabels.CREATION_MAIN_MENU_GREETING,
-                                                 media=media,
-                                                 language=user.language[media]),
-                                  keyboard=Keyboard(state=States.CREATION_MAIN_MENU,
-                                                    language=user.language.get(media, Languages.RU)))
-            user.set_state(media, States.CREATION_MAIN_MENU, creation=True)
+            if user.is_moderator:
+                new_message = Message(user_id,
+                                      text=load_text(TextLabels.MODERATION_GREETING,
+                                                     media=media,
+                                                     language=user.language[media]))
+                user.set_state(media, States.MODERATION_NULL, moderation=True)
+            else:
+                new_message = Message(user_id,
+                                      text=load_text(TextLabels.MODERATION_ACCESS_DENIED,
+                                                     media=media,
+                                                     language=user.language[media]),
+                                      marks=[MessageMarks.NO_ACCESS])
+
         return list([new_message])
 
     @staticmethod
     def unregistered(media, user_id):
         new_message = Message(user_id,
-                              text=load_text(TextLabels.CREATION_UNREGISTERED, media=media),
+                              text=load_text(TextLabels.MODERATION_UNREGISTERED, media=media),
                               marks=list([MessageMarks.UNREGISTERED]))
+        return list([new_message])
+
+    @staticmethod
+    def no_access(media, user_id):
+        new_message = Message(user_id,
+                              text=load_text(TextLabels.MODERATION_ACCESS_DENIED, media=media),
+                              marks=list([MessageMarks.NO_ACCESS]))
         return list([new_message])

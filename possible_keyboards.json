@@ -392,7 +392,9 @@
             "EN": "Save",
             "state": "CREATION_MAIN_MENU",
             "info": {
-              "actions": ["SEND_SAVING_CONFIRMATION"]
+              "actions": [
+                "CREATION_SEND_SAVING_CONFIRMATION"
+              ]
             }
           }
         ]
@@ -468,7 +470,9 @@
             "EN": "Save",
             "state": "CREATION_MAIN_MENU",
             "info": {
-              "actions": ["SEND_SAVING_CONFIRMATION"]
+              "actions": [
+                "CREATION_SEND_SAVING_CONFIRMATION"
+              ]
             }
           }
         ]
@@ -496,7 +500,9 @@
             "EN": "Save",
             "state": "CREATION_MAIN_MENU",
             "info": {
-              "actions": ["SEND_SAVING_CONFIRMATION"]
+              "actions": [
+                "CREATION_SEND_SAVING_CONFIRMATION"
+              ]
             }
           }
         ]
@@ -523,7 +529,11 @@
             "RU": "Сохранить",
             "EN": "Save",
             "state": "CREATION_MAIN_MENU",
-            "info": {"actions": ["SEND_SAVING_CONFIRMATION"]}
+            "info": {
+              "actions": [
+                "CREATION_SEND_SAVING_CONFIRMATION"
+              ]
+            }
           }
         ]
       ]
@@ -607,6 +617,76 @@
           {
             "RU": "Сохранить",
             "EN": "Save",
+            "state": "CREATION_SUBMIT_OR_EDIT",
+            "info": {
+              "actions": [
+                "CREATION_SHOW_REQUEST_DRAFT"
+              ],
+              "message_type": "CREATION_SUBMIT_OR_EDIT",
+              "draft_to_show": "CURRENT_EDITED"
+            }
+          }
+        ]
+      ]
+    },
+    "CREATION_SUBMIT_OR_EDIT": {
+      "type": "REPLY",
+      "to_be_formed": false,
+      "buttons": [
+        [
+          {
+            "RU": "Отправить на модерацию",
+            "EN": "Send for moderation",
+            "state": "CREATION_ASK_ABOUT_MODERATION",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Редактировать",
+            "EN": "Edit",
+            "state": "CREATION_EDIT_DRAFT",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Сохранить и вернуться в главное меню",
+            "EN": "Save and go back to main menu",
+            "state": "CREATION_MAIN_MENU",
+            "info": {}
+          }
+        ]
+      ]
+    },
+    "CREATION_ASK_ABOUT_MODERATION": {
+      "type": "REPLY",
+      "to_be_formed": false,
+      "buttons": [
+        [
+          {
+            "RU": "Отправить",
+            "EN": "Submit",
+            "state": "CREATION_MAIN_MENU",
+            "info": {
+              "actions": [
+                "CREATION_SUBMIT_REQUEST"
+              ]
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Отменить и продолжить редактирование",
+            "EN": "Cancel and continue editing",
+            "state": "CREATION_EDIT_DRAFT",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Отменить и выйти в главное меню",
+            "EN": "Cancel and go to main menu",
             "state": "CREATION_MAIN_MENU",
             "info": {}
           }
