@@ -1,6 +1,6 @@
 from airtable import Airtable
 from exceptions import UserNotFound
-import os
+import enumerates
 
 BASE_ID = 'apphvG4aTncmmmVPv'
 API_KEY_PATH = 'api_key.txt'
@@ -67,3 +67,39 @@ def new_request(name, creator_record_id):
 def delete_request(request_id):
     table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
     table.delete(request_id)
+
+
+def get_id_of_all_moderators(media):
+    table = Airtable(BASE_ID, USERS_TABLE_NAME, api_key=API_KEY)
+    users_from_table = table.search('is_moderator', '1')
+    res_users = list()
+    for i in users_from_table:
+        try:
+            user_id = i['fields'][media.name.lower() + '_id']
+            res_users.append(user_id)
+        except KeyError:
+            pass
+
+    return res_users
+
+
+def get_id_of_users_without_ignore_hashtags(media=enumerates.Media.TELEGRAM,
+                                            tags=None):  # tags = список тэгов в виде объектов enum.HashTags
+    if tags is None:
+        tags = list()
+    tags_strings = [i.name for i in tags]
+
+    if tags:
+        find_formula = 'FIND("{tag_name}", {{ignored_tags}}, 0)'
+        find_formulas = [find_formula.format(tag_name=i) for i in tags_strings]
+        formula = 'IF(OR({find_formulas}), FALSE(), TRUE())'
+        final_formula = formula.format(find_formulas=', '.join(find_formulas))
+    else:
+        final_formula = None
+
+    table = Airtable(BASE_ID, USERS_TABLE_NAME, api_key=API_KEY)
+    res_list = list()
+    for u in table.get_all(formula=final_formula, fields=media.name.lower() + '_id'):
+        if u['fields'].get('telegram_id', None):
+            res_list.append(u['fields']['telegram_id'])
+    return res_list

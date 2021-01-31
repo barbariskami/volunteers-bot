@@ -1,9 +1,10 @@
 import dataBase
-from enumerates import Media, States, Languages, HashTags
+from enumerates import Media, States, Languages, HashTags, Bots
 from exceptions import AlreadyRegistered
 from extensions import tag_into_text
 from copy import deepcopy
 import request
+import json
 
 
 class User:
@@ -39,12 +40,15 @@ class User:
     @staticmethod
     def transform_from_record_into_variable_dict(record):
         res_dict = deepcopy(record['fields'])
-        res_dict['media_id'] = {}
-        res_dict['state'] = {}
-        res_dict['creation_state'] = {}
-        res_dict['moderation_state'] = {}
-        res_dict['language'] = {}
-        res_dict['edited_drafts'] = {}
+        res_dict['media_id'] = dict()
+        res_dict['state'] = dict()
+        res_dict['creation_state'] = dict()
+        res_dict['moderation_state'] = dict()
+        res_dict['language'] = dict()
+        res_dict['edited_drafts'] = dict()
+        res_dict['messages_for_requests'] = dict()
+        for bot in Bots:
+            res_dict['messages_for_requests'][bot] = dict()
 
         for media in Media:
             res_dict['media_id'][media] = record['fields'].get(media.name.lower() + '_id', None)
@@ -52,9 +56,15 @@ class User:
             res_dict['creation_state'][media] = States[
                 record['fields'].get(media.name.lower() + '_creation_state', 'CREATION_MAIN_MENU')]
             res_dict['moderation_state'][media] = States[
-                record['fields'].get(media.name.lower() + '_moderation_state', 'MODERATION_NULL')]
+                record['fields'].get(media.name.lower() + '_moderation_state', 'MODERATION_MAIN_MENU')]
             res_dict['language'][media] = Languages[record['fields'].get(media.name.lower() + '_language', 'RU')]
             res_dict['edited_drafts'][media] = record['fields'].get(media.name.lower() + '_creation_edited_draft', None)
+            for bot in Bots:
+                if media.name.lower() + '_' + bot.name.lower() + '_messages_for_requests' in record['fields'].keys():
+                    res_dict['messages_for_requests'][bot][media] = json.loads(
+                        record['fields'][media.name.lower() + '_' + bot.name.lower() + '_messages_for_requests'])
+                else:
+                    res_dict['messages_for_requests'][bot][media] = dict()
         if 'is_moderator' not in res_dict.keys():
             res_dict['is_moderator'] = False
         res_dict['ignored_tags'] = list()
@@ -121,6 +131,12 @@ class User:
                 fields['ignored_tags'] = list(map(lambda x: x.name, fields['ignored_tags']))
             elif key == 'REQUEST_COLUMNS_CONNECTION':
                 del fields[key]
+            elif key == 'messages_for_requests':
+                del fields[key]
+                for bot in self.messages_for_requests:
+                    for media in self.messages_for_requests[bot]:
+                        fields[media.name.lower() + '_' + bot.name.lower() + '_messages_for_requests'] = json.dumps(
+                            self.messages_for_requests[bot][media])
         record['fields'] = fields
         return record
 
@@ -211,11 +227,31 @@ class User:
     def connect_request(self, request):
         self.update_from_server()
 
-    def clear_current_editing(self, media):
+    def clear_edited_draft_field(self, media):
         self.edited_drafts[media] = None
 
     def delete_created_request(self, request_id):
         self.update_from_server()
+
+    def add_message_id(self, media, bot, message_id, request_id):
+        self.update_from_server()
+        self.messages_for_requests[bot][media][request_id] = message_id
+        self.update_on_server()
+
+    @staticmethod
+    def get_id_of_all_moderators(media):
+        res_list = dataBase.get_id_of_all_moderators(media)
+        return res_list
+
+    @staticmethod
+    def get_id_of_users_without_ignore_hashtags(media, tags):
+        res_list = dataBase.get_id_of_users_without_ignore_hashtags(media, tags)
+        return res_list
+
+    def get_message_id_by_request_id(self, media, bot, request_base_id):
+        message_id = self.messages_for_requests[bot][media].get(request_base_id, 0)
+        return message_id
+
 
     @staticmethod
     def register(media, user_id, password):

@@ -1,0 +1,7 @@
+TELEGRAM_RU
+Ваша просьба "{request_name}" была отклонена модератором.
+Чтобы пройти модерацию, отредактируйте просьбу в разделе "Мои просьбы" (не забудьте проверить ее на соответствие правилам).
+++++++++++++++++
+TELEGRAM_EN
+Your request "{request_name}" has been dismissed by a moderator.
+To pass moderation, edit the request in the "My Requests" section (don't forget to check if it follows the rules).

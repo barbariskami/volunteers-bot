@@ -1,0 +1,5 @@
+TELEGRAM_RU
+Ваш запрос отправлен на модерацию
+++++++++++++++++
+TELEGRAM_EN
+Your request has been sent for moderation

@@ -39,8 +39,11 @@
       "EN": "The execution period is from {date1} to {date2}"
     }
   },
-  "RequestText":
-  {
+  "RequestText": {
+    "creator": {
+      "RU": "Создатель: {creator}",
+      "EN": "Creator: {creator}"
+    },
     "people_number": {
       "RU": "Сколько человек необходимо: {people_number}",
       "EN": "How many volunteers is needed: {people_number}"

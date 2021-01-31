@@ -3,9 +3,10 @@ import dataBase
 from copy import deepcopy
 from enumerates import DateType, HashTags
 import exceptions
+from extensions import tag_into_text
 from datetime import datetime, date
-from user import User
 from traceback import print_exc
+import user
 
 
 class Request:
@@ -34,6 +35,32 @@ class Request:
         else:
             self.tags = [HashTags[i] for i in self.tags]
 
+        self.FEATURES_FOR_READABLE_FORMAT = {'creator': {
+            'RU': 'Создатель: {creator}',
+            'EN': 'Creator: {creator}'
+        },
+            'people_number': {
+                'RU': 'Сколько человек необходимо: {people_number}',
+                'EN': 'How many volunteers is needed: {people_number}'
+            },
+            'tags': {
+                'RU': 'Хэш-тэги: {tags}',
+                'EN': 'Hashtags: {tags}'
+            },
+            'date_type': {'DATE': {
+                'RU': 'Дата выполнения: {date1}',
+                'EN': 'Date: {date1}'
+            },
+                'DEADLINE': {
+                    'RU': 'Крайний срок выполнения: {date1}',
+                    'EN': 'Deadline: {date1}'
+                },
+                'PERIOD': {
+                    'RU': 'Период выполнения с {date1} по {date2}',
+                    'EN': 'The execution period is from {date1} to {date2}'
+                }}
+        }
+
     def into_record(self):
         record = {'id': self.base_id}
         fields = deepcopy(self.__dict__)
@@ -44,7 +71,7 @@ class Request:
                 del fields[key]
             elif key == 'date_type':
                 fields[key] = self.date_type.name
-            elif key == 'id':
+            elif key == 'id' or key == 'FEATURES_FOR_READABLE_FORMAT':
                 del fields[key]
             elif (key == 'date1' or key == 'date2') and fields[key]:
                 fields[key] = fields[key].strftime('%Y-%m-%d')
@@ -53,6 +80,32 @@ class Request:
 
         record['fields'] = fields
         return record
+
+    def into_human_readable(self, language):
+        lines = list()
+        lines.append(self.FEATURES_FOR_READABLE_FORMAT['creator'][language.name].format(
+            creator=self.get_creators_name()))
+        lines.append(self.name)
+        lines.append(self.text)
+        date_types_names = self.FEATURES_FOR_READABLE_FORMAT['date_type']
+        lines.append(date_types_names[self.date_type.name][language.name].format(
+            date1=str(self.date1), date2=str(self.date2)))
+
+        lines.append(self.FEATURES_FOR_READABLE_FORMAT['people_number'][language.name].format(
+            people_number=str(self.people_number)))
+        hashtags_list = tag_into_text(self.tags, language)
+        if hashtags_list:
+            lines.append(self.FEATURES_FOR_READABLE_FORMAT['tags'][language.name].format(tags=', '.join(hashtags_list)))
+        res_text = '\n'.join(lines)
+        return res_text
+
+    def get_creators_name(self):
+        creator_user = user.User(base_id=self.creator[0])
+        return creator_user.name_surname
+
+    def get_creator(self):
+        creator = user.User(base_id=self.creator[0])
+        return creator
 
     def update(self):
         record = self.into_record()
@@ -112,6 +165,14 @@ class Request:
             self.tags.remove(tag)
         except ValueError:
             pass
+        self.update()
+
+    def set_submission_status(self, status):
+        self.was_submited = status
+        self.update()
+
+    def set_publishing_status(self, status):
+        self.was_published = status
         self.update()
 
     @classmethod

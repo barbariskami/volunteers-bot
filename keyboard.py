@@ -4,22 +4,29 @@ from enumerates import KeyboardTypes, States, ButtonActions, DateType
 
 
 class Keyboard:
-    def __init__(self, language, buttons=None, board_type=None, state=None, json_set=None):
+    def __init__(self, language, buttons=None, board_type=None, state=None, text_label=None, json_set=None):
         if buttons and board_type:
             self.buttons = buttons
             self.type = board_type
-        elif state or json_set:
+        elif state or text_label or json_set:
             if state:
                 json_set = self.__class__.load_keyboard(state.name)
+            elif text_label:
+                json_set = self.__class__.load_keyboard(text_label.name)
+            self.type = KeyboardTypes[json_set['type']]
             self.buttons = list()
             for line in json_set['buttons']:
                 self.buttons.append(list())
                 for button in line:
+                    if self.type == KeyboardTypes.INLINE:
+                        callback_data = button['info']['callback_data']
+                    else:
+                        callback_data = None
                     self.buttons[-1].append(
                         KeyboardButton(text=button.get(language.name, button['RU']),
                                        following_state=States[button['state']],
-                                       info=button.get('info', dict())))
-            self.type = KeyboardTypes[json_set['type']]
+                                       info=button.get('info', dict()),
+                                       callback_data=callback_data))
         else:
             raise ValueError
 
@@ -36,6 +43,7 @@ class Keyboard:
             for button in line:
                 if button.text == text:
                     res_button = button
+                    break
         return res_button
 
     @staticmethod
@@ -52,10 +60,11 @@ class Keyboard:
 
 
 class KeyboardButton:
-    def __init__(self, text, following_state, info):
+    def __init__(self, text, following_state, info, callback_data=None):
         self.text = text
         self.following_state = following_state
         self.info = info
+        self.callback_data = callback_data
         self.actions = info.get('actions', list())
         for i in range(len(self.actions)):
             self.actions[i] = ButtonActions[self.actions[i]]

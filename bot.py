@@ -4,11 +4,11 @@ from message import Message
 from exceptions import UserNotFound, AlreadyRegistered, DateFormatError, EarlyDate, WrongDateOrder
 from extensions import load_text, tag_into_text, load_features_for_formation, get_action_text_for_creation
 from keyboard import Keyboard
-from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, HashTags, DateType
+from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, HashTags, Bots
 import copy
-import json
 from traceback import print_exc
-from datetime import datetime
+from dataBase import get_id_of_all_moderators
+import json
 
 
 class Bot:
@@ -46,8 +46,11 @@ class Bot:
                                   keyboard=Keyboard(state=States.MAIN_MENU,
                                                     language=user.language.get(media, Languages.RU)))
             user.set_state(media, States.MAIN_MENU)
-            user.clear_current_editing(media)
-        return list([new_message])
+            user.clear_edited_draft_field(media)
+
+        messages_list = list([new_message])
+        response = {'send': messages_list}
+        return response
 
     @staticmethod
     def register(media, user_id, password):
@@ -83,14 +86,18 @@ class Bot:
                                   keyboard=Keyboard(state=States.MAIN_MENU,
                                                     language=user.language.get(media, Languages.RU)),
                                   marks=list([MessageMarks.SUCCESSFUL_REGISTRATION]))
-        return list([new_message])
+        messages_list = list([new_message])
+        response = {'send': messages_list}
+        return response
 
     @staticmethod
     def unregistered(media, user_id):
         new_message = Message(user_id,
                               text=load_text(TextLabels.UNREGISTERED, media=media),
                               marks=list([MessageMarks.UNREGISTERED]))
-        return list([new_message])
+        messages_list = list([new_message])
+        response = {'send': messages_list}
+        return response
 
     @staticmethod
     def switch_language_command(user_id, media):
@@ -111,7 +118,8 @@ class Bot:
 
             user.set_state(media, States.CHOSE_LANGUAGE)
 
-        return new_messages
+        response = {'send': new_messages}
+        return response
 
     @classmethod
     def handle_message(cls, media, message, creation=False):
@@ -124,14 +132,14 @@ class Bot:
         :param creation:
         :return:
         """
-        new_messages = list()
+        new_messages = {'send': list()}
         try:
             user = User(media, message.user_id)
         except UserNotFound:
-            new_messages.append(Message(message.user_id,
-                                        text=load_text(TextLabels.REGISTRATION, media=media),
-                                        marks=list([MessageMarks.UNREGISTERED]))
-                                )
+            new_messages['send'].append(Message(message.user_id,
+                                                text=load_text(TextLabels.REGISTRATION, media=media),
+                                                marks=list([MessageMarks.UNREGISTERED]))
+                                        )
         else:
             try:
                 state = user.get_state(media, creation=creation)
@@ -140,33 +148,72 @@ class Bot:
                 state = user.get_state(media, creation=creation)
 
             message_handler = MessageHandler(user, media)
-            new_messages = message_handler.handle(state, message)
+            messages_from_handler = message_handler.handle(state, message)
+            for key in messages_from_handler.keys():
+                if key in new_messages.keys():
+                    new_messages[key].extend(messages_from_handler[key])
+                else:
+                    new_messages[key] = messages_from_handler[key]
         return new_messages
 
     @staticmethod
     def button_pressed(media, user_id, button, creation=False):
-        new_messages = list()
+        new_messages = {'send': list()}
         try:
             user = User(media=media, user_id=user_id)
         except UserNotFound:
-            new_messages.append(Message(user_id=user_id,
-                                        text=load_text(TextLabels.REGISTRATION, media=media),
-                                        marks=list([MessageMarks.UNREGISTERED]))
-                                )
+            new_messages['send'].append(Message(user_id=user_id,
+                                                text=load_text(TextLabels.REGISTRATION, media=media),
+                                                marks=list([MessageMarks.UNREGISTERED]))
+                                        )
         else:
-            button_handler = ButtonHandler(user, media, button)
-            for action in button.actions:
-                new_messages_from_button = button_handler.handle(action)
-                new_messages.extend(new_messages_from_button)
+            button_handler = ButtonHandler(user, media)
+            messages_from_handler = button_handler.handle_button(button)
+            for key in messages_from_handler.keys():
+                if key in new_messages.keys():
+                    new_messages[key].extend(messages_from_handler[key])
+                else:
+                    new_messages[key] = messages_from_handler[key]
+
             user.set_state(media, button.following_state, creation=creation)
+
         return new_messages
+
+    @staticmethod
+    def callback_query_handler(media, user_id, callback_data, bot=Bots.MAIN):
+        new_messages = dict()
+        try:
+            user = User(media=media, user_id=user_id)
+        except UserNotFound:
+            new_messages['send'].append(Message(user_id=user_id,
+                                                text=load_text(TextLabels.REGISTRATION, media=media),
+                                                marks=list([MessageMarks.UNREGISTERED]))
+                                        )
+        else:
+            if bot == Bots.MODERATION:
+                action, request_id = callback_data.split('|')
+                action = ButtonActions[action]
+                request_id = int(request_id)
+
+                button_handler = ButtonHandler(user=user, media=media)
+                messages_from_handler = button_handler.handle_action(action, request_id=request_id)
+                for key in messages_from_handler.keys():
+                    if key in new_messages.keys():
+                        new_messages[key].extend(messages_from_handler[key])
+                    else:
+                        new_messages[key] = messages_from_handler[key]
+        return new_messages
+
+    @staticmethod
+    def connect_message_to_request(media, media_user_id, bot, request_base_id, message_id):
+        user = User(media=media, user_id=media_user_id)
+        user.add_message_id(media=media, bot=bot, message_id=message_id, request_id=request_base_id)
 
 
 class ButtonHandler:
-    def __init__(self, user, media, button):
+    def __init__(self, user, media):
         self.user = user
         self.media = media
-        self.button = button
 
         self.button_action_methods = {ButtonActions.LOAD_STATE: self.standard,
                                       ButtonActions.SWITCH_LANGUAGE: self.switch_language,
@@ -178,62 +225,76 @@ class ButtonHandler:
                                       ButtonActions.ADD_TAG_TO_DRAFT: self.add_tag_to_draft,
                                       ButtonActions.DELETE_TAG_FROM_DRAFT: self.delete_tag_from_draft,
                                       ButtonActions.CREATION_SEND_SAVING_CONFIRMATION: self.send_saving_confirmation,
-                                      ButtonActions.CREATION_SHOW_REQUEST_DRAFT: self.creation_show_request_draft}
+                                      ButtonActions.CREATION_SHOW_REQUEST_DRAFT: self.creation_show_request_draft,
+                                      ButtonActions.CREATION_SUBMIT_REQUEST: self.creation_submit_request,
+                                      ButtonActions.MODERATION_APPROVE_REQUEST: self.moderation_approve_request,
+                                      ButtonActions.MODERATION_DISMISS_REQUEST: self.moderation_dismiss_request}
 
-    def handle(self, action):
-        res = self.button_action_methods[action]()
-        return res
-
-    def standard(self):
-        # Обработчик для тех кнопок, которые не выполняют особых действий, а просто переводят в состояние, в
-        # котором юзеру отправляется только одно соощение
-        new_messages = list()
-        new_message = Message(user_id=self.user.media_id[self.media],
-                              text=load_text(TextLabels[self.button.following_state.name], self.media,
-                                             self.user.language.get(self.media, Languages.RU)),
-                              keyboard=Keyboard(state=self.button.following_state,
-                                                language=self.user.language.get(self.media, Languages.RU)))
-
-        new_messages.append(new_message)
+    def handle_button(self, button):
+        new_messages = dict()
+        for action in button.actions:
+            action_messages = self.handle_action(action, button=button)
+            for key in action_messages.keys():
+                if key in new_messages.keys():
+                    new_messages[key].extend(action_messages[key])
+                else:
+                    new_messages[key] = action_messages[key]
         return new_messages
 
-    def switch_language(self):
-        language = Languages[self.button.info['language']]
+    def handle_action(self, action, **kwargs):
+        new_messages = self.button_action_methods[action](**kwargs)
+        return new_messages
+
+    def standard(self, button=None, **kwargs):
+        # Обработчик для тех кнопок, которые не выполняют особых действий, а просто переводят в состояние, в
+        # котором юзеру отправляется только одно соощение
+        new_messages = {'send': list()}
+        new_message = Message(user_id=self.user.media_id[self.media],
+                              text=load_text(TextLabels[button.following_state.name], self.media,
+                                             self.user.language.get(self.media, Languages.RU)),
+                              keyboard=Keyboard(state=button.following_state,
+                                                language=self.user.language.get(self.media, Languages.RU)))
+
+        new_messages['send'].append(new_message)
+        return new_messages
+
+    def switch_language(self, button=None, **kwargs):
+        language = Languages[button.info['language']]
         self.user.set_language(self.media, language)
-        new_messages = list()
+        new_messages = {'send': list()}
         new_message = Message(user_id=self.user.media_id[self.media],
                               text=load_text(TextLabels.LANGUAGE_SWITCHED_SUCCESSFULLY,
                                              self.media,
                                              self.user.language.get(self.media, Languages.RU)))
-        new_messages.append(new_message)
+        new_messages['send'].append(new_message)
         return new_messages
 
-    def form_message(self):
+    def form_message(self, button=None, **kwargs):
         producer = MessageBuildingProducer(self.user, self.media)
-        message_data = producer.build_message(button=self.button)
+        message_data = producer.build_message(button=button)
 
-        new_messages = list()
+        new_messages = {'send': list()}
         new_message = Message(user_id=self.user.media_id[self.media],
                               text=message_data['text'],
                               keyboard=message_data['keyboard'] if message_data['keyboard']
-                              else Keyboard(state=self.button.following_state,
+                              else Keyboard(state=button.following_state,
                                             language=self.user.language.get(self.media, Languages.RU)))
-        new_messages.append(new_message)
+        new_messages['send'].append(new_message)
         return new_messages
 
-    def delete_tag_from_ignore(self):
-        tag = self.button.info['tag']
+    def delete_tag_from_ignore(self, button=None, **kwargs):
+        tag = button.info['tag']
         self.user.delete_tag_from_ignore(tag)
-        new_messages = list()
+        new_messages = dict()
         return new_messages
 
-    def add_tag_into_ignore(self):
-        tag = self.button.info['tag']
+    def add_tag_into_ignore(self, button=None, **kwargs):
+        tag = button.info['tag']
         self.user.add_tag_into_ignore(tag)
-        new_messages = list()
+        new_messages = dict()
         return new_messages
 
-    def delete_current_draft(self):
+    def delete_current_draft(self, button=None, **kwargs):
         draft = self.user.get_edited_draft(self.media)
         draft.delete()
 
@@ -242,41 +303,42 @@ class ButtonHandler:
                                          self.media,
                                          self.user.language.get(self.media, Languages.RU))
                           )
-        new_messages = list()
-        new_messages.append(message)
+        new_messages = {'send': list()}
+        new_messages['send'].append(message)
         return new_messages
 
-    def set_date_type(self):
-        date_type = self.button.info['date_type']
+    def set_date_type(self, button=None, **kwargs):
+        date_type = button.info['date_type']
         request = self.user.get_edited_draft(self.media)
         request.change_date_type(date_type)
-        return list()
+        return dict()
 
-    def add_tag_to_draft(self):
-        tag = self.button.info['tag']
+    def add_tag_to_draft(self, button=None, **kwargs):
+        tag = button.info['tag']
         request = self.user.get_edited_draft(self.media)
         request.add_tag(tag)
-        return list()
+        return dict()
 
-    def delete_tag_from_draft(self):
-        tag = self.button.info['tag']
+    def delete_tag_from_draft(self, button=None, **kwargs):
+        tag = button.info['tag']
         request = self.user.get_edited_draft(self.media)
         request.delete_tag(tag)
-        return list()
+        return dict()
 
-    def send_saving_confirmation(self):
-        new_messages = list()
+    def send_saving_confirmation(self, button=None, **kwargs):
+        new_messages = {'send': list()}
         new_message = Message(user_id=self.user.media_id[self.media],
                               text=load_text(TextLabels.CREATION_SAVING_CONFIRMATION, self.media,
                                              self.user.language.get(self.media, Languages.RU)))
-        new_messages.append(new_message)
+        new_messages['send'].append(new_message)
         return new_messages
 
-    def creation_show_request_draft(self):
-        new_messages = list()
+    def creation_show_request_draft(self, button=None, draft_type=None, **kwargs):
+        new_messages = {'send': list()}
         message_builder = MessageBuildingProducer(self.user, self.media)
 
-        draft_type = self.button.info.get('draft_to_show', 'CURRENT_EDITED')
+        if not draft_type:
+            draft_type = button.info.get('draft_to_show', 'CURRENT_EDITED')
         draft = None
         if draft_type == 'CURRENT_EDITED':
             draft = self.user.get_edited_draft(self.media)
@@ -285,7 +347,105 @@ class ButtonHandler:
                                                      text_without_button=True)['text']
         new_message = Message(user_id=self.user.media_id[self.media],
                               text=message_text)
-        new_messages.append(new_message)
+        new_messages['send'].append(new_message)
+        return new_messages
+
+    def creation_submit_request(self, **kwargs):
+        new_messages = {'send': list()}
+        message_builder = MessageBuildingProducer(self.user, self.media)
+        request = self.user.get_edited_draft(self.media)
+
+        moderators = User.get_id_of_all_moderators(self.media)
+
+        for moderator_id in moderators:
+            message_data = message_builder.build_message(text_label=TextLabels.MODERATION_SEND_DRAFT,
+                                                         language=Languages.RU,
+                                                         request=request)
+            new_message = Message(user_id=moderator_id,
+                                  text=message_data['text'],
+                                  keyboard=message_data['keyboard'],
+                                  bot=Bots.MODERATION,
+                                  request_id=request.base_id,
+                                  moderation=True)
+            new_messages['send'].append(new_message)
+
+        message_for_creator = Message(user_id=self.user.media_id[self.media],
+                                      text=load_text(TextLabels.CREATION_SUBMIT_REQUEST, self.media,
+                                                     self.user.language.get(self.media, Languages.RU))
+                                      )
+        new_messages['send'].append(message_for_creator)
+        request.set_submission_status(True)
+        self.user.clear_edited_draft_field(self.media)
+
+        return new_messages
+
+    def moderation_approve_request(self, request_id=None, **kwargs):
+        request = Request(request_id=request_id)
+        request.set_publishing_status(True)
+
+        message_builder = MessageBuildingProducer(self.user, self.media)
+        new_messages = {'send': list()}
+        users = User.get_id_of_users_without_ignore_hashtags(media=self.media,
+                                                             tags=request.tags)
+        for i in users:
+            keyboard = \
+                message_builder.build_message(following_state=States.MAIN_REQUEST, no_text=True, request=request)[
+                    'keyboard']
+            message = Message(user_id=i,
+                              text=request.into_human_readable(self.user.language[self.media]),
+                              keyboard=keyboard,
+                              bot=Bots.MAIN,
+                              request_id=request.base_id,
+                              main_bot=True)
+            new_messages['send'].append(message)
+
+        creator = request.get_creator()
+        message_data = message_builder.build_message(text_label=TextLabels.CREATION_PUBLICATION_NOTIFICATION,
+                                                     request=request)
+        message = Message(user_id=creator.media_id[self.media],
+                          text=message_data['text'],
+                          bot=Bots.CREATION)
+        new_messages['send'].append(message)
+
+        new_messages['delete'] = list()
+        moderators = User.get_id_of_all_moderators(media=self.media)
+        for moderator_id in moderators:
+            moder = User(user_id=moderator_id, media=self.media)
+            message_id = moder.get_message_id_by_request_id(media=self.media,
+                                                            bot=Bots.MODERATION,
+                                                            request_base_id=request.base_id)
+            message_to_delete = Message(media_id=message_id,
+                                        user_id=moder.media_id[self.media],
+                                        bot=Bots.MODERATION)
+            new_messages['delete'].append(message_to_delete)
+        return new_messages
+
+    def moderation_dismiss_request(self, request_id=None, **kwargs):
+        request = Request(request_id=request_id)
+        request.set_submission_status(False)
+
+        message_builder = MessageBuildingProducer(self.user, self.media)
+        new_messages = {'send': list()}
+
+        creator = request.get_creator()
+        message_data = message_builder.build_message(text_label=TextLabels.CREATION_REQUEST_DISMISSED_NOTIFICATION,
+                                                     request=request)
+        message = Message(user_id=creator.media_id[self.media],
+                          text=message_data['text'],
+                          bot=Bots.CREATION)
+        new_messages['send'].append(message)
+
+        new_messages['delete'] = list()
+        moderators = User.get_id_of_all_moderators(media=self.media)
+        for moderator_id in moderators:
+            moder = User(user_id=moderator_id, media=self.media)
+            message_id = moder.get_message_id_by_request_id(media=self.media,
+                                                            bot=Bots.MODERATION,
+                                                            request_base_id=request.base_id)
+            message_to_delete = Message(media_id=message_id,
+                                        user_id=moder.media_id[self.media],
+                                        bot=Bots.MODERATION)
+            new_messages['delete'].append(message_to_delete)
         return new_messages
 
 
@@ -303,7 +463,11 @@ class MessageBuildingProducer:
                                         TextLabels.CREATION_SET_TAGS: self.creation_set_tags,
                                         TextLabels.CREATION_TAG_ADDED_TO_DRAFT: self.creation_tag_added_or_deleted,
                                         TextLabels.CREATION_TAG_DELETED_FROM_DRAFT: self.creation_tag_added_or_deleted,
-                                        TextLabels.CREATION_SHOW_REQUEST_DRAFT: self.creation_show_request_draft}
+                                        TextLabels.CREATION_SHOW_REQUEST_DRAFT: self.creation_show_request_draft,
+                                        TextLabels.MODERATION_SEND_DRAFT: self.moderation_send_draft,
+                                        TextLabels.MAIN_REQUEST: self.request_inline_keyboard,
+                                        TextLabels.CREATION_PUBLICATION_NOTIFICATION: self.creation_publication_notification,
+                                        TextLabels.CREATION_REQUEST_DISMISSED_NOTIFICATION: self.creation_request_dismissed}
 
     @staticmethod
     def get_features_for_formation(type_of_features):
@@ -319,11 +483,11 @@ class MessageBuildingProducer:
         if button and not button.info.get('no_text', False) or not no_text:
             message_text = load_text(text_label,
                                      self.media,
-                                     self.user.language.get(self.media, Languages.RU))
+                                     kwargs.get('language', self.user.language.get(self.media, Languages.RU)))
             res_message_text = message_text.format(**data['text'])
         else:
             res_message_text = ''
-        return {'text': res_message_text, 'keyboard': data['keyboard']}
+        return {'text': res_message_text, 'keyboard': data.get('keyboard', None)}
 
     def ignore_lists_messages(self, button=None, **kwargs):
         ignored = self.user.get_ignored_hashtags_text(self.media)
@@ -398,7 +562,7 @@ class MessageBuildingProducer:
 
         return res
 
-    def creation_set_tags(self, button=None, following_state=None):
+    def creation_set_tags(self, button=None, following_state=None, **kwargs):
         request = self.user.get_edited_draft(self.media)
         tags = list(HashTags)
         tags.sort(key=lambda x: (x in request.tags))
@@ -456,20 +620,34 @@ class MessageBuildingProducer:
         return {'text': text, 'keyboard': keyboard}
 
     def creation_show_request_draft(self, request=None, **kwargs):
-        lines = list()
-        lines.append(request.name)
-        lines.append(request.text)
-        date_types_names = self.__class__.get_features_for_formation('DateType')
-        lines.append(date_types_names[request.date_type.name][self.user.language[self.media].name].format(
-            date1=str(request.date1), date2=str(request.date2)))
-        features = self.__class__.get_features_for_formation('RequestText')
-        lines.append(features['people_number'][self.user.language[self.media].name].format(
-            people_number=str(request.people_number)))
-        hashtags_list = tag_into_text(request.tags, self.user.language[self.media])
-        if hashtags_list:
-            lines.append(features['tags'][self.user.language[self.media].name].format(tags=', '.join(hashtags_list)))
-        res_text = '\n'.join(lines)
+        res_text = request.into_human_readable(language=self.user.language.get(self.media, Languages.RU))
         return {'text': {'request': res_text}, 'keyboard': None}
+
+    def moderation_send_draft(self, request=None, **kwargs):
+        result = self.creation_show_request_draft(request=request)
+        keyboard = Keyboard.load_keyboard("MODERATION_SEND_DRAFT")
+        for i in range(len(keyboard['buttons'][0])):
+            keyboard['buttons'][0][i]['info']['request'] = request.id
+            keyboard['buttons'][0][i]['info']['callback_data'] = ' '.join(
+                keyboard['buttons'][0][i]['info']['actions']) + '|' + str(request.id)
+        result['keyboard'] = Keyboard(language=self.user.language.get(self.media, Languages.RU), json_set=keyboard)
+        return result
+
+    def request_inline_keyboard(self, request=None, **kwargs):
+        result = {'text': None}
+        keyboard = Keyboard.load_keyboard("MAIN_REQUEST")
+        for i in range(len(keyboard['buttons'][0])):
+            keyboard['buttons'][0][i]['info']['request'] = request.id
+            keyboard['buttons'][0][i]['info']['callback_data'] = ' '.join(
+                keyboard['buttons'][0][i]['info']['actions']) + '|' + str(request.id)
+        result['keyboard'] = Keyboard(language=self.user.language.get(self.media, Languages.RU), json_set=keyboard)
+        return result
+
+    def creation_publication_notification(self, request=None, **kwargs):
+        return {'text': {'request_name': request.name}}
+
+    def creation_request_dismissed(self, request=None, **kwargs):
+        return {'text': {'request_name': request.name}}
 
 
 class MessageHandler:
@@ -491,8 +669,8 @@ class MessageHandler:
         return res
 
     def ignore_handler(self, message):
-        new_messages = list()
-        return new_messages
+        response = dict()
+        return response
 
     def create_new_request(self, message):
         name = message.text
@@ -512,7 +690,9 @@ class MessageHandler:
         new_messages.append(new_message)
         self.user.set_state(self.media, next_state, creation=True)
         self.user.set_edited_draft(self.media, request.id)
-        return new_messages
+
+        response = {'send': new_messages}
+        return response
 
     def edit_text(self, message):
         text = message.text
@@ -530,7 +710,9 @@ class MessageHandler:
                                                 language=self.user.language.get(self.media, Languages.RU)))
         new_messages.append(new_message)
         self.user.set_state(self.media, next_state, creation=True)
-        return new_messages
+
+        response = {'send': new_messages}
+        return response
 
     def set_date(self, message):
         text = message.text
@@ -569,7 +751,9 @@ class MessageHandler:
                                                     language=self.user.language.get(self.media, Languages.RU)))
             self.user.set_state(self.media, next_state, creation=True)
         new_messages.append(new_message)
-        return new_messages
+
+        response = {'send': new_messages}
+        return response
 
     def set_people_number(self, message):
         text = message.text
@@ -596,4 +780,6 @@ class MessageHandler:
                                   keyboard=message_data['keyboard'])
             self.user.set_state(self.media, next_state, creation=True)
         new_messages.append(new_message)
-        return new_messages
+
+        response = {'send': new_messages}
+        return response

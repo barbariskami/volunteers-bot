@@ -2,4 +2,4 @@ TELEGRAM_RU
 Главное меню
 Добро пожаловать! Теперь вы можете узнавать о проектах школы и ее жителей и помогать им в достижении их целей.
 Инструкцию по использованию бота можно найти в разделе "Помощь". Чтобы открыть его, воспользуйтесь клавиатурой или командой /help (просто кликните на нее)
-To switch the language, use the command /switch_language or go to settings.
+To switch the language, use the command /switch\_language or go to settings.

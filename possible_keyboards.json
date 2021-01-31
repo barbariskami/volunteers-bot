@@ -692,6 +692,66 @@
           }
         ]
       ]
+    },
+    "MODERATION_SEND_DRAFT": {
+      "type": "INLINE",
+      "to_be_formed": true,
+      "buttons": [
+        [
+          {
+            "RU": "Одобрить",
+            "EN": "Approve",
+            "state": "MODERATION_MAIN_MENU",
+            "info": {
+              "actions": [
+                "MODERATION_APPROVE_REQUEST"
+              ],
+              "request": "ID"
+            }
+          },
+          {
+            "RU": "Отклонить",
+            "EN": "Dismiss",
+            "state": "MODERATION_MAIN_MENU",
+            "info": {
+              "actions": [
+                "MODERATION_DISMISS_REQUEST"
+              ],
+              "request": "ID"
+            }
+          }
+        ]
+      ]
+    },
+    "MAIN_REQUEST": {
+      "type": "INLINE",
+      "to_be_formed": true,
+      "buttons": [
+        [
+          {
+            "RU": "Берусь",
+            "EN": "Take",
+            "state": "MAIN_MENU",
+            "info": {
+              "actions": [
+                "TAKE_REQUEST"
+              ],
+              "request": "ID"
+            }
+          },
+          {
+            "RU": "Отказываюсь",
+            "EN": "Decline",
+            "state": "MAIN_MENU",
+            "info": {
+              "actions": [
+                "DECLINE_REQUEST"
+              ],
+              "request": "ID"
+            }
+          }
+        ]
+      ]
     }
   }
 }
