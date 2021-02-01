@@ -7,8 +7,6 @@ from keyboard import Keyboard
 from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, HashTags, Bots
 import copy
 from traceback import print_exc
-from dataBase import get_id_of_all_moderators
-import json
 
 
 class Bot:
@@ -22,19 +20,22 @@ class Bot:
     """
 
     @staticmethod
-    def start_conversation(media, user_id):
+    def start_conversation(media, user_id, user_contact_link=''):
         """
         Метод должен использоваться программой-ботом для начала диалога с пользователем, который раньше не использовал
         бота на этой конкретной платформе или перезапустил бота. Этот метод совершает попытку опознать пользователя на
         случай, если он уже использовал бота в этой платформы и просто воспользовался перезагруской, и в случае успеха
         выводит его в главное меню. Иначе он предлагает пользователю связать его аккаунт на платформе с уже существующим
         (и созданным силами админов) аккаунтом в системе.
+        :param user_contact_link:
         :param media:
         :param user_id:
         :return:
         """
         try:
             user = User(media=media, user_id=user_id)
+            user.set_link(media=media,
+                          link=user_contact_link)
         except UserNotFound:
             new_message = Message(user_id, text=load_text(TextLabels.REGISTRATION, media=media),
                                   marks=[MessageMarks.UNREGISTERED])
@@ -53,7 +54,7 @@ class Bot:
         return response
 
     @staticmethod
-    def register(media, user_id, password):
+    def register(media, user_id, password, user_contact_link=''):
         """
         Метод получает на вход объект media, который является экземпляром класса enumerates.Media, id пользователя на
         этой платформе, и пароль, который он должен получить через инфе каналы связи от департамента внеакадема или
@@ -61,6 +62,7 @@ class Bot:
         (связать аккаунт в медиа с аккаунтом в системе) При несовпадении пароля предлагается попробовать ввести его
         снова. Если аккаунт этого человека в системе уже связан с неким аккаунтом в этом медиа, пользователю предлага-
         ется обратиться в аккаунт внеакадема.
+        :param user_contact_link:
         :param media:
         :param user_id: is id of the user inside the media, for example in Telegram it is id given to user by telegram
         :param password: is the password sent by a user to register
@@ -68,7 +70,7 @@ class Bot:
         """
 
         try:
-            User.register(media, user_id, password)
+            User.register(media, user_id, password, user_contact_link)
         except UserNotFound:
             new_message = Message(user_id,
                                   text=load_text(TextLabels.WRONG_PASSWORD, media=media),
@@ -190,7 +192,7 @@ class Bot:
                                                 marks=list([MessageMarks.UNREGISTERED]))
                                         )
         else:
-            if bot == Bots.MODERATION:
+            if bot == Bots.MODERATION or bot == Bots.MAIN:
                 action, request_id = callback_data.split('|')
                 action = ButtonActions[action]
                 request_id = int(request_id)
@@ -228,7 +230,9 @@ class ButtonHandler:
                                       ButtonActions.CREATION_SHOW_REQUEST_DRAFT: self.creation_show_request_draft,
                                       ButtonActions.CREATION_SUBMIT_REQUEST: self.creation_submit_request,
                                       ButtonActions.MODERATION_APPROVE_REQUEST: self.moderation_approve_request,
-                                      ButtonActions.MODERATION_DISMISS_REQUEST: self.moderation_dismiss_request}
+                                      ButtonActions.MODERATION_DISMISS_REQUEST: self.moderation_dismiss_request,
+                                      ButtonActions.TAKE_REQUEST: self.take_request,
+                                      ButtonActions.DECLINE_REQUEST: self.decline_request}
 
     def handle_button(self, button):
         new_messages = dict()
@@ -382,6 +386,7 @@ class ButtonHandler:
     def moderation_approve_request(self, request_id=None, **kwargs):
         request = Request(request_id=request_id)
         request.set_publishing_status(True)
+        request.set_publisher(self.user)
 
         message_builder = MessageBuildingProducer(self.user, self.media)
         new_messages = {'send': list()}
@@ -448,6 +453,74 @@ class ButtonHandler:
             new_messages['delete'].append(message_to_delete)
         return new_messages
 
+    def take_request(self, request_id=None, **kwargs):
+        request = Request(request_id=request_id)
+        self.user.take_request(request)
+        request.load_from_server()
+
+        creator = request.get_creator()
+
+        message_builder = MessageBuildingProducer(self.user, self.media)
+        new_messages = {'send': list(), 'delete': list()}
+
+        notification_data = message_builder.build_message(text_label=TextLabels.NEW_EXECUTOR_NOTIFICATION,
+                                                          request=request)
+        notification_message = Message(user_id=creator.media_id[self.media],
+                                       text=notification_data['text'],
+                                       bot=Bots.CREATION)
+        new_messages['send'].append(notification_message)
+
+        id_of_message_to_delete = self.user.get_message_id_by_request_id(request_base_id=request.base_id,
+                                                                         media=self.media,
+                                                                         bot=Bots.MAIN)
+        message_to_delete = Message(user_id=self.user.media_id[self.media],
+                                    media_id=id_of_message_to_delete,
+                                    bot=Bots.MAIN)
+        new_messages['delete'].append(message_to_delete)
+
+        notification_for_executor_data = message_builder.build_message(
+            text_label=TextLabels.TAKING_CONFIRMATION_FOR_EXECUTOR,
+            request=request)
+        notification_for_executor = Message(user_id=self.user.media_id[self.media],
+                                            text=notification_for_executor_data['text'],
+                                            bot=Bots.MAIN)
+        new_messages['send'].append(notification_for_executor)
+
+        if request.has_enough_executors():
+            if request.get_people_number() > 1:
+                notification_for_creator_data = message_builder.build_message(
+                    text_label=TextLabels.ENOUGH_EXECUTORS_NOTIFICATION,
+                    request=request,
+                    executors=request.get_executors())
+                notification_for_creator = Message(user_id=creator.media_id[self.media],
+                                                   text=notification_for_creator_data['text'],
+                                                   bot=Bots.CREATION)
+                new_messages['send'].append(notification_for_creator)
+
+            ids_of_messages_to_delete = User.get_ids_of_messages_to_delete_for_enough_executors(request=request,
+                                                                                                media=self.media,
+                                                                                                bot=Bots.MAIN)
+            for user_id in ids_of_messages_to_delete.keys():
+                message_to_delete = Message(user_id=user_id,
+                                            media_id=ids_of_messages_to_delete[user_id],
+                                            bot=Bots.MAIN)
+                new_messages['delete'].append(message_to_delete)
+
+        return new_messages
+
+    def decline_request(self, request_id=None, **kwargs):
+        request = Request(request_id=request_id)
+        self.user.decline_request(request)
+
+        new_messages = {'send': list(), 'delete': list()}
+        message_id = self.user.get_message_id_by_request_id(media=self.media,
+                                                            bot=Bots.MAIN,
+                                                            request_base_id=request.base_id)
+        message = Message(user_id=self.user.media_id[self.media], media_id=message_id)
+        new_messages['delete'].append(message)
+
+        return new_messages
+
 
 class MessageBuildingProducer:
     def __init__(self, user, media):
@@ -467,7 +540,10 @@ class MessageBuildingProducer:
                                         TextLabels.MODERATION_SEND_DRAFT: self.moderation_send_draft,
                                         TextLabels.MAIN_REQUEST: self.request_inline_keyboard,
                                         TextLabels.CREATION_PUBLICATION_NOTIFICATION: self.creation_publication_notification,
-                                        TextLabels.CREATION_REQUEST_DISMISSED_NOTIFICATION: self.creation_request_dismissed}
+                                        TextLabels.CREATION_REQUEST_DISMISSED_NOTIFICATION: self.creation_request_dismissed,
+                                        TextLabels.NEW_EXECUTOR_NOTIFICATION: self.new_executor_notification,
+                                        TextLabels.TAKING_CONFIRMATION_FOR_EXECUTOR: self.taking_confirmation_for_executor,
+                                        TextLabels.ENOUGH_EXECUTORS_NOTIFICATION: self.enough_executors_notification}
 
     @staticmethod
     def get_features_for_formation(type_of_features):
@@ -648,6 +724,21 @@ class MessageBuildingProducer:
 
     def creation_request_dismissed(self, request=None, **kwargs):
         return {'text': {'request_name': request.name}}
+
+    def new_executor_notification(self, request=None, **kwargs):
+        request_name = request.name
+        contact_info = self.user.get_contact_card(self.media)
+        return {'text': {'request_name': request_name, 'contacts': contact_info}, 'keyboard': None}
+
+    def taking_confirmation_for_executor(self, request=None, **kwargs):
+        request_name = request.name
+        return {'text': {'request_name': request_name}, 'keyboard': None}
+
+    def enough_executors_notification(self, request, executors, **kwargs):
+        users_cards = [e.get_contact_card(self.media) for e in executors]
+        contact_info = '\n––––––––––––––––––––––––'.join(users_cards).strip()
+        request_name = request.name
+        return {'text': {'request_name': request_name, 'contacts': contact_info}, 'keyboard': None}
 
 
 class MessageHandler:

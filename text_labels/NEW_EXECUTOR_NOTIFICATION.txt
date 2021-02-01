@@ -1,0 +1,9 @@
+TELEGRAM_RU
+На ваш запрос "{request_name}" откликнулся исполнитель:
+{contacts}
+Вы также можете уточнить его контакты в разделе "Мои Просьбы"
+++++++++++++++++
+TELEGRAM_EN
+A a new performer responded to your request "{request_name}":
+{contacts}
+You can also find his contact info in "My requests" section

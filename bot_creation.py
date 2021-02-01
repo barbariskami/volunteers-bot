@@ -10,7 +10,7 @@ from enumerates import TextLabels, States, MessageMarks, Languages
 class CreationBot(Bot):
 
     @staticmethod
-    def start_conversation(media, user_id):
+    def start_conversation(media, user_id, user_contact_link=''):
         try:
             user = User(media=media, user_id=user_id)
         except UserNotFound:

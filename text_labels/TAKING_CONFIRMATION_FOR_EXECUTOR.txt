@@ -1,0 +1,7 @@
+TELEGRAM_RU
+Вы вызвались выполнить просьбу "{request_name}". Подробную информацию о нем вы теперь можете посмотреть в разделе "Мои запросы".
+Держатель просьбы вскоре свяжется с вами для уточнения деталей.
+++++++++++++++++
+TELEGRAM_EN
+You have volunteered to fulfil the request "{request_name}". You can now see its details in the "My Requests" section.
+The requestor will contact you shortly for details.

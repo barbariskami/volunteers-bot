@@ -61,6 +61,9 @@ class Request:
                 }}
         }
 
+    def load_from_server(self):
+        self.__init__(request_base_id=self.base_id)
+
     def into_record(self):
         record = {'id': self.base_id}
         fields = deepcopy(self.__dict__)
@@ -153,6 +156,8 @@ class Request:
             self.update()
 
     def set_people_number(self, number):
+        if number < 1:
+            raise ValueError
         self.people_number = number
         self.update()
 
@@ -175,8 +180,32 @@ class Request:
         self.was_published = status
         self.update()
 
+    def set_publisher(self, publisher_user):
+        self.published_by = list()
+        self.published_by.append(publisher_user.base_id)
+        self.update()
+
     @classmethod
     def new(cls, name, creator_base_id):
         record = dataBase.new_request(name=name, creator_record_id=creator_base_id)
         new_request_obj = cls(record=record)
         return new_request_obj
+
+    def has_enough_executors(self):
+        if 'taken_by' in self.__dict__.keys():
+            executors_number = len(self.taken_by)
+        else:
+            executors_number = 0
+        return executors_number == self.__dict__.get('people_number', 0)
+
+    def get_executors(self):
+        executors = [user.User(base_id=u) for u in self.__dict__.get('taken_by', list())]
+        return executors
+
+    def user_is_executor(self, user_to_check):
+        executors = self.__dict__.get('taken_by', list())
+        return user_to_check.base_id in executors
+
+    def get_people_number(self):
+        return self.__dict__.get('people_number', 0)
+

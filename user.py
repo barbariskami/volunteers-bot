@@ -37,6 +37,28 @@ class User:
                                            'taken_by': 'taken_requests',
                                            'creator': 'created_requests'}
 
+        self.FEATURES_FOR_CONTACTS = {
+            'not_stated': {
+                'RU': 'не указано',
+                'EN': 'not stated'
+            },
+            'phone_number': {
+                'RU': 'Номер телефона: ',
+                'EN': 'Phone number: '
+            },
+            'link':
+                {'TELEGRAM':
+                    {
+                        'RU': '[Telegram-сылка](tg://user?id={user_id})',
+                        'EN': '[Telegram-link](tg://user?id={user_id}})'
+                    }
+                },
+            'email': {
+                'RU': 'Почта: ',
+                'EN': 'Email: '
+            }
+        }
+
     @staticmethod
     def transform_from_record_into_variable_dict(record):
         res_dict = deepcopy(record['fields'])
@@ -47,6 +69,7 @@ class User:
         res_dict['language'] = dict()
         res_dict['edited_drafts'] = dict()
         res_dict['messages_for_requests'] = dict()
+        res_dict['link'] = dict()
         for bot in Bots:
             res_dict['messages_for_requests'][bot] = dict()
 
@@ -59,6 +82,7 @@ class User:
                 record['fields'].get(media.name.lower() + '_moderation_state', 'MODERATION_MAIN_MENU')]
             res_dict['language'][media] = Languages[record['fields'].get(media.name.lower() + '_language', 'RU')]
             res_dict['edited_drafts'][media] = record['fields'].get(media.name.lower() + '_creation_edited_draft', None)
+            res_dict['link'][media] = record['fields'].get(media.name.lower() + '_link', None)
             for bot in Bots:
                 if media.name.lower() + '_' + bot.name.lower() + '_messages_for_requests' in record['fields'].keys():
                     res_dict['messages_for_requests'][bot][media] = json.loads(
@@ -86,6 +110,8 @@ class User:
                 del res_dict[media.name.lower() + '_moderation_state']
             if media.name.lower() + '_creation_edited_draft' in res_dict.keys():
                 del res_dict[media.name.lower() + '_creation_edited_draft']
+            if media.name.lower() + '_link' in res_dict.keys():
+                del res_dict[media.name.lower() + '_link']
 
         return res_dict
 
@@ -137,6 +163,13 @@ class User:
                     for media in self.messages_for_requests[bot]:
                         fields[media.name.lower() + '_' + bot.name.lower() + '_messages_for_requests'] = json.dumps(
                             self.messages_for_requests[bot][media])
+            elif key == 'link':
+                del fields[key]
+                for media in self.link.keys():
+                    if self.link[media]:
+                        fields[media.name.lower() + '_link'] = self.link[media]
+            elif key == 'FEATURES_FOR_CONTACTS':
+                del fields[key]
         record['fields'] = fields
         return record
 
@@ -169,6 +202,11 @@ class User:
             self.moderation_state[media] = state
         else:
             self.state[media] = state
+        self.update_on_server()
+
+    def set_link(self, media, link):
+        self.update_from_server()
+        self.link[media] = link
         self.update_on_server()
 
     def set_language(self, media, language):
@@ -229,6 +267,7 @@ class User:
 
     def clear_edited_draft_field(self, media):
         self.edited_drafts[media] = None
+        self.update_on_server()
 
     def delete_created_request(self, request_id):
         self.update_from_server()
@@ -249,16 +288,64 @@ class User:
         return res_list
 
     def get_message_id_by_request_id(self, media, bot, request_base_id):
+        self.update_from_server()
         message_id = self.messages_for_requests[bot][media].get(request_base_id, 0)
         return message_id
 
+    def decline_request(self, request_to_decline):
+        self.update_from_server()
+        self.refused_requests = self.__dict__.get('refused_requests', list())
+        self.refused_requests.append(request_to_decline.base_id)
+        self.update_on_server()
+
+    def take_request(self, request_to_take):
+        self.update_from_server()
+        self.taken_requests = self.__dict__.get('taken_requests', list())
+        self.taken_requests.append(request_to_take.base_id)
+        self.update_on_server()
+
+    def get_contact_card(self, media):
+        lines = list()
+        lines.append(self.name_surname)
+        link_line = self.FEATURES_FOR_CONTACTS['link'][media.name][self.language[media].name].format(
+            user_id=str(self.media_id[media]))
+        lines.append(link_line)
+        email_line = self.FEATURES_FOR_CONTACTS['email'][self.language[media].name]
+        email_line += self.__dict__.get('email', self.FEATURES_FOR_CONTACTS['not_stated'][self.language[media].name])
+        lines.append(email_line)
+        phone_line = self.FEATURES_FOR_CONTACTS['phone_number'][self.language[media].name]
+        phone_line += self.__dict__.get('phone_number',
+                                        self.FEATURES_FOR_CONTACTS['not_stated'][self.language[media].name])
+        lines.append(phone_line)
+
+        text = '\n'.join(lines)
+
+        if media == Media.TELEGRAM:
+            self.replace = text.replace('_', '\_')
+            text = self.replace
+        return text
 
     @staticmethod
-    def register(media, user_id, password):
+    def get_ids_of_messages_to_delete_for_enough_executors(request, bot, media):
+        res = dict()
+        all_users_records = dataBase.get_all_users()
+        for user_record in all_users_records:
+            user = User(record=user_record)
+            try:
+                message_id = user.messages_for_requests[bot][media].get(request.base_id, 0)
+                if (not request.user_is_executor(user)) and user.media_id[media] and message_id:
+                    res[user.media_id[media]] = message_id
+            except AttributeError or KeyError:
+                pass
+        return res
+
+    @staticmethod
+    def register(media, user_id, password, user_contact_link):
         """
         This static method is used to register a new user using a unique password given to them by student development
         department (or any other people that regulate the usage of this service). It loads all the information about the
         user from the password and add his media-id to an airtable base.
+        :param user_contact_link:
         :param media:
         :param user_id:
         :param password:
@@ -269,3 +356,4 @@ class User:
             raise AlreadyRegistered
         user.media_id[media] = user_id
         user.update_on_server()
+        user.set_link(media, user_contact_link)

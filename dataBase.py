@@ -103,3 +103,9 @@ def get_id_of_users_without_ignore_hashtags(media=enumerates.Media.TELEGRAM,
         if u['fields'].get('telegram_id', None):
             res_list.append(u['fields']['telegram_id'])
     return res_list
+
+
+def get_all_users():
+    table = Airtable(BASE_ID, USERS_TABLE_NAME, api_key=API_KEY)
+    users_from_table = table.get_all()
+    return users_from_table

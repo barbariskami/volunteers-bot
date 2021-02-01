@@ -1,5 +1,5 @@
 TELEGRAM_RU
-Пожалуйста, введите число
+Пожалуйста, введите число (оно должно быть большим или равным 1)
 ++++++++++++++++
 TELEGRAM_EN
-Please enter a number
+Please enter a number (it must be bigger or equal to 1)

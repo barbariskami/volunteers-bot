@@ -1,0 +1,9 @@
+TELEGRAM_RU
+На ваш запрос "{request_name}" откликнулось достаточное число исполнителей. Их контакты:
+{contacts}
+Вы также можете узнать их в разделе "Мои Просьбы"
+++++++++++++++++
+TELEGRAM_EN
+A sufficient number of performers responded to your request "{request_name}". Here is their contact info:
+{contacts}
+You can also find them in "My requests" section
