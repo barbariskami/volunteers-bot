@@ -5,6 +5,7 @@ from extensions import tag_into_text
 from copy import deepcopy
 import request
 import json
+from datetime import date
 
 
 class User:
@@ -96,7 +97,6 @@ class User:
             res_dict['ignored_tags'].append(HashTags[tag])
 
         # Deletion of needless (or inconvenient) fields
-        del res_dict['id']
         for media in Media:
             if media.name.lower() + '_id' in res_dict.keys():
                 del res_dict[media.name.lower() + '_id']
@@ -121,7 +121,7 @@ class User:
         fields = deepcopy(self.__dict__)
         keys = list(fields.keys())
         for key in keys:
-            if key == 'user_elem' or key == 'base_id' or fields[key] is None:
+            if key == 'id' or key == 'user_elem' or key == 'base_id' or fields[key] is None:
                 del fields[key]
             elif key == 'media_id':
                 del fields[key]
@@ -337,6 +337,27 @@ class User:
                     res[user.media_id[media]] = message_id
             except AttributeError or KeyError:
                 pass
+        return res
+
+    def get_taken_requests(self):
+        request_records = [request.Request(record=r) for r in dataBase.get_requests_taken_by_user(self)]
+        return self.__class__.sort_request_by_date(request_records)
+
+    def get_created_requests(self):
+        request_records = [request.Request(record=r) for r in dataBase.get_requests_created_by_user(self)]
+        return self.__class__.sort_request_by_date(request_records)
+
+    @staticmethod
+    def sort_request_by_date(requests_list):
+        def sort_func(request):
+            if request.date2:
+                return request.date2
+            elif request.date1:
+                return request.date1
+            else:
+                return date(1, 1, 1)
+
+        res = list(sorted(requests_list, key=sort_func))
         return res
 
     @staticmethod

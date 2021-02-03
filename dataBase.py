@@ -109,3 +109,17 @@ def get_all_users():
     table = Airtable(BASE_ID, USERS_TABLE_NAME, api_key=API_KEY)
     users_from_table = table.get_all()
     return users_from_table
+
+
+def get_requests_taken_by_user(user):
+    table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
+    formula = 'FIND({user_id}, {{taken_by}}, TRUE())'.format(user_id=user.id)
+    res = table.get_all(formula=formula)
+    return res
+
+
+def get_requests_created_by_user(user):
+    table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
+    formula = 'FIND({user_id}, {{creator}}, TRUE())'.format(user_id=user.id)
+    res = table.get_all(formula=formula)
+    return res

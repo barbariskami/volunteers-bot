@@ -532,6 +532,8 @@ class MessageBuildingProducer:
                                         TextLabels.CHOSE_TAG_ADDING: self.chose_tag_to_edit,
                                         TextLabels.TAG_ADDED_INTO_IGNORE: self.chose_tag_to_edit,
                                         TextLabels.TAG_DELETED_FROM_IGNORE: self.chose_tag_to_edit,
+                                        TextLabels.REQUESTS_I_TOOK_PENDING: self.requests_i_took_list,
+                                        TextLabels.REQUESTS_I_TOOK_FULFILLED: self.requests_i_took_list,
                                         TextLabels.CREATION_SET_DATE: self.creation_set_date,
                                         TextLabels.CREATION_SET_TAGS: self.creation_set_tags,
                                         TextLabels.CREATION_TAG_ADDED_TO_DRAFT: self.creation_tag_added_or_deleted,
@@ -543,7 +545,12 @@ class MessageBuildingProducer:
                                         TextLabels.CREATION_REQUEST_DISMISSED_NOTIFICATION: self.creation_request_dismissed,
                                         TextLabels.NEW_EXECUTOR_NOTIFICATION: self.new_executor_notification,
                                         TextLabels.TAKING_CONFIRMATION_FOR_EXECUTOR: self.taking_confirmation_for_executor,
-                                        TextLabels.ENOUGH_EXECUTORS_NOTIFICATION: self.enough_executors_notification}
+                                        TextLabels.ENOUGH_EXECUTORS_NOTIFICATION: self.enough_executors_notification,
+                                        TextLabels.CREATION_DRAFTS_LIST: self.creation_requests_lists,
+                                        TextLabels.CREATION_REQUESTS_ON_MODERATION_LIST: self.creation_requests_lists,
+                                        TextLabels.CREATION_REQUESTS_WAITING_TO_BE_DONE_LIST: self.creation_requests_lists,
+                                        TextLabels.CREATION_FINISHED_REQUESTS_LIST: self.creation_requests_lists
+                                        }
 
     @staticmethod
     def get_features_for_formation(type_of_features):
@@ -556,6 +563,8 @@ class MessageBuildingProducer:
         elif following_state:
             text_label = TextLabels[following_state.name]
         data = self.FUNCTIONS_FOR_FORMATION[text_label](button=button, following_state=following_state, **kwargs)
+        if data.get('change_label', None):
+            text_label = data['change_label']
         if button and not button.info.get('no_text', False) or not no_text:
             message_text = load_text(text_label,
                                      self.media,
@@ -739,6 +748,108 @@ class MessageBuildingProducer:
         contact_info = '\n––––––––––––––––––––––––'.join(users_cards).strip()
         request_name = request.name
         return {'text': {'request_name': request_name, 'contacts': contact_info}, 'keyboard': None}
+
+    def requests_i_took_list(self, button=None, **kwargs):
+        res = {'text': dict()}
+        keyboard = Keyboard.load_keyboard(button.following_state.name)
+
+        requests = self.user.get_taken_requests()
+        if button.following_state == States.REQUESTS_I_TOOK_PENDING:
+            requests = list(filter(lambda r: (not r.is_expired()), requests))
+        elif button.following_state == States.REQUESTS_I_TOOK_FULFILLED:
+            requests = list(filter(lambda r: r.is_expired(), requests))
+
+        if len(requests) > 5:
+            right_border = (button.info['page'] + 1) * 5
+            if right_border > len(requests):
+                right_border = len(requests)
+            left_border = (button.info['page'] * 5)
+            requests = requests[left_border:right_border]
+            keyboard['buttons'][1][0]['info']['page'] = button.info['page'] - 1
+            keyboard['buttons'][1][1]['info']['page'] = button.info['page'] + 1
+            if button.info['page'] == 0:
+                del keyboard['buttons'][1][0]
+                keyboard['buttons'][1][0]['info']['page'] = 1
+            elif button.info['page'] * 5 >= len(requests):
+                del keyboard['buttons'][1][1]
+        else:
+            del keyboard['buttons'][1]
+        button_template = keyboard['buttons'][0][0]
+        del keyboard['buttons'][0]
+        for req in requests:
+            new_button = copy.deepcopy(button_template)
+            for l in list(Languages):
+                new_button[l.name] = req.name
+            new_button['state'] = button.following_state.name
+            new_button['info']['request_base_is'] = req.base_id
+            keyboard['buttons'].insert(0, [new_button])
+        res['keyboard'] = Keyboard(language=self.user.language.get(self.media, Languages.RU),
+                                   json_set=keyboard)
+        return res
+
+    def creation_requests_lists(self, button=None, **kwargs):
+        all_requests = self.user.get_created_requests()
+        requests = list()
+        if button.following_state == States.CREATION_DRAFTS_LIST:
+            sort_function = lambda r: not r.__dict__.get('was_submited', False)
+            requests = list(filter(sort_function, all_requests))
+        elif button.following_state == States.CREATION_REQUESTS_ON_MODERATION_LIST:
+            sort_function = lambda r: r.__dict__.get('was_submited', False) and \
+                                      not r.__dict__.get('was_published', False)
+            requests = list(filter(sort_function, all_requests))
+        elif button.following_state == States.CREATION_REQUESTS_WAITING_TO_BE_DONE_LIST:
+            sort_function = lambda r: r.__dict__.get('was_published', False) and \
+                                      not r.__dict__.get('was_executed', False) and not r.is_expired()
+            requests = list(filter(sort_function, all_requests))
+        elif button.following_state == States.CREATION_FINISHED_REQUESTS_LIST:
+            sort_function = lambda r: r.__dict__.get('was_executed', False) or r.is_expired()
+            requests = list(filter(sort_function, all_requests))
+
+        if button.following_state == States.CREATION_DRAFTS_LIST:
+            keyboard = Keyboard.load_keyboard(button.following_state.name)
+        else:
+            keyboard = Keyboard.load_keyboard('CREATION_REQUESTS_LIST')
+
+        if len(requests) == 0:
+            print('here')
+            keyboard['buttons'] = keyboard['buttons'][-1:]
+            feqtures_for_formaion = self.get_features_for_formation('CREATION_LISTS_OF_REQUESTS_NAMES')[
+                button.following_state.name]
+            res = {'text': {'list_name': feqtures_for_formaion[self.user.language.get(self.media, Languages.RU).name]},
+                   'keyboard': Keyboard(language=self.user.language.get(self.media, Languages.RU),
+                                        json_set=keyboard),
+                   'change_label': TextLabels.CREATION_REQUESTS_LIST_IS_EMPTY}
+            return res
+        elif len(requests) > 5:
+            right_border = (button.info['page'] + 1) * 5
+            if right_border > len(requests):
+                right_border = len(requests)
+            left_border = (button.info['page'] * 5)
+            requests = requests[left_border:right_border]
+            keyboard['buttons'][1][0]['info']['page'] = button.info['page'] - 1
+            keyboard['buttons'][1][1]['info']['page'] = button.info['page'] + 1
+            if button.info['page'] == 0:
+                del keyboard['buttons'][1][0]
+                keyboard['buttons'][1][0]['info']['page'] = 1
+            elif button.info['page'] * 5 >= len(requests):
+                del keyboard['buttons'][1][1]
+        else:
+            del keyboard['buttons'][1]
+
+        button_template = keyboard['buttons'][0][0]
+        del keyboard['buttons'][0]
+        for req in requests:
+            new_button = copy.deepcopy(button_template)
+            for l in list(Languages):
+                new_button[l.name] = req.name
+            if button.following_state != States.CREATION_DRAFTS_LIST:
+                new_button['state'] = button.following_state.name
+            new_button['info']['request_base_is'] = req.base_id
+            keyboard['buttons'].insert(0, [new_button])
+        res = {'text': dict()}
+        res['keyboard'] = Keyboard(language=self.user.language.get(self.media, Languages.RU),
+                                   json_set=keyboard)
+        return res
 
 
 class MessageHandler:

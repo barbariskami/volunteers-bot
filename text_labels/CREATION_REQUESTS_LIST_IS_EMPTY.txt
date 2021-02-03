@@ -1,0 +1,5 @@
+TELEGRAM_RU
+Список {list_name} пуст. Вернитесь в предыдущий раздел с помощью кнопки "Назад"
+++++++++++++++++
+TELEGRAM_EN
+The list {list_name} is empty. Go back to the previous section via "Back" button. 

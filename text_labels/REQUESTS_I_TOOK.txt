@@ -1,0 +1,5 @@
+TELEGRAM_RU
+Выберите, какой список запросов, взятых вами, вы хотите увидеть:
+++++++++++++++++
+TELEGRAM_EN
+Chose, which list of requests you've took you want to see:

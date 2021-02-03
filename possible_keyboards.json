@@ -32,9 +32,177 @@
             "state": "HELP",
             "info": {}
           }
+        ],
+        [
+          {
+            "RU": "Мои задачи",
+            "EN": "Requests I took",
+            "state": "REQUESTS_I_TOOK",
+            "info": {}
+          }
         ]
       ]
     },
+
+    "REQUESTS_I_TOOK": {
+      "type": "REPLY",
+      "to_be_formed": false,
+      "buttons": [
+        [
+          {
+            "RU": "Ожидают выполнения",
+            "EN": "Pending requests",
+            "state": "REQUESTS_I_TOOK_PENDING",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "REQUESTS_I_TOOK_PENDING",
+              "ignore_standard_action": true,
+              "page": 0
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Выполнены / Срок истек",
+            "EN": "Fulfilled / Expired",
+            "state": "REQUESTS_I_TOOK_FULFILLED",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "REQUESTS_I_TOOK_FULFILLED",
+              "ignore_standard_action": true,
+              "page": 0
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "MAIN_MENU",
+            "info": {}
+          }
+        ]
+      ]
+    },
+    "REQUESTS_I_TOOK_PENDING": {
+      "type": "REPLY",
+      "to_be_formed": true,
+      "buttons": [
+        [
+          {
+            "RU": "запрос",
+            "EN": "request",
+            "state": "REQUESTS_I_TOOK_PENDING",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "request": "request_base_id",
+              "message_type": "REQUESTS_DESCRIPTION",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "<---",
+            "EN": "<---",
+            "state": "REQUESTS_I_TOOK_PENDING",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "ignore_standard_action": true,
+              "message_type": "REQUESTS_I_TOOK_PENDING",
+              "no_text": true
+            }
+          },
+          {
+            "RU": "--->",
+            "EN": "--->",
+            "state": "REQUESTS_I_TOOK_PENDING",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "ignore_standard_action": true,
+              "message_type": "REQUESTS_I_TOOK_PENDING",
+              "no_text": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "REQUESTS_I_TOOK",
+            "info": {}
+          }
+        ]
+      ]
+    },
+    "REQUESTS_I_TOOK_FULFILLED": {
+      "type": "REPLY",
+      "to_be_formed": true,
+      "buttons": [
+        [
+          {
+            "RU": "запрос",
+            "EN": "request",
+            "state": "REQUESTS_I_TOOK_FULFILLED",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "request": "request_base_id",
+              "message_type": "REQUESTS_DESCRIPTION",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "<---",
+            "EN": "<---",
+            "state": "REQUESTS_I_TOOK_FULFILLED",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "ignore_standard_action": true,
+              "message_type": "REQUESTS_I_TOOK_FULFILLED",
+              "no_text": true
+            }
+          },
+          {
+            "RU": "--->",
+            "EN": "--->",
+            "state": "REQUESTS_I_TOOK_FULFILLED",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "ignore_standard_action": true,
+              "message_type": "REQUESTS_I_TOOK_FULFILLED",
+              "no_text": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "REQUESTS_I_TOOK",
+            "info": {}
+          }
+        ]
+      ]
+    },
+
     "HELP": {
       "type": "REPLY",
       "buttons": [
@@ -344,15 +512,82 @@
             "RU": "Мои просьбы",
             "EN": "My requests",
             "state": "CREATION_MY_REQUESTS",
-            "info": {}
+            "info": {
+            }
           }
         ],
         [
           {
             "RU": "Помощь",
             "EN": "Help",
-            "state": "HELP",
+            "state": "CREATION_HELP",
             "info": {}
+          }
+        ]
+      ]
+    },
+    "CREATION_MY_REQUESTS": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Черновики",
+            "EN": "Drafts",
+            "state": "CREATION_DRAFTS_LIST",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "CREATION_DRAFTS_LIST",
+              "ignore_standard_action": true,
+              "page": 0
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Ожидающие модерации",
+            "EN": "Waiting to be approved",
+            "state": "CREATION_REQUESTS_ON_MODERATION_LIST",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "CREATION_REQUESTS_ON_MODERATION_LIST",
+              "ignore_standard_action": true,
+              "page": 0
+
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Ожидающие исполнения",
+            "EN": "Waiting to be done",
+            "state": "CREATION_REQUESTS_WAITING_TO_BE_DONE_LIST",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "CREATION_REQUESTS_WAITING_TO_BE_DONE_LIST",
+              "ignore_standard_action": true,
+              "page": 0
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Завершенные",
+            "EN": "Finished",
+            "state": "CREATION_FINISHED_REQUESTS_LIST",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "CREATION_FINISHED_REQUESTS_LIST",
+              "ignore_standard_action": true,
+              "page": 0
+            }
           }
         ]
       ]
@@ -749,6 +984,115 @@
               ],
               "request": "ID"
             }
+          }
+        ]
+      ]
+    },
+    "CREATION_DRAFTS_LIST": {
+      "type": "REPLY",
+      "to_be_formed": true,
+      "buttons": [
+        [
+          {
+            "RU": "запрос",
+            "EN": "request",
+            "state": "CREATION_EDITING",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "request": "request_base_id",
+              "message_type": "CREATION_EDITING",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "<---",
+            "EN": "<---",
+            "state": "CREATION_DRAFTS_LIST",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "ignore_standard_action": true,
+              "message_type": "REQUESTS_I_TOOK_PENDING"
+            }
+          },
+          {
+            "RU": "--->",
+            "EN": "--->",
+            "state": "CREATION_DRAFTS_LIST",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "ignore_standard_action": true,
+              "message_type": "REQUESTS_I_TOOK_PENDING"
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "CREATION_MY_REQUESTS",
+            "info": {}
+          }
+        ]
+      ]},
+    "CREATION_REQUESTS_LIST": {
+      "type": "REPLY",
+      "to_be_formed": true,
+      "buttons": [
+        [
+          {
+            "RU": "запрос",
+            "EN": "request",
+            "state": "",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "request": "request_base_id",
+              "message_type": "REQUESTS_DESCRIPTION",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "<---",
+            "EN": "<---",
+            "state": "CREATION_FINISHED_REQUESTS_LIST",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "ignore_standard_action": true,
+              "message_type": "CREATION_FINISHED_REQUESTS_LIST"
+            }
+          },
+          {
+            "RU": "--->",
+            "EN": "--->",
+            "state": "CREATION_FINISHED_REQUESTS_LIST",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "ignore_standard_action": true,
+              "message_type": "CREATION_FINISHED_REQUESTS_LIST"
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "CREATION_MY_REQUESTS",
+            "info": {}
           }
         ]
       ]

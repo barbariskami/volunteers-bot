@@ -52,5 +52,23 @@
       "RU": "Хэш-тэги: {tags}",
       "EN": "Hashtags: {tags}"
     }
+  },
+  "CREATION_LISTS_OF_REQUESTS_NAMES": {
+    "CREATION_DRAFTS_LIST": {
+      "RU": "черновиков",
+      "EN": "of drafts"
+    },
+    "CREATION_REQUESTS_ON_MODERATION_LIST": {
+      "RU": "запросов, ожидающих модерацию,",
+      "EN": "of requests waiting to be approved"
+    },
+    "CREATION_REQUESTS_WAITING_TO_BE_DONE_LIST": {
+      "RU": "запросов, ожидающих выполнения",
+      "EN": "of requests, waiting to be done"
+    },
+    "CREATION_FINISHED_REQUESTS_LIST": {
+      "RU": "завершенных запросов",
+      "EN": "finished requests"
+    }
   }
 }

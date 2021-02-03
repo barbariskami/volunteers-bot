@@ -209,3 +209,11 @@ class Request:
     def get_people_number(self):
         return self.__dict__.get('people_number', 0)
 
+    def is_expired(self):
+        today = datetime.today().date()
+        if self.date2:
+            return self.date2 < today
+        elif self.date1:
+            return self.date1 < today
+        else:
+            return False
