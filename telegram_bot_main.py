@@ -1,5 +1,5 @@
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler
-from telegram_bot.handlers import start, text_message_handler, switch_language, callback_query_handler
+from telegram_bot.handlers import start, text_message_handler, switch_language, callback_query_handler, help_command
 
 
 def main():
@@ -10,6 +10,7 @@ def main():
 
     dp.add_handler(CommandHandler('start', start))
     dp.add_handler(CommandHandler('switch_language', switch_language))
+    dp.add_handler(CommandHandler('help', help_command))
     dp.add_handler(MessageHandler(Filters.text, text_message_handler))
     dp.add_handler(CallbackQueryHandler(callback_query_handler, pass_user_data=True))
 

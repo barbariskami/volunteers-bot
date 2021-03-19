@@ -43,3 +43,6 @@ class EarlyDate(DateError):
 
 class WrongDateOrder(DateError):
     pass
+
+class OneDateMissing(DateError):
+    pass

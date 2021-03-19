@@ -1,0 +1,5 @@
+TELEGRAM_RU
+Теперь введите {date_word} в формате дд.мм.гг
+++++++++++++++++
+TELEGRAM_EN
+Now enter {date_word} in the following format: dd.mm.yy

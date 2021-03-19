@@ -1,6 +1,10 @@
 from airtable import Airtable
 from exceptions import UserNotFound
 import enumerates
+import logging
+
+logging.basicConfig(level=logging.INFO,
+                    format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s')
 
 BASE_ID = 'apphvG4aTncmmmVPv'
 API_KEY_PATH = 'api_key.txt'
@@ -14,6 +18,7 @@ def get_user_by_id_in_media(media, user_id):
     user = users_table.match(media.name.lower() + '_id', user_id)
     if not user:
         raise UserNotFound
+    logging.info('get_user_by_id_in_media')
     return user
 
 
@@ -22,6 +27,7 @@ def get_user_by_base_id(base_id):
     user = users_table.get(base_id)
     if not user:
         raise UserNotFound
+    logging.info('get_user_by_base_id')
     return user
 
 
@@ -30,30 +36,35 @@ def get_user_by_password(password):
     user = users_table.match('password', password)
     if not user:
         raise UserNotFound
+    logging.info('get_user_by_password')
     return user
 
 
 def update_user_on_server(record):
     table = Airtable(BASE_ID, USERS_TABLE_NAME, api_key=API_KEY)
     user_elem = table.update(record['id'], record['fields'])
+    logging.info('update_user_on_server')
     return user_elem
 
 
 def update_request(record):
     table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
     request_elem = table.update(record['id'], record['fields'])
+    logging.info('update_request')
     return request_elem
 
 
 def get_request_by_id(request_id):
     table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
     request_elem = table.match('id', request_id)
+    logging.info('get_request_by_id')
     return request_elem
 
 
 def get_request_by_base_id(request_base_id):
     table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
     request_elem = table.get(request_base_id)
+    logging.info('get_request_by_base_id')
     return request_elem
 
 
@@ -61,11 +72,13 @@ def new_request(name, creator_record_id):
     table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
     record = {'creator': [creator_record_id], 'name': name}
     res_record = table.insert(record)
+    logging.info('new_request')
     return res_record
 
 
 def delete_request(request_id):
     table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
+    logging.info('delete_request')
     table.delete(request_id)
 
 
@@ -80,11 +93,11 @@ def get_id_of_all_moderators(media):
         except KeyError:
             pass
 
+    logging.info('get_id_of_all_moderators')
     return res_users
 
 
-def get_id_of_users_without_ignore_hashtags(media=enumerates.Media.TELEGRAM,
-                                            tags=None):  # tags = список тэгов в виде объектов enum.HashTags
+def get_id_of_users_without_ignore_hashtags(media=enumerates.Media.TELEGRAM, tags=None):  # tags = список тэгов в виде объектов enum.HashTags
     if tags is None:
         tags = list()
     tags_strings = [i.name for i in tags]
@@ -102,12 +115,14 @@ def get_id_of_users_without_ignore_hashtags(media=enumerates.Media.TELEGRAM,
     for u in table.get_all(formula=final_formula, fields=media.name.lower() + '_id'):
         if u['fields'].get('telegram_id', None):
             res_list.append(u['fields']['telegram_id'])
+    logging.info('get_id_of_users_without_ignore_hashtags')
     return res_list
 
 
 def get_all_users():
     table = Airtable(BASE_ID, USERS_TABLE_NAME, api_key=API_KEY)
     users_from_table = table.get_all()
+    logging.info('get_all_users')
     return users_from_table
 
 
@@ -115,6 +130,7 @@ def get_requests_taken_by_user(user):
     table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
     formula = 'FIND({user_id}, {{taken_by}}, TRUE())'.format(user_id=user.id)
     res = table.get_all(formula=formula)
+    logging.info('get_requests_taken_by_user')
     return res
 
 
@@ -122,4 +138,5 @@ def get_requests_created_by_user(user):
     table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
     formula = 'FIND({user_id}, {{creator}}, TRUE())'.format(user_id=user.id)
     res = table.get_all(formula=formula)
+    logging.info('get_requests_created_by_user')
     return res

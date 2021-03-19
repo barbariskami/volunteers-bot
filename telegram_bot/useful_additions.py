@@ -1,4 +1,4 @@
-from telegram import ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton, ParseMode, Bot
+from telegram import ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton, ParseMode, Bot, ReplyKeyboardRemove
 from enumerates import KeyboardTypes, Media
 from user import User
 import traceback
@@ -22,6 +22,9 @@ def send_message(update, context, message):
 
 def convert_keyboard(keyboard):
     tg_keyboard = None
+    if keyboard.DELETE:
+        tg_keyboard = ReplyKeyboardRemove()
+        return tg_keyboard
     if keyboard.type == KeyboardTypes.REPLY:
         tg_keyboard = ReplyKeyboardMarkup([[button.text for button in line] for line in keyboard.buttons])
     elif keyboard.type == KeyboardTypes.INLINE:

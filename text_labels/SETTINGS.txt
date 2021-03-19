@@ -1,6 +1,3 @@
 TELEGRAM_RU
-Этот раздел к сожалению еще не дописан. Вы можете вернуться в главное меню или попробовать понять функции кнопок интуитивно.
-
-++++++++++++++++
-TELEGRAM_EN
-This sections is not finished yet. You can go back to the main menu of try to guess the function of buttons below.
+*Настройки*
+Здесь вы можете изменить язык или список игнорируемых вами тэгов.

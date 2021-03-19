@@ -43,7 +43,6 @@
         ]
       ]
     },
-
     "REQUESTS_I_TOOK": {
       "type": "REPLY",
       "to_be_formed": false,
@@ -101,8 +100,8 @@
               "actions": [
                 "FORM_MESSAGE"
               ],
-              "request": "request_base_id",
-              "message_type": "REQUESTS_DESCRIPTION",
+              "request_base_id": "request_base_id",
+              "message_type": "REQUEST_INFO",
               "ignore_standard_action": true
             }
           }
@@ -158,8 +157,8 @@
               "actions": [
                 "FORM_MESSAGE"
               ],
-              "request": "request_base_id",
-              "message_type": "REQUESTS_DESCRIPTION",
+              "request_base_id": "request_base_id",
+              "message_type": "REQUEST_INFO",
               "ignore_standard_action": true
             }
           }
@@ -202,7 +201,6 @@
         ]
       ]
     },
-
     "HELP": {
       "type": "REPLY",
       "buttons": [
@@ -556,7 +554,6 @@
               "message_type": "CREATION_REQUESTS_ON_MODERATION_LIST",
               "ignore_standard_action": true,
               "page": 0
-
             }
           }
         ],
@@ -588,6 +585,14 @@
               "ignore_standard_action": true,
               "page": 0
             }
+          }
+        ],
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "CREATION_MAIN_MENU",
+            "info": {}
           }
         ]
       ]
@@ -855,7 +860,7 @@
             "state": "CREATION_SUBMIT_OR_EDIT",
             "info": {
               "actions": [
-                "CREATION_SHOW_REQUEST_DRAFT"
+                "CREATION_SHOW_REQUEST_TEXT"
               ],
               "message_type": "CREATION_SUBMIT_OR_EDIT",
               "draft_to_show": "CURRENT_EDITED"
@@ -880,7 +885,7 @@
           {
             "RU": "Редактировать",
             "EN": "Edit",
-            "state": "CREATION_EDIT_DRAFT",
+            "state": "CREATION_CHOSE_FIELD_TO_EDIT",
             "info": {}
           }
         ],
@@ -912,7 +917,7 @@
         ],
         [
           {
-            "RU": "Отменить и продолжить редактирование",
+            "RU": "Не отправлять и продолжить редактирование",
             "EN": "Cancel and continue editing",
             "state": "CREATION_EDIT_DRAFT",
             "info": {}
@@ -920,7 +925,7 @@
         ],
         [
           {
-            "RU": "Отменить и выйти в главное меню",
+            "RU": "Не отправлять, сохранить шаблон и выйти в главное меню",
             "EN": "Cancel and go to main menu",
             "state": "CREATION_MAIN_MENU",
             "info": {}
@@ -996,14 +1001,16 @@
           {
             "RU": "запрос",
             "EN": "request",
-            "state": "CREATION_EDITING",
+            "state": "CREATION_EDIT_OR_SEND_SAVED_DRAFT",
             "info": {
               "actions": [
+                "CREATION_SET_EDITED_DRAFT",
                 "FORM_MESSAGE"
               ],
-              "request": "request_base_id",
-              "message_type": "CREATION_EDITING",
-              "ignore_standard_action": true
+              "request_base_id": "request_base_id",
+              "message_type": "CREATION_EDIT_OR_SEND_SAVED_DRAFT",
+              "ignore_standard_action": true,
+              "show_creator": false
             }
           }
         ],
@@ -1017,7 +1024,7 @@
                 "FORM_MESSAGE"
               ],
               "ignore_standard_action": true,
-              "message_type": "REQUESTS_I_TOOK_PENDING"
+              "message_type": "CREATION_DRAFTS_LIST"
             }
           },
           {
@@ -1029,7 +1036,7 @@
                 "FORM_MESSAGE"
               ],
               "ignore_standard_action": true,
-              "message_type": "REQUESTS_I_TOOK_PENDING"
+              "message_type": "CREATION_DRAFTS_LIST"
             }
           }
         ],
@@ -1041,7 +1048,8 @@
             "info": {}
           }
         ]
-      ]},
+      ]
+    },
     "CREATION_REQUESTS_LIST": {
       "type": "REPLY",
       "to_be_formed": true,
@@ -1055,9 +1063,10 @@
               "actions": [
                 "FORM_MESSAGE"
               ],
-              "request": "request_base_id",
-              "message_type": "REQUESTS_DESCRIPTION",
-              "ignore_standard_action": true
+              "request_base_id": "request_base_id",
+              "message_type": "REQUEST_INFO",
+              "ignore_standard_action": true,
+              "show_creator": false
             }
           }
         ],
@@ -1065,7 +1074,7 @@
           {
             "RU": "<---",
             "EN": "<---",
-            "state": "CREATION_FINISHED_REQUESTS_LIST",
+            "state": "",
             "info": {
               "actions": [
                 "FORM_MESSAGE"
@@ -1077,7 +1086,7 @@
           {
             "RU": "--->",
             "EN": "--->",
-            "state": "CREATION_FINISHED_REQUESTS_LIST",
+            "state": "",
             "info": {
               "actions": [
                 "FORM_MESSAGE"
@@ -1093,6 +1102,331 @@
             "EN": "Back",
             "state": "CREATION_MY_REQUESTS",
             "info": {}
+          }
+        ]
+      ]
+    },
+    "CREATION_EDIT_OR_SEND_SAVED_DRAFT": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Редактировать",
+            "EN": "Edit",
+            "state": "CREATION_CHOSE_FIELD_TO_EDIT",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Отправить на модерацию",
+            "EN": "Submit",
+            "state": "CREATION_CONFIRM_DRAFT_SUBMISSION",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Удалить черновик",
+            "EN": "Delete draft",
+            "state": "CREATION_CONFIRM_EDITED_DRAFT_DELETION",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "CREATION_DRAFTS_LIST",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "CREATION_DRAFTS_LIST",
+              "ignore_standard_action": true,
+              "page": 0
+            }
+          }
+        ]
+      ]
+    },
+    "CREATION_CONFIRM_DRAFT_SUBMISSION": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Отправить",
+            "EN": "Submit",
+            "state": "CREATION_DRAFTS_LIST",
+            "info": {
+              "actions": [
+                "CREATION_SUBMIT_REQUEST",
+                "FORM_MESSAGE"
+              ],
+              "message_type": "CREATION_DRAFTS_LIST",
+              "ignore_standard_action": true,
+              "page": 0
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Отменить и вернуться",
+            "EN": "Cancel and go back",
+            "state": "CREATION_EDIT_OR_SEND_SAVED_DRAFT",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "CREATION_EDIT_OR_SEND_SAVED_DRAFT",
+              "ignore_standard_action": true
+            }
+          }
+        ]
+      ]
+    },
+    "CREATION_CONFIRM_EDITED_DRAFT_DELETION": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Удалить",
+            "EN": "Delete",
+            "state": "CREATION_DRAFTS_LIST",
+            "info": {
+              "actions": [
+                "DELETE_CURRENT_EDITED_DRAFT",
+                "FORM_MESSAGE"
+              ],
+              "message_type": "CREATION_DRAFTS_LIST",
+              "ignore_standard_action": true,
+              "page": 0
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Отменить",
+            "EN": "Cancel",
+            "state": "CREATION_EDIT_OR_SEND_SAVED_DRAFT",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "CREATION_EDIT_OR_SEND_SAVED_DRAFT",
+              "ignore_standard_action": true
+            }
+          }
+        ]
+      ]
+    },
+    "CREATION_CHOSE_FIELD_TO_EDIT": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Название",
+            "EN": "Title",
+            "state": "CREATION_EDIT_FIELD_NAME",
+            "info": {
+              "actions": [
+
+              ]
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Текст",
+            "EN": "Text",
+            "state": "CREATION_EDIT_FIELD_TEXT",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Тип даты",
+            "EN": "Date type",
+            "state": "CREATION_EDIT_FIELD_DATE_TYPE",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Дата",
+            "EN": "Date",
+            "state": "CREATION_EDIT_FIELD_DATE",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "CREATION_EDIT_FIELD_DATE",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Колличество человек",
+            "EN": "Number of people",
+            "state": "CREATION_EDIT_FIELD_PEOPLE_NUMBER",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Тэги",
+            "EN": "Tags",
+            "state": "CREATION_EDIT_FIELD_TAGS",
+            "info": {}
+          }
+        ],
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "CREATION_EDIT_OR_SEND_SAVED_DRAFT",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "CREATION_EDIT_OR_SEND_SAVED_DRAFT",
+              "ignore_standard_action": true,
+              "request_base_id": 0
+            }
+          }
+        ]
+      ]
+    },
+    "CREATION_EDIT_FIELD_NAME": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Отменить",
+            "EN": "Cancel",
+            "state": "CREATION_CHOSE_FIELD_TO_EDIT"
+          }
+        ]
+      ]
+    },
+    "CREATION_EDIT_FIELD_TEXT": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Отменить",
+            "EN": "Cancel",
+            "state": "CREATION_CHOSE_FIELD_TO_EDIT"
+          }
+        ]
+      ]
+    },
+    "CREATION_EDIT_FIELD_DATE_TYPE": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Конкретная дата",
+            "EN": "Date",
+            "state": "CREATION_CHOSE_FIELD_TO_EDIT",
+            "info": {
+              "actions": [
+                "SET_DATE_TYPE",
+                "CREATION_SHOW_REQUEST_AFTER_EDITING"
+              ],
+              "date_type": "DATE"
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Дэдлайн",
+            "EN": "Deadline",
+            "state": "CREATION_CHOSE_FIELD_TO_EDIT",
+            "info": {
+              "actions": [
+                "SET_DATE_TYPE",
+                "CREATION_SHOW_REQUEST_AFTER_EDITING"
+              ],
+              "date_type": "DEADLINE"
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Период",
+            "EN": "Period",
+            "state": "CREATION_CHOSE_FIELD_TO_EDIT",
+            "info": {
+              "actions": [
+                "SET_DATE_TYPE",
+                "CREATION_SHOW_REQUEST_AFTER_EDITING"
+              ],
+              "date_type": "PERIOD"
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Отменить",
+            "EN": "Cancel",
+            "state": "CREATION_CHOSE_FIELD_TO_EDIT"
+          }
+        ]
+      ]
+    },
+    "CREATION_EDIT_FIELD_DATE": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Отменить",
+            "EN": "Cancel",
+            "state": "CREATION_CHOSE_FIELD_TO_EDIT"
+          }
+        ]
+      ]
+    },
+    "CREATION_EDIT_FIELD_PEOPLE_NUMBER": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Отменить",
+            "EN": "Cancel",
+            "state": "CREATION_CHOSE_FIELD_TO_EDIT"
+          }
+        ]
+      ]
+    },
+    "CREATION_EDIT_FIELD_TAGS": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Отменить",
+            "EN": "Cancel",
+            "state": "CREATION_CHOSE_FIELD_TO_EDIT"
+          }
+        ]
+      ]
+    },
+    "CREATION_HELP": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Отменить",
+            "EN": "Cancel",
+            "state": "CREATION_CHOSE_FIELD_TO_EDIT"
+          }
+        ],
+        [
+          {
+            "RU": "Отменить",
+            "EN": "Cancel",
+            "state": "CREATION_CHOSE_FIELD_TO_EDIT"
           }
         ]
       ]

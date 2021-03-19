@@ -151,8 +151,7 @@ class User:
             elif key == 'edited_drafts':
                 del fields[key]
                 for media in self.edited_drafts.keys():
-                    if self.edited_drafts[media]:
-                        fields[media.name.lower() + '_creation_edited_draft'] = self.edited_drafts[media]
+                    fields[media.name.lower() + '_creation_edited_draft'] = self.edited_drafts[media]
             elif key == 'ignored_tags':
                 fields['ignored_tags'] = list(map(lambda x: x.name, fields['ignored_tags']))
             elif key == 'REQUEST_COLUMNS_CONNECTION':
@@ -252,20 +251,24 @@ class User:
             self.ignored_tags.append(tag)
         self.update_on_server()
 
-    def set_edited_draft(self, media, draft_id):
+    def set_edited_draft(self, media, draft_base_id):
         self.update_from_server()
-        self.edited_drafts[media] = draft_id
+        self.edited_drafts[media] = [draft_base_id]
         self.update_on_server()
 
     def get_edited_draft(self, media):
         self.update_from_server()
-        draft = request.Request(request_id=self.edited_drafts[media])
+        if self.edited_drafts[media]:
+            draft = request.Request(request_base_id=self.edited_drafts[media][0])
+        else:
+            draft = None
         return draft
 
     def connect_request(self, request):
         self.update_from_server()
 
     def clear_edited_draft_field(self, media):
+        self.update_from_server()
         self.edited_drafts[media] = None
         self.update_on_server()
 
@@ -306,7 +309,7 @@ class User:
 
     def get_contact_card(self, media):
         lines = list()
-        lines.append(self.name_surname)
+        lines.append(self.name)
         link_line = self.FEATURES_FOR_CONTACTS['link'][media.name][self.language[media].name].format(
             user_id=str(self.media_id[media]))
         lines.append(link_line)

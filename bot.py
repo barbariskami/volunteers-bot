@@ -1,10 +1,10 @@
 from request import Request
 from user import User
 from message import Message
-from exceptions import UserNotFound, AlreadyRegistered, DateFormatError, EarlyDate, WrongDateOrder
+from exceptions import UserNotFound, AlreadyRegistered, DateFormatError, EarlyDate, WrongDateOrder, OneDateMissing
 from extensions import load_text, tag_into_text, load_features_for_formation, get_action_text_for_creation
 from keyboard import Keyboard
-from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, HashTags, Bots
+from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, HashTags, Bots, DateType
 import copy
 from traceback import print_exc
 
@@ -38,7 +38,8 @@ class Bot:
                           link=user_contact_link)
         except UserNotFound:
             new_message = Message(user_id, text=load_text(TextLabels.REGISTRATION, media=media),
-                                  marks=[MessageMarks.UNREGISTERED])
+                                  marks=[MessageMarks.UNREGISTERED],
+                                  keyboard=Keyboard(delete_keyboard=True))
         else:
             new_message = Message(user_id,
                                   text=load_text(TextLabels.MAIN_MENU_GREETING,
@@ -74,7 +75,8 @@ class Bot:
         except UserNotFound:
             new_message = Message(user_id,
                                   text=load_text(TextLabels.WRONG_PASSWORD, media=media),
-                                  marks=list([MessageMarks.UNREGISTERED]))
+                                  marks=list([MessageMarks.UNREGISTERED]),
+                                  keyboard=Keyboard(delete_keyboard=True))
         except AlreadyRegistered:
             new_message = Message(user_id,
                                   text=load_text(TextLabels.ALREADY_REGISTERED, media=media),
@@ -96,7 +98,8 @@ class Bot:
     def unregistered(media, user_id):
         new_message = Message(user_id,
                               text=load_text(TextLabels.UNREGISTERED, media=media),
-                              marks=list([MessageMarks.UNREGISTERED]))
+                              marks=list([MessageMarks.UNREGISTERED]),
+                              keyboard=Keyboard(delete_keyboard=True))
         messages_list = list([new_message])
         response = {'send': messages_list}
         return response
@@ -109,7 +112,8 @@ class Bot:
         except UserNotFound:
             new_messages.append(Message(user_id,
                                         text=load_text(TextLabels.REGISTRATION, media=media),
-                                        marks=list([MessageMarks.UNREGISTERED])))
+                                        marks=list([MessageMarks.UNREGISTERED]),
+                                        keyboard=Keyboard(delete_keyboard=True)))
         else:
             new_message = Message(user_id=user.media_id[media],
                                   text=load_text(TextLabels.CHOSE_LANGUAGE, media,
@@ -119,6 +123,29 @@ class Bot:
             new_messages.append(new_message)
 
             user.set_state(media, States.CHOSE_LANGUAGE)
+
+        response = {'send': new_messages}
+        return response
+
+    @staticmethod
+    def help_command(user_id, media):
+        new_messages = list()
+        try:
+            user = User(media, user_id)
+        except UserNotFound:
+            new_messages.append(Message(user_id,
+                                        text=load_text(TextLabels.REGISTRATION, media=media),
+                                        marks=list([MessageMarks.UNREGISTERED]),
+                                        keyboard=Keyboard(delete_keyboard=True)))
+        else:
+            new_message = Message(user_id=user.media_id[media],
+                                  text=load_text(TextLabels.HELP, media,
+                                                 user.language.get(media, Languages.RU)),
+                                  keyboard=Keyboard(state=States.HELP,
+                                                    language=user.language.get(media, Languages.RU)))
+            new_messages.append(new_message)
+
+            user.set_state(media, States.HELP)
 
         response = {'send': new_messages}
         return response
@@ -140,7 +167,8 @@ class Bot:
         except UserNotFound:
             new_messages['send'].append(Message(message.user_id,
                                                 text=load_text(TextLabels.REGISTRATION, media=media),
-                                                marks=list([MessageMarks.UNREGISTERED]))
+                                                marks=list([MessageMarks.UNREGISTERED]),
+                                                keyboard=Keyboard(delete_keyboard=True))
                                         )
         else:
             try:
@@ -151,11 +179,12 @@ class Bot:
 
             message_handler = MessageHandler(user, media)
             messages_from_handler = message_handler.handle(state, message)
-            for key in messages_from_handler.keys():
-                if key in new_messages.keys():
-                    new_messages[key].extend(messages_from_handler[key])
-                else:
-                    new_messages[key] = messages_from_handler[key]
+            if messages_from_handler:
+                for key in messages_from_handler.keys():
+                    if key in new_messages.keys():
+                        new_messages[key].extend(messages_from_handler[key])
+                    else:
+                        new_messages[key] = messages_from_handler[key]
         return new_messages
 
     @staticmethod
@@ -166,7 +195,8 @@ class Bot:
         except UserNotFound:
             new_messages['send'].append(Message(user_id=user_id,
                                                 text=load_text(TextLabels.REGISTRATION, media=media),
-                                                marks=list([MessageMarks.UNREGISTERED]))
+                                                marks=list([MessageMarks.UNREGISTERED]),
+                                                keyboard=Keyboard(delete_keyboard=True))
                                         )
         else:
             button_handler = ButtonHandler(user, media)
@@ -189,7 +219,8 @@ class Bot:
         except UserNotFound:
             new_messages['send'].append(Message(user_id=user_id,
                                                 text=load_text(TextLabels.REGISTRATION, media=media),
-                                                marks=list([MessageMarks.UNREGISTERED]))
+                                                marks=list([MessageMarks.UNREGISTERED]),
+                                                keyboard=Keyboard(delete_keyboard=True))
                                         )
         else:
             if bot == Bots.MODERATION or bot == Bots.MAIN:
@@ -227,12 +258,14 @@ class ButtonHandler:
                                       ButtonActions.ADD_TAG_TO_DRAFT: self.add_tag_to_draft,
                                       ButtonActions.DELETE_TAG_FROM_DRAFT: self.delete_tag_from_draft,
                                       ButtonActions.CREATION_SEND_SAVING_CONFIRMATION: self.send_saving_confirmation,
-                                      ButtonActions.CREATION_SHOW_REQUEST_DRAFT: self.creation_show_request_draft,
+                                      ButtonActions.CREATION_SHOW_REQUEST_TEXT: self.creation_show_request_text,
                                       ButtonActions.CREATION_SUBMIT_REQUEST: self.creation_submit_request,
                                       ButtonActions.MODERATION_APPROVE_REQUEST: self.moderation_approve_request,
                                       ButtonActions.MODERATION_DISMISS_REQUEST: self.moderation_dismiss_request,
                                       ButtonActions.TAKE_REQUEST: self.take_request,
-                                      ButtonActions.DECLINE_REQUEST: self.decline_request}
+                                      ButtonActions.DECLINE_REQUEST: self.decline_request,
+                                      ButtonActions.CREATION_SET_EDITED_DRAFT: self.creation_set_edited_draft,
+                                      ButtonActions.CREATION_SHOW_REQUEST_AFTER_EDITING: self.show_request_after_editing}
 
     def handle_button(self, button):
         new_messages = dict()
@@ -276,13 +309,17 @@ class ButtonHandler:
     def form_message(self, button=None, **kwargs):
         producer = MessageBuildingProducer(self.user, self.media)
         message_data = producer.build_message(button=button)
-
         new_messages = {'send': list()}
+        if message_data['keyboard']:
+            keyboard = message_data['keyboard']
+        elif message_data.get('no_keyboard', False):
+            keyboard = None
+        else:
+            keyboard = Keyboard(state=button.following_state,
+                                language=self.user.language.get(self.media, Languages.RU))
         new_message = Message(user_id=self.user.media_id[self.media],
                               text=message_data['text'],
-                              keyboard=message_data['keyboard'] if message_data['keyboard']
-                              else Keyboard(state=button.following_state,
-                                            language=self.user.language.get(self.media, Languages.RU)))
+                              keyboard=keyboard)
         new_messages['send'].append(new_message)
         return new_messages
 
@@ -337,7 +374,8 @@ class ButtonHandler:
         new_messages['send'].append(new_message)
         return new_messages
 
-    def creation_show_request_draft(self, button=None, draft_type=None, **kwargs):
+    def creation_show_request_text(self, button=None, draft_type=None, **kwargs):
+        print('here')
         new_messages = {'send': list()}
         message_builder = MessageBuildingProducer(self.user, self.media)
 
@@ -346,7 +384,7 @@ class ButtonHandler:
         draft = None
         if draft_type == 'CURRENT_EDITED':
             draft = self.user.get_edited_draft(self.media)
-        message_text = message_builder.build_message(text_label=TextLabels.CREATION_SHOW_REQUEST_DRAFT,
+        message_text = message_builder.build_message(text_label=TextLabels.CREATION_SHOW_REQUEST_TEXT,
                                                      request=draft,
                                                      text_without_button=True)['text']
         new_message = Message(user_id=self.user.media_id[self.media],
@@ -521,6 +559,24 @@ class ButtonHandler:
 
         return new_messages
 
+    def creation_set_edited_draft(self, button=None, **kwargs):
+        self.user.set_edited_draft(media=self.media,
+                                   draft_base_id=button.info['request_base_id'])
+        return dict()
+
+    def show_request_after_editing(self, button=None, **kwargs):
+        new_messages = {'send': list()}
+        message_builder = MessageBuildingProducer(self.user, self.media)
+
+        draft = self.user.get_edited_draft(self.media)
+        message_text = message_builder.build_message(text_label=TextLabels.CREATION_REQUEST_AFTER_EDITING,
+                                                     request=draft,
+                                                     text_without_button=True)['text']
+        new_message = Message(user_id=self.user.media_id[self.media],
+                              text=message_text)
+        new_messages['send'].append(new_message)
+        return new_messages
+
 
 class MessageBuildingProducer:
     def __init__(self, user, media):
@@ -538,7 +594,7 @@ class MessageBuildingProducer:
                                         TextLabels.CREATION_SET_TAGS: self.creation_set_tags,
                                         TextLabels.CREATION_TAG_ADDED_TO_DRAFT: self.creation_tag_added_or_deleted,
                                         TextLabels.CREATION_TAG_DELETED_FROM_DRAFT: self.creation_tag_added_or_deleted,
-                                        TextLabels.CREATION_SHOW_REQUEST_DRAFT: self.creation_show_request_draft,
+                                        TextLabels.CREATION_SHOW_REQUEST_TEXT: self.show_request_info,
                                         TextLabels.MODERATION_SEND_DRAFT: self.moderation_send_draft,
                                         TextLabels.MAIN_REQUEST: self.request_inline_keyboard,
                                         TextLabels.CREATION_PUBLICATION_NOTIFICATION: self.creation_publication_notification,
@@ -549,8 +605,11 @@ class MessageBuildingProducer:
                                         TextLabels.CREATION_DRAFTS_LIST: self.creation_requests_lists,
                                         TextLabels.CREATION_REQUESTS_ON_MODERATION_LIST: self.creation_requests_lists,
                                         TextLabels.CREATION_REQUESTS_WAITING_TO_BE_DONE_LIST: self.creation_requests_lists,
-                                        TextLabels.CREATION_FINISHED_REQUESTS_LIST: self.creation_requests_lists
-                                        }
+                                        TextLabels.CREATION_FINISHED_REQUESTS_LIST: self.creation_requests_lists,
+                                        TextLabels.REQUEST_INFO: self.show_request_info,
+                                        TextLabels.CREATION_EDIT_OR_SEND_SAVED_DRAFT: self.creation_edit_or_send_saved_draft,
+                                        TextLabels.CREATION_REQUEST_AFTER_EDITING: self.creation_request_after_editing,
+                                        TextLabels.CREATION_EDIT_FIELD_DATE: self.creation_set_date}
 
     @staticmethod
     def get_features_for_formation(type_of_features):
@@ -572,7 +631,9 @@ class MessageBuildingProducer:
             res_message_text = message_text.format(**data['text'])
         else:
             res_message_text = ''
-        return {'text': res_message_text, 'keyboard': data.get('keyboard', None)}
+        return {'text': res_message_text,
+                'keyboard': data.get('keyboard', None),
+                'no_keyboard': data.get('no_keyboard', False)}
 
     def ignore_lists_messages(self, button=None, **kwargs):
         ignored = self.user.get_ignored_hashtags_text(self.media)
@@ -641,9 +702,12 @@ class MessageBuildingProducer:
         request = self.user.get_edited_draft(self.media)
         features = self.__class__.get_features_for_formation('CREATION_SET_DATE')
         res = {'text': dict()}
-        res['text']['date_word'] = features['date_word'][request.date_type.name][self.user.language[self.media].name]
+        date_type = request.__dict__.get('date_type', DateType.DATE)
+        res['text']['date_word'] = features['date_word'][date_type.name][
+            self.user.language[self.media].name]
 
-        res['keyboard'] = Keyboard(state=button.following_state, language=self.user.language[self.media])
+        if button and button.following_state != States.CREATION_CHOSE_FIELD_TO_EDIT:
+            res['keyboard'] = Keyboard(state=button.following_state, language=self.user.language[self.media])
 
         return res
 
@@ -704,12 +768,18 @@ class MessageBuildingProducer:
         keyboard = self.creation_set_tags(button=button)['keyboard']
         return {'text': text, 'keyboard': keyboard}
 
-    def creation_show_request_draft(self, request=None, **kwargs):
-        res_text = request.into_human_readable(language=self.user.language.get(self.media, Languages.RU))
-        return {'text': {'request': res_text}, 'keyboard': None}
+    def show_request_info(self, request=None, button=None, **kwargs):
+        res_text = ''
+        if request:
+            res_text = request.into_human_readable(language=self.user.language.get(self.media, Languages.RU), )
+        elif button:
+            request = Request(request_base_id=button.info['request_base_id'])
+            res_text = request.into_human_readable(language=self.user.language.get(self.media, Languages.RU),
+                                                   show_creator=button.info.get('show_creator', True))
+        return {'text': {'request': res_text}, 'keyboard': None, 'no_keyboard': True}
 
     def moderation_send_draft(self, request=None, **kwargs):
-        result = self.creation_show_request_draft(request=request)
+        result = self.show_request_info(request=request)
         keyboard = Keyboard.load_keyboard("MODERATION_SEND_DRAFT")
         for i in range(len(keyboard['buttons'][0])):
             keyboard['buttons'][0][i]['info']['request'] = request.id
@@ -781,7 +851,7 @@ class MessageBuildingProducer:
             for l in list(Languages):
                 new_button[l.name] = req.name
             new_button['state'] = button.following_state.name
-            new_button['info']['request_base_is'] = req.base_id
+            new_button['info']['request_base_id'] = req.base_id
             keyboard['buttons'].insert(0, [new_button])
         res['keyboard'] = Keyboard(language=self.user.language.get(self.media, Languages.RU),
                                    json_set=keyboard)
@@ -811,11 +881,10 @@ class MessageBuildingProducer:
             keyboard = Keyboard.load_keyboard('CREATION_REQUESTS_LIST')
 
         if len(requests) == 0:
-            print('here')
             keyboard['buttons'] = keyboard['buttons'][-1:]
-            feqtures_for_formaion = self.get_features_for_formation('CREATION_LISTS_OF_REQUESTS_NAMES')[
+            features_for_formaion = self.get_features_for_formation('CREATION_LISTS_OF_REQUESTS_NAMES')[
                 button.following_state.name]
-            res = {'text': {'list_name': feqtures_for_formaion[self.user.language.get(self.media, Languages.RU).name]},
+            res = {'text': {'list_name': features_for_formaion[self.user.language.get(self.media, Languages.RU).name]},
                    'keyboard': Keyboard(language=self.user.language.get(self.media, Languages.RU),
                                         json_set=keyboard),
                    'change_label': TextLabels.CREATION_REQUESTS_LIST_IS_EMPTY}
@@ -825,31 +894,55 @@ class MessageBuildingProducer:
             if right_border > len(requests):
                 right_border = len(requests)
             left_border = (button.info['page'] * 5)
-            requests = requests[left_border:right_border]
+            requests_on_page = requests[left_border:right_border]
             keyboard['buttons'][1][0]['info']['page'] = button.info['page'] - 1
             keyboard['buttons'][1][1]['info']['page'] = button.info['page'] + 1
+            keyboard['buttons'][1][0]['state'] = button.following_state.name
+            keyboard['buttons'][1][1]['state'] = button.following_state.name
+            keyboard['buttons'][1][0]['info']['message_type'] = button.following_state.name
+            keyboard['buttons'][1][1]['info']['message_type'] = button.following_state.name
             if button.info['page'] == 0:
                 del keyboard['buttons'][1][0]
                 keyboard['buttons'][1][0]['info']['page'] = 1
-            elif button.info['page'] * 5 >= len(requests):
+            elif (button.info['page'] + 1) * 5 >= len(requests):
                 del keyboard['buttons'][1][1]
         else:
             del keyboard['buttons'][1]
+            requests_on_page = requests
 
         button_template = keyboard['buttons'][0][0]
         del keyboard['buttons'][0]
-        for req in requests:
+        for req in requests_on_page:
             new_button = copy.deepcopy(button_template)
             for l in list(Languages):
                 new_button[l.name] = req.name
             if button.following_state != States.CREATION_DRAFTS_LIST:
                 new_button['state'] = button.following_state.name
-            new_button['info']['request_base_is'] = req.base_id
+            new_button['info']['request_base_id'] = req.base_id
             keyboard['buttons'].insert(0, [new_button])
         res = {'text': dict()}
         res['keyboard'] = Keyboard(language=self.user.language.get(self.media, Languages.RU),
                                    json_set=keyboard)
         return res
+
+    def creation_edit_or_send_saved_draft(self, button=None, **kwargs):
+        if button.info.get('request_base_id', None):
+            request = Request(request_base_id=button.info['request_base_id'])
+        else:
+            request = self.user.get_edited_draft(self.media)
+        res_text = request.into_draft_text(language=self.user.language.get(self.media, Languages.RU),
+                                           media=self.media)
+        keyboard = Keyboard.load_keyboard(button.following_state.name)
+        if not request.is_ready_for_submission():
+            del keyboard['buttons'][1]
+        res = {'text': {'request': res_text}}
+        res['keyboard'] = Keyboard(language=self.user.language.get(self.media, Languages.RU),
+                                   json_set=keyboard)
+        return res
+
+    def creation_request_after_editing(self, request=None, **kwargs):
+        return {'text': {'request': (request.into_draft_text(language=self.user.language.get(self.media, Languages.RU),
+                                                             media=self.media))}}
 
 
 class MessageHandler:
@@ -861,20 +954,24 @@ class MessageHandler:
                                  States.CREATION_NEW_REQUEST: self.create_new_request,
                                  States.CREATION_TYPE_TEXT: self.edit_text,
                                  States.CREATION_SET_DATE: self.set_date,
-                                 States.CREATION_SET_PEOPLE_NUMBER: self.set_people_number}
+                                 States.CREATION_SET_PEOPLE_NUMBER: self.set_people_number,
+                                 States.CREATION_EDIT_FIELD_NAME: self.creation_edit_field_name,
+                                 States.CREATION_EDIT_FIELD_TEXT: self.edit_text,
+                                 States.CREATION_EDIT_FIELD_DATE: self.set_date,
+                                 States.CREATION_EDIT_FIELD_PEOPLE_NUMBER: self.set_people_number}
 
     def handle(self, state, message):
         handler = self.message_handlers.get(state, None)
         if not handler:
             handler = self.ignore_handler
-        res = handler(message)
+        res = handler(message, current_state=state)
         return res
 
     def ignore_handler(self, message):
         response = dict()
         return response
 
-    def create_new_request(self, message):
+    def create_new_request(self, message, **kwargs):
         name = message.text
         request = Request.new(name, self.user.base_id)
         self.user.connect_request(request)
@@ -891,19 +988,32 @@ class MessageHandler:
 
         new_messages.append(new_message)
         self.user.set_state(self.media, next_state, creation=True)
-        self.user.set_edited_draft(self.media, request.id)
+        self.user.set_edited_draft(self.media, request.base_id)
 
         response = {'send': new_messages}
         return response
 
-    def edit_text(self, message):
+    def edit_text(self, message, current_state=States.CREATION_TYPE_TEXT, **kwargs):
         text = message.text
         request = self.user.get_edited_draft(self.media)
         request.change_text(text)
 
         new_messages = list()
 
-        next_state = States.CREATION_CHOSE_DATE_TYPE
+        next_state = None
+        if current_state == States.CREATION_TYPE_TEXT:
+            next_state = States.CREATION_CHOSE_DATE_TYPE
+        elif current_state == States.CREATION_EDIT_FIELD_TEXT:
+            next_state = States.CREATION_CHOSE_FIELD_TO_EDIT
+            building_producer = MessageBuildingProducer(user=self.user, media=self.media)
+            data = building_producer.build_message(text_label=TextLabels.CREATION_REQUEST_AFTER_EDITING,
+                                                   request=request)
+            request_message = Message(self.user.media_id[self.media],
+                                      text=data['text'],
+                                      media=self.media,
+                                      language=self.user.language[self.media])
+            new_messages.append(request_message)
+
         new_message = Message(self.user.media_id[self.media],
                               text=load_text(TextLabels[next_state.name],
                                              media=self.media,
@@ -916,7 +1026,7 @@ class MessageHandler:
         response = {'send': new_messages}
         return response
 
-    def set_date(self, message):
+    def set_date(self, message, current_state=States.CREATION_SET_DATE, **kwargs):
         text = message.text
         request = self.user.get_edited_draft(self.media)
         new_messages = list()
@@ -927,24 +1037,44 @@ class MessageHandler:
                                   text=load_text(TextLabels.CREATION_SET_DATE_FORMAT_ERROR,
                                                  media=self.media,
                                                  language=self.user.language[self.media]),
-                                  keyboard=Keyboard(state=self.user.state[self.media],
+                                  keyboard=Keyboard(state=self.user.creation_state[self.media],
                                                     language=self.user.language.get(self.media, Languages.RU)))
         except EarlyDate:
             new_message = Message(self.user.media_id[self.media],
                                   text=load_text(TextLabels.CREATION_SET_DATE_EARLY_DATE,
                                                  media=self.media,
                                                  language=self.user.language[self.media]),
-                                  keyboard=Keyboard(state=self.user.state[self.media],
+                                  keyboard=Keyboard(state=self.user.creation_state[self.media],
                                                     language=self.user.language.get(self.media, Languages.RU)))
         except WrongDateOrder:
             new_message = Message(self.user.media_id[self.media],
                                   text=load_text(TextLabels.CREATION_SET_DATE_WRONG_DATE_ORDER,
                                                  media=self.media,
                                                  language=self.user.language[self.media]),
-                                  keyboard=Keyboard(state=self.user.state[self.media],
+                                  keyboard=Keyboard(state=self.user.creation_state[self.media],
+                                                    language=self.user.language.get(self.media, Languages.RU)))
+        except OneDateMissing:
+            new_message = Message(self.user.media_id[self.media],
+                                  text=load_text(TextLabels.CREATION_SET_DATE_ONE_DATE_MISSING,
+                                                 media=self.media,
+                                                 language=self.user.language[self.media]),
+                                  keyboard=Keyboard(state=self.user.creation_state[self.media],
                                                     language=self.user.language.get(self.media, Languages.RU)))
         else:
-            next_state = States.CREATION_SET_PEOPLE_NUMBER
+            next_state = None
+            if current_state == States.CREATION_SET_DATE:
+                next_state = States.CREATION_SET_PEOPLE_NUMBER
+            elif current_state == States.CREATION_EDIT_FIELD_DATE:
+                next_state = States.CREATION_CHOSE_FIELD_TO_EDIT
+                building_producer = MessageBuildingProducer(user=self.user, media=self.media)
+                data = building_producer.build_message(text_label=TextLabels.CREATION_REQUEST_AFTER_EDITING,
+                                                       request=request)
+                request_message = Message(self.user.media_id[self.media],
+                                          text=data['text'],
+                                          media=self.media,
+                                          language=self.user.language[self.media])
+                new_messages.append(request_message)
+
             new_message = Message(self.user.media_id[self.media],
                                   text=load_text(TextLabels[next_state.name],
                                                  media=self.media,
@@ -957,7 +1087,7 @@ class MessageHandler:
         response = {'send': new_messages}
         return response
 
-    def set_people_number(self, message):
+    def set_people_number(self, message, current_state=States.CREATION_SET_PEOPLE_NUMBER, **kwargs):
         text = message.text
         request = self.user.get_edited_draft(self.media)
         new_messages = list()
@@ -972,16 +1102,64 @@ class MessageHandler:
                                   keyboard=Keyboard(state=States.CREATION_SET_PEOPLE_NUMBER,
                                                     language=self.user.language.get(self.media, Languages.RU)))
         else:
-            next_state = States.CREATION_SET_TAGS
-            building_producer = MessageBuildingProducer(self.user, self.media)
-            message_data = building_producer.build_message(following_state=next_state)
-            new_message = Message(self.user.media_id[self.media],
-                                  text=load_text(TextLabels[next_state.name],
-                                                 media=self.media,
-                                                 language=self.user.language[self.media]),
-                                  keyboard=message_data['keyboard'])
-            self.user.set_state(self.media, next_state, creation=True)
+            next_state = None
+            if current_state == States.CREATION_SET_PEOPLE_NUMBER:
+                next_state = States.CREATION_SET_TAGS
+                building_producer = MessageBuildingProducer(self.user, self.media)
+                message_data = building_producer.build_message(following_state=next_state)
+                new_message = Message(self.user.media_id[self.media],
+                                      text=load_text(TextLabels[next_state.name],
+                                                     media=self.media,
+                                                     language=self.user.language[self.media]),
+                                      keyboard=message_data['keyboard'])
+                self.user.set_state(self.media, next_state, creation=True)
+                new_messages.append(new_message)
+            elif current_state == States.CREATION_EDIT_FIELD_PEOPLE_NUMBER:
+                next_state = States.CREATION_CHOSE_FIELD_TO_EDIT
+                building_producer = MessageBuildingProducer(user=self.user, media=self.media)
+                data = building_producer.build_message(text_label=TextLabels.CREATION_REQUEST_AFTER_EDITING,
+                                                       request=request)
+                request_message = Message(self.user.media_id[self.media],
+                                          text=data['text'],
+                                          media=self.media,
+                                          language=self.user.language[self.media])
+                new_messages.append(request_message)
+
+                new_message = Message(self.user.media_id[self.media],
+                                      text=load_text(TextLabels[next_state.name],
+                                                     media=self.media,
+                                                     language=self.user.language[self.media]),
+                                      keyboard=Keyboard(state=next_state,
+                                                        language=self.user.language.get(self.media, Languages.RU)))
+                self.user.set_state(self.media, next_state, creation=True)
+                new_messages.append(new_message)
+
+        response = {'send': new_messages}
+        return response
+
+    def creation_edit_field_name(self, message, **kwargs):
+        text = message.text
+        request = self.user.get_edited_draft(self.media)
+        request.change_name(name=text)
+        new_messages = list()
+
+        building_producer = MessageBuildingProducer(user=self.user, media=self.media)
+        data = building_producer.build_message(text_label=TextLabels.CREATION_REQUEST_AFTER_EDITING, request=request)
+        request_message = Message(self.user.media_id[self.media],
+                                  text=data['text'],
+                                  media=self.media,
+                                  language=self.user.language[self.media])
+        new_messages.append(request_message)
+
+        next_state = States.CREATION_CHOSE_FIELD_TO_EDIT
+        new_message = Message(self.user.media_id[self.media],
+                              text=load_text(TextLabels[next_state.name],
+                                             media=self.media,
+                                             language=self.user.language[self.media]),
+                              keyboard=Keyboard(state=next_state,
+                                                language=self.user.language.get(self.media, Languages.RU)))
         new_messages.append(new_message)
+        self.user.set_state(self.media, next_state, creation=True)
 
         response = {'send': new_messages}
         return response

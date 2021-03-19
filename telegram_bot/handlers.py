@@ -91,6 +91,33 @@ def switch_language(update, context):
         traceback.print_exc()
 
 
+def help_command(update, context):
+    try:
+        if not context.user_data.get('registered', None):
+            new_messages = Bot.unregistered(Media.TELEGRAM, update.effective_user.id)
+        else:
+            new_messages = Bot.help_command(update.effective_user.id, Media.TELEGRAM)
+
+        for message in new_messages['send']:
+            if MessageMarks.UNREGISTERED in message.marks:
+                context.user_data['registered'] = False
+            if message.keyboard:
+                context.user_data['keyboard'] = message.keyboard
+            context, message_id = send_message(update, context, message)
+            if message.__dict__.get('request_id'):
+                if not message.bot:
+                    message_bot = Bots.MAIN
+                else:
+                    message_bot = message.bot
+                Bot.connect_message_to_request(media=Media.TELEGRAM,
+                                               media_user_id=update.effective_user.id,
+                                               bot=message_bot,
+                                               message_id=message_id,
+                                               request_base_id=message.request_id)
+    except Exception:
+        traceback.print_exc()
+
+
 def callback_query_handler(update, context):
     try:
         if not context.user_data.get('registered', None):

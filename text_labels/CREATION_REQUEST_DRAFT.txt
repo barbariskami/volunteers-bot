@@ -1,0 +1,8 @@
+TELEGRAM_RU
+_название_: {name}
+_текст_:
+{text}
+_тип даты_: {date_type}
+_дата_: {date}
+_количество человек_: {people_number}
+_тэги_: {tags}

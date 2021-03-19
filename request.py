@@ -1,9 +1,9 @@
 from dataBase import get_request_by_id, get_request_by_base_id
 import dataBase
 from copy import deepcopy
-from enumerates import DateType, HashTags
+from enumerates import DateType, HashTags, Media, TextLabels
 import exceptions
-from extensions import tag_into_text
+from extensions import tag_into_text, load_text
 from datetime import datetime, date
 from traceback import print_exc
 import user
@@ -27,7 +27,7 @@ class Request:
         else:
             self.date1 = None
         if 'date2' in self.__dict__.keys():
-            self.date2 = datetime.strptime(self.date1, '%Y-%m-%d').date()
+            self.date2 = datetime.strptime(self.date2, '%Y-%m-%d').date()
         else:
             self.date2 = None
         if 'tags' not in self.__dict__.keys():
@@ -60,6 +60,26 @@ class Request:
                     'EN': 'The execution period is from {date1} to {date2}'
                 }}
         }
+        self.FEATURES_FOR_DRAFT_FORMAT = {
+            "not_stated": {
+                "RU": "не указано",
+                "EN": "not stated"
+            },
+            "date_type_name": {
+                "DATE": {
+                    "RU": "Конкретная дата",
+                    "EN": "Date"
+                },
+                "DEADLINE": {
+                    "RU": "Дэдлайн",
+                    "EN": "Deadline"
+                },
+                "PERIOD": {
+                    "RU": "Период",
+                    "EN": "Period"
+                }
+            }
+        }
 
     def load_from_server(self):
         self.__init__(request_base_id=self.base_id)
@@ -74,7 +94,7 @@ class Request:
                 del fields[key]
             elif key == 'date_type':
                 fields[key] = self.date_type.name
-            elif key == 'id' or key == 'FEATURES_FOR_READABLE_FORMAT':
+            elif key == 'id' or key == 'FEATURES_FOR_READABLE_FORMAT' or key == 'FEATURES_FOR_DRAFT_FORMAT':
                 del fields[key]
             elif (key == 'date1' or key == 'date2') and fields[key]:
                 fields[key] = fields[key].strftime('%Y-%m-%d')
@@ -84,15 +104,19 @@ class Request:
         record['fields'] = fields
         return record
 
-    def into_human_readable(self, language):
+    def into_human_readable(self, language, show_creator=True, media=Media.TELEGRAM):
         lines = list()
-        lines.append(self.FEATURES_FOR_READABLE_FORMAT['creator'][language.name].format(
-            creator=self.get_creators_name()))
-        lines.append(self.name)
-        lines.append(self.text)
+        if show_creator:
+            lines.append(self.FEATURES_FOR_READABLE_FORMAT['creator'][language.name].format(
+                creator=self.get_creators_name()) + '\n')
+        if media == Media.TELEGRAM:
+            lines.append('*' + self.name + '*')
+        else:
+            lines.append(self.name)
+        lines.append(self.text + '\n')
         date_types_names = self.FEATURES_FOR_READABLE_FORMAT['date_type']
         lines.append(date_types_names[self.date_type.name][language.name].format(
-            date1=str(self.date1), date2=str(self.date2)))
+            date1=self.date1.strftime('%d.%m.%Y'), date2=self.date2.strftime('%d.%m.%Y') if self.date2 else None))
 
         lines.append(self.FEATURES_FOR_READABLE_FORMAT['people_number'][language.name].format(
             people_number=str(self.people_number)))
@@ -102,9 +126,40 @@ class Request:
         res_text = '\n'.join(lines)
         return res_text
 
+    def into_draft_text(self, language, media=Media.TELEGRAM):
+        not_stated = self.FEATURES_FOR_DRAFT_FORMAT['not_stated'][language.name]
+        text = load_text(TextLabels.CREATION_REQUEST_DRAFT, media=media, language=language)
+        if self.__dict__.get('date_type', None):
+            date_type = self.FEATURES_FOR_DRAFT_FORMAT['date_type_name'][self.date_type.name][language.name]
+        else:
+            date_type = not_stated
+        if self.__dict__.get('date1', None):
+            if self.date_type == DateType.PERIOD:
+                if self.__dict__.get('date2', None):
+                    date = self.date1.strftime('%d.%m.%Y') + ' – ' + self.date1.strftime('%d.%m.%Y')
+                else:
+                    date = self.date1.strftime('%d.%m.%Y') + ' – ' + not_stated
+            else:
+                date = self.date1.strftime('%d.%m.%Y')
+        else:
+            date = not_stated
+        if self.__dict__.get('tags', None):
+            tags = ', '.join(tag_into_text(self.tags, language))
+        else:
+            tags = not_stated
+        data = {'name': self.name if self.__dict__.get('name', None) else not_stated,
+                'text': self.text if self.__dict__.get('text', None) else not_stated,
+                'date_type': date_type,
+                'date': date,
+                'people_number': self.people_number if self.__dict__.get('people_number', None) else not_stated,
+                'tags': tags}
+
+        res_text = text.format(**data).strip()
+        return res_text
+
     def get_creators_name(self):
         creator_user = user.User(base_id=self.creator[0])
-        return creator_user.name_surname
+        return creator_user.name
 
     def get_creator(self):
         creator = user.User(base_id=self.creator[0])
@@ -116,6 +171,10 @@ class Request:
 
     def delete(self):
         dataBase.delete_request(self.base_id)
+
+    def change_name(self, name):
+        self.name = name
+        self.update()
 
     def change_text(self, text):
         self.text = text
@@ -137,13 +196,16 @@ class Request:
         if self.date_type == DateType.DATE or self.date_type == DateType.DEADLINE:
             new_date = transform_date_str_into_date(date_string)
             today = date.today()
-            if new_date <= today:
+            if new_date < today:
                 raise exceptions.EarlyDate
             self.date1 = new_date
             self.update()
 
         elif self.date_type == DateType.PERIOD:
-            date1, date2 = date_string.split()
+            try:
+                date1, date2 = date_string.split()
+            except ValueError:
+                raise exceptions.OneDateMissing
             date1 = transform_date_str_into_date(date1)
             date2 = transform_date_str_into_date(date2)
             today = date.today()
@@ -217,3 +279,13 @@ class Request:
             return self.date1 < today
         else:
             return False
+
+    def is_ready_for_submission(self):
+        if self.__dict__.get('name', None) and self.__dict__.get('text', None):
+            if self.__dict__.get('date_type', None) and self.__dict__.get('people_number', None):
+                if self.__dict__.get('date1', None):
+                    if self.__dict__.get('date_type', None) == DateType.PERIOD and self.__dict__.get('date2', None):
+                        return True
+                    elif self.__dict__.get('date_type', None) and self.__dict__.get('date_type', None) != DateType.PERIOD:
+                        return True
+        return False

@@ -24,6 +24,7 @@ class CreationBot(Bot):
                                   keyboard=Keyboard(state=States.CREATION_MAIN_MENU,
                                                     language=user.language.get(media, Languages.RU)))
             user.set_state(media, States.CREATION_MAIN_MENU, creation=True)
+            user.clear_edited_draft_field(media=media)
         response = {'send': list([new_message])}
         return response
 

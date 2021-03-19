@@ -1,10 +1,13 @@
 import json
 import os
-from enumerates import KeyboardTypes, States, ButtonActions, DateType
+from enumerates import KeyboardTypes, States, ButtonActions, DateType, Languages
 
 
 class Keyboard:
-    def __init__(self, language, buttons=None, board_type=None, state=None, text_label=None, json_set=None):
+    def __init__(self, language=Languages.RU, buttons=None, board_type=None, state=None, text_label=None, json_set=None, delete_keyboard=False):
+        self.DELETE = delete_keyboard
+        if self.DELETE:
+            return
         if buttons and board_type:
             self.buttons = buttons
             self.type = board_type
