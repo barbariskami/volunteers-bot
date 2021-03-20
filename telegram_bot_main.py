@@ -1,6 +1,10 @@
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler
 from telegram_bot.handlers import start, text_message_handler, switch_language, callback_query_handler, help_command
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO,
+                    format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s')
 
 
 def main():
@@ -21,7 +25,11 @@ def main():
                           url_path=token)
     updater.bot.setWebhook('https://volunteers-bot.herokuapp.com/' + token)
 
+    logging.info('here now')
+
     updater.idle()
+
+    logging.info('and finally here')
 
 
 if __name__ == '__main__':
