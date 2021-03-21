@@ -35,18 +35,18 @@ def main(bot_type='main'):
         dp.add_handler(CommandHandler('help', h_main.help_command))
         dp.add_handler(MessageHandler(Filters.text, h_main.text_message_handler))
         dp.add_handler(CallbackQueryHandler(h_main.callback_query_handler, pass_user_data=True))
-        url = 'https://letovo-hepler.herokuapp.com/'
+        url = 'https://letovo-helper.herokuapp.com/'
     elif bot_type == 'creation':
         logging.info(args.bot + 'recognized')
         dp.add_handler(CommandHandler('start', h_creation.start))
         dp.add_handler(MessageHandler(Filters.text, h_creation.text_message_handler))
         dp.add_handler(MessageHandler(Filters.photo, h_creation.image_message_handler))
-        url = 'https://letovo-hepler-ask.herokuapp.com/'
+        url = 'https://letovo-helper-ask.herokuapp.com/'
     elif bot_type == 'moderation':
         dp.add_handler(CommandHandler('start', h_moderation.start))
         dp.add_handler(MessageHandler(Filters.text, h_moderation.text_message_handler))
         dp.add_handler(CallbackQueryHandler(h_moderation.callback_query_handler, pass_user_data=True))
-        url = 'https://letovo-hepler-moderation.herokuapp.com/'
+        url = 'https://letovo-helper-moderation.herokuapp.com/'
 
     updater.start_webhook(listen="0.0.0.0",
                           port=int(port),
