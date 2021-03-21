@@ -23,6 +23,7 @@ logging.info(args.bot)
 def main(bot_type='main'):
     port = int(os.environ.get('PORT', 5000))
     token = open('telegram_bot/token_{bot}.txt'.format(bot=bot_type)).read()
+    logging.info('token is' + str(token))
     updater = Updater(token, use_context=True)
 
     dp = updater.dispatcher
@@ -34,6 +35,7 @@ def main(bot_type='main'):
         dp.add_handler(MessageHandler(Filters.text, h_main.text_message_handler))
         dp.add_handler(CallbackQueryHandler(h_main.callback_query_handler, pass_user_data=True))
     elif bot_type == 'creation':
+        logging.info(args.bot + 'recognized')
         dp.add_handler(CommandHandler('start', h_creation.start))
         dp.add_handler(MessageHandler(Filters.text, h_creation.text_message_handler))
         dp.add_handler(MessageHandler(Filters.photo, h_creation.image_message_handler))
