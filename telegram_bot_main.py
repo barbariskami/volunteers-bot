@@ -23,31 +23,35 @@ logging.info(args.bot)
 def main(bot_type='main'):
     port = int(os.environ.get('PORT', 5000))
     token = open('telegram_bot/token_{bot}.txt'.format(bot=bot_type)).read()
-    logging.info('token is' + str(token))
+    logging.info('token is ' + str(token))
     updater = Updater(token, use_context=True)
 
     dp = updater.dispatcher
 
+    url = ''
     if bot_type == 'main':
         dp.add_handler(CommandHandler('start', h_main.start))
         dp.add_handler(CommandHandler('switch_language', h_main.switch_language))
         dp.add_handler(CommandHandler('help', h_main.help_command))
         dp.add_handler(MessageHandler(Filters.text, h_main.text_message_handler))
         dp.add_handler(CallbackQueryHandler(h_main.callback_query_handler, pass_user_data=True))
+        url = 'https://letovo-hepler.herokuapp.com/'
     elif bot_type == 'creation':
         logging.info(args.bot + 'recognized')
         dp.add_handler(CommandHandler('start', h_creation.start))
         dp.add_handler(MessageHandler(Filters.text, h_creation.text_message_handler))
         dp.add_handler(MessageHandler(Filters.photo, h_creation.image_message_handler))
+        url = 'https://letovo-hepler-ask.herokuapp.com/'
     elif bot_type == 'moderation':
         dp.add_handler(CommandHandler('start', h_moderation.start))
         dp.add_handler(MessageHandler(Filters.text, h_moderation.text_message_handler))
         dp.add_handler(CallbackQueryHandler(h_moderation.callback_query_handler, pass_user_data=True))
+        url = 'https://letovo-hepler-moderation.herokuapp.com/'
 
     updater.start_webhook(listen="0.0.0.0",
                           port=int(port),
                           url_path=token)
-    updater.bot.setWebhook('https://volunteers-bot.herokuapp.com/' + token)
+    updater.bot.setWebhook(url + token)
     logging.info('here now')
 
     updater.idle()
