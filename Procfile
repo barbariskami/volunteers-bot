@@ -1,1 +1,1 @@
-web: python3 telegram_bot_main.py
+web: python3 telegram_bot_main.py --bot $BOT_NAME
