@@ -1,5 +1,5 @@
 TELEGRAM_RU
-Этот раздел еще не написан
+Чтобы разобраться в том, как я работаю, почитайте эти разделы:
 ++++++++++++++++
 TELEGRAM_EN
 This section is not finished yet

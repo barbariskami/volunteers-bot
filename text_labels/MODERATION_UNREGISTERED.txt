@@ -1,6 +1,6 @@
 TELEGRAM_RU
-Вы не привязали свой телеграм-аккаунт к вашему аккаунту в системе. Для этого выполните процедуру регистрации в основном боте: @letovo\_volunteers\_bot
-После этого, восопользуйтесь командой /start еще раз (просто кликните на нее в этом сообщении)
+Вы не привязали свой телеграм-аккаунт к вашему аккаунту в системе. Для этого выполните процедуру регистрации в основном боте: @letovo\_helper\_bot
+После этого, воспользуйтесь командой /start еще раз (просто кликните на нее в этом сообщении)
 ++++++++++++++++
 TELEGRAM_EN
 You haven't attached your telegram account with your account in the system. To do this please complete the registration process in the main bot: @letovo\_volunteers\_bot

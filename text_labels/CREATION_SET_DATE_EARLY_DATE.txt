@@ -1,5 +1,5 @@
 TELEGRAM_RU
-Дата не может быть раньше сегоднящнего дня. Попробуйте снова (формат: дд.мм.гг)
+Дата не может быть раньше сегодняшнего дня. Введите ее снова (формат: дд.мм.гг)
 ++++++++++++++++
 TELEGRAM_EN
 The date can't be earlier than today. Please, try again (the format: dd.mm.yy)
