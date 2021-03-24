@@ -4,7 +4,7 @@ import enumerates
 import logging
 
 logging.basicConfig(level=logging.INFO,
-                    format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s')
+                    format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s')
 
 BASE_ID = 'apphvG4aTncmmmVPv'
 API_KEY_PATH = 'api_key.txt'
@@ -97,7 +97,8 @@ def get_id_of_all_moderators(media):
     return res_users
 
 
-def get_id_of_users_without_ignore_hashtags(media=enumerates.Media.TELEGRAM, tags=None):  # tags = список тэгов в виде объектов enum.HashTags
+def get_id_of_users_without_ignore_hashtags(media=enumerates.Media.TELEGRAM,
+                                            tags=None):  # tags = список тэгов в виде объектов enum.HashTags
     if tags is None:
         tags = list()
     tags_strings = [i.name for i in tags]

@@ -8,9 +8,18 @@ import telegram
 
 def start(update, context):
     try:
-        new_messages = Bot.start_conversation(Media.TELEGRAM,
-                                              update.effective_user.id,
-                                              user_contact_link='@' + (update.effective_user.username if update.effective_user.username else ''))
+        if context.args:
+            password = context.args[0]
+            new_messages = Bot.register(Media.TELEGRAM,
+                                        user_id=update.effective_user.id,
+                                        password=password,
+                                        user_contact_link='@' + (
+                                            update.effective_user.username if update.effective_user.username else ''))
+        else:
+            new_messages = Bot.start_conversation(Media.TELEGRAM,
+                                                  update.effective_user.id,
+                                                  user_contact_link='@' + (
+                                                      update.effective_user.username if update.effective_user.username else ''))
         context.user_data['registered'] = True
         for message in new_messages['send']:
             if MessageMarks.UNREGISTERED in message.marks:
@@ -28,7 +37,8 @@ def text_message_handler(update, context):
             new_messages = Bot.register(Media.TELEGRAM,
                                         update.effective_user.id,
                                         update.message.text,
-                                        user_contact_link='@' + (update.effective_user.username if update.effective_user.username else ''))
+                                        user_contact_link='@' + (
+                                            update.effective_user.username if update.effective_user.username else ''))
         elif context.user_data.get('keyboard', None) and \
                 update.message.text in context.user_data['keyboard'].get_buttons():
             new_messages = Bot.button_pressed(media=Media.TELEGRAM,
