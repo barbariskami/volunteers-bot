@@ -364,18 +364,18 @@ class User:
         return res
 
     @staticmethod
-    def register(media, user_id, password, user_contact_link):
+    def register(media, user_id, passwords_hash, user_contact_link):
         """
         This static method is used to register a new user using a unique password given to them by student development
         department (or any other people that regulate the usage of this service). It loads all the information about the
         user from the password and add his media-id to an airtable base.
+        :param passwords_hash:
         :param user_contact_link:
         :param media:
         :param user_id:
-        :param password:
         :return:
         """
-        user = User(record=dataBase.get_user_by_password(password))
+        user = User(record=dataBase.get_user_by_passwords_hash(passwords_hash))
         if user.media_id.get(media, None):
             raise AlreadyRegistered
         user.media_id[media] = user_id

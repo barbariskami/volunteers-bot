@@ -40,6 +40,15 @@ def get_user_by_password(password):
     return user
 
 
+def get_user_by_passwords_hash(passwords_hash):
+    users_table = Airtable(BASE_ID, USERS_TABLE_NAME, api_key=API_KEY)
+    user = users_table.match(field_name='passwords_hash', field_value=passwords_hash)
+    if not user:
+        raise UserNotFound
+    logging.info('get_user_by_passwords_hash')
+    return user
+
+
 def update_user_on_server(record):
     table = Airtable(BASE_ID, USERS_TABLE_NAME, api_key=API_KEY)
     user_elem = table.update(record['id'], record['fields'])
