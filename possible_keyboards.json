@@ -1417,16 +1417,23 @@
       "buttons": [
         [
           {
-            "RU": "Отменить",
-            "EN": "Cancel",
-            "state": "CREATION_CHOSE_FIELD_TO_EDIT"
+            "RU": "Как создать задачу?",
+            "EN": "How to create a request?",
+            "state": "CREATION_HELP_REQUEST"
           }
         ],
         [
           {
-            "RU": "Отменить",
-            "EN": "Cancel",
-            "state": "CREATION_CHOSE_FIELD_TO_EDIT"
+            "RU": "Правила создания задачи",
+            "EN": "Rules for creating a task",
+            "state": "CREATION_HELP_RULES"
+          }
+        ],
+        [
+          {
+            "RU": "В главное меню",
+            "EN": "To the Main Menu",
+            "state": "CREATION_MAIN_MENU"
           }
         ]
       ]
