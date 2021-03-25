@@ -1437,6 +1437,30 @@
           }
         ]
       ]
+    },
+    "CREATION_HELP_REQUEST": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "CREATION_HELP"
+          }
+        ]
+      ]
+    },
+    "CREATION_HELP_RULES": {
+      "type": "REPLY",
+      "buttons": [
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "CREATION_HELP"
+          }
+        ]
+      ]
     }
   }
 }
