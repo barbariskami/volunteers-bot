@@ -1,2 +1,5 @@
 TELEGRAM_RU
 Выберите, какое поле вы хотите отредактировать:
+++++++++++++++++
+TELEGRAM_EN
+Choose which field you want to edit:

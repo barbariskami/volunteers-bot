@@ -1,3 +1,7 @@
 TELEGRAM_RU
 Вы действительно хотите отправить запрос? До ответа модератора его нельзя будет редактировать.
-Если модератор примет ваш запрос, он будет разослан читателям и его также нельзя будет изменить.
+Если модератор примет ваш запрос, он будет разослан пользователям и его также нельзя будет изменить.
+++++++++++++++++
+TELEGRAM_EN
+Are you sure you want to send the request? It cannot be edited before the moderator answers.
+If the moderator accepts your request, it will be sent to the users, and you will not be able to change it.

@@ -1,2 +1,5 @@
 TELEGRAM_RU
 Выберите тэги
+++++++++++++++++
+TELEGRAM_EN
+Select tags

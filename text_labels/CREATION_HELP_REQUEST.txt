@@ -5,7 +5,7 @@
 • Название
 • Текст
 • Тип даты – это может быть дэдлайн (если задача должна быть выполнена до определенного числа), конкретная дата (если задачу нужно выполнить в конкретный день) или период.
-• Дата
+• Дата (или две, если вы выбрали период)
 • Число человек, необходимых для выполнения задачи
 • Теги
 
@@ -15,10 +15,35 @@
 
 Выставление тэгов – не обязательно, но рекомендовано.
 
-После того, как вы закончите редактирование шаблона, вы сможете отправить задачу на модерацию. Если она соответствует всем правилам, модератор опубликует ее и она отправится всем пользователям бота. Если модератор отклонит вашу просьбу, вы получите уведомление об этом и сможете отредактировать ее и отправить повторно. Пока задача находится на модерации и после отправки пользователям редактировать или удалять ее нельзя, поэтому будьте внимательны.
+После того, как вы закончите редактирование черновика, вы сможете отправить задачу на модерацию. Если она соответствует всем правилам, модератор опубликует ее и она отправится всем пользователям бота. Если модератор отклонит вашу просьбу, вы получите уведомление об этом и сможете отредактировать ее и отправить повторно. Пока задача находится на модерации и после отправки пользователям редактировать или удалять ее нельзя, поэтому будьте внимательны.
 
 После рассылки задачи пользователи смогут откликнуться на нее. Каждый раз, когда кто-то берется за вашу задачу, вы будете получать уведомление, содержащее контакты этого волонтера. После этого вы должны связаться договориться с ним самостоятельно.
 
 Когда задача набирает достаточное число пользователей или ее срок подходит к концу, она удаляется у всех пользователей, которые на нее не откликнулись и считается завершенной.
 
-Вы можете увидеть все свои задачи в разделе “Мои задачи”
+Вы можете увидеть все свои задачи в разделе *Мои задачи*
+++++++++++++++++
+TELEGRAM_EN
+To create a request, go to the Main Menu and press a button "New request"
+Each request has parameters:
+
+• Name
+• Text
+• Timeframe type – it can be a deadline (if the request must be completed by a specific date), a fixed date (if the request must be completed on a specific date), or a period.
+• Date (or two, if a period has been selected)
+• Number of people required to fulfill the request
+• Tags
+
+Each request also has information about its creator.
+
+The text of each request should describe in detail the tasks that the volunteer will be asked to do. When creating a request, please adhere to the rules (they are described in the corresponding section).
+
+Tagging is optional but recommended.
+
+After you finish editing the template, you can submit your request for moderation. If it meets all the rules, the moderator will publish it, and the request will be shared with all users of the bot. If the moderator declines your request, you will receive a notification about that and will be able to edit and resubmit it. Be careful as you cannot edit or delete your request while it is pending moderation or after it has been sent to users.
+
+After the request has been posted, users will be able to respond to it. Every time someone responds to your request, you will receive a notification containing this volunteer’s contacts. After that, you must contact them personally to discuss the request.
+
+When a request reaches a sufficient number of volunteers’ responses or expires, it will be deleted from the chats of all users who have not responded to it and is considered complete.
+
+You can see all your requests in the *My Requests* section

@@ -1,13 +1,15 @@
 TELEGRAM_RU
-Главное Меню
+*Главное Меню*
 Со мной вы можете создать свою собственную просьбу и опубликовать ее для школьного сообщества.
+Чтобы использовать меню, откройте клавиатуру (кнопка с четырьмя точками возле строки ввода сообщений).
 Как создать задачу? Можете узнать это в разделе "Помощь".
 Подробности о ресурсе вы можете узнать в основном боте @letovo\_helper\_bot
 To switch the language, go to the main bot, using the link above.
 
 ++++++++++++++++
 TELEGRAM_EN
-Main menu
-With me you can create your own request and post it for the school society.
-How can I create a request? You can find this out in the "Help" section.
-You can read more about the resource in the main bot @letovo\_volunteers\_bot
+*Main menu*
+With my help, you can create a request and post it for the school community.
+To use the menu, open the keyboard (button with four circles near the input line).
+How to create a request? Find out in the Help section.
+More details about the resource in the main bot @letovo\_helper\_bot

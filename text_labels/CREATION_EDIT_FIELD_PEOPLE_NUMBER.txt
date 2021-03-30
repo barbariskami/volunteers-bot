@@ -1,2 +1,5 @@
 TELEGRAM_RU
-Введите количество людей
+Введите необходимое количество людей
+++++++++++++++++
+TELEGRAM_EN
+Enter the number of persons required

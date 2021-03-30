@@ -12,4 +12,14 @@ TELEGRAM_RU
 Этот бот существует по принципам альтруизма и бескорыстной помощи. В связи с этим помните, что никто никого не принуждает, поэтому просящий о помощи не обязан отблагодарить вас материально.
 ++++++++++++++++
 TELEGRAM_EN
-This sections is not finished yet. Please go back to the main menu
+What is a request?
+
+Here a request is a small message that I send out on behalf of someone from the school community who needs help.
+
+You, as a volunteer, can respond to this request, and then its creator will receive a notification about that and will be able to write to you in Telegram or non-Letovo email box. You can also reject a request if you are sure that you don’t want to complete it, and then it will be permanently removed from your chat.
+
+Please take requests responsibly. If you agree to fulfill a request, you are expected to perform it as formulated in its text and, possibly, make an effort. Do not volunteer for a request if you doubt that you can complete it. Do not miss meetings and try not to forget about your promise if you have already agreed to do something.
+
+Besides, please remember to be polite and respectful. Do not disregard good manners when communicating with the creators of the requests.
+
+This bot exists according to the principles of altruism and selfless help. Please remember that there is no pressure to take up the requests; the person requesting help is not obliged to thank you financially.

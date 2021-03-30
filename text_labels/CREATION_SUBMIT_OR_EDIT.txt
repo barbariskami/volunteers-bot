@@ -2,4 +2,4 @@ TELEGRAM_RU
 Теперь вы можете отправить вашу просьбу на премодерацию, редактировать ее, или сохранить черновик и вернуться в главное меню
 ++++++++++++++++
 TELEGRAM_EN
-You can now sent it for moderation, continue editing or save the draft and go back to the main menu
+Now you can send your request for pre-moderation, edit it, or save the draft and go back to the Main Menu.

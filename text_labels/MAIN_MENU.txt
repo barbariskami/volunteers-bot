@@ -1,5 +1,11 @@
 TELEGRAM_RU
 *Главное меню*
-Инструкцию по использованию бота можно найти в разделе "Помощь". Чтобы открыть его, воспользуйтесь клавиатурой (кнопка с четырьмя точками возле поля для сообщения) или командой /help (просто кликните на нее)
+Инструкцию по использованию бота можно найти в разделе "Помощь". Чтобы открыть его, воспользуйтесь клавиатурой (кнопка с четырьмя точками возле поля для сообщения) или командой /help (просто кликните на нее). Если у вас остались вопросы, напишите нам на почту: letovo_helper@letovo.ru
 Чтобы создать свою задачу перейдите в другой бот: @letovo\_helper\_ask\_bot
+To switch the language, use the command /switch\_language or go to settings.
+++++++++++++++++
+TELEGRAM_EN
+*Main Menu*
+Instructions for using the bot can be found in the Help section. To open it, use the keyboard or the /help command (just click on it).
+To create your own request, use another bot: @letovo\_helper\_ask\_bot
 To switch the language, use the command /switch\_language or go to settings.

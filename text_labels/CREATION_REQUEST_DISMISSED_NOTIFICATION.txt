@@ -3,5 +3,5 @@ TELEGRAM_RU
 Чтобы пройти модерацию, отредактируйте просьбу в разделе "Мои просьбы" (не забудьте проверить ее на соответствие правилам).
 ++++++++++++++++
 TELEGRAM_EN
-Your request "{request_name}" has been dismissed by a moderator.
-To pass moderation, edit the request in the "My Requests" section (don't forget to check if it follows the rules).
+The moderator has declined your {request_name} request.
+To pass moderation, edit the request in the My Requests section (make sure to check it for compliance with the rules).

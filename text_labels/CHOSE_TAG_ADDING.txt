@@ -1,4 +1,9 @@
 TELEGRAM_RU
 Выберите тег, который вы хотите добавить в игнор-лист
 Воспользуйтесь стрелочками, чтобы просмотреть весь список.
-Нажмите кнопку "Назад", когда завершите настройку.
+Нажмите кнопку *Назад*, когда завершите настройку.
+++++++++++++++++
+TELEGRAM_EN
+Select the tag you want to add to your ignore list.
+Use arrows to view the entire list.
+Click on the *Back* button after you’ve finished the set-up.

@@ -1,2 +1,5 @@
 TELEGRAM_RU
 Вы выбрали тип даты "Период", поэтому введите пожалуйста ДВЕ даты через пробел (в формате дд.мм.гг)
+++++++++++++++++
+TELEGRAM_EN
+You've chosen the "Period" timeframe type, so please enter TWO dates separated with a space.

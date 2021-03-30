@@ -6,3 +6,12 @@ _тип даты_: {date_type}
 _дата_: {date}
 _количество человек_: {people_number}
 _тэги_: {tags}
+++++++++++++++++
+TELEGRAM_EN
+_name_: {name}
+_text_:
+{text}
+_timeframe type_: {date_type}
+_date_: {date}
+_number of people_: {people_number}
+_tags_: {tags}

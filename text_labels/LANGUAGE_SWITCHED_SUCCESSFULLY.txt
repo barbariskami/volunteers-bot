@@ -3,4 +3,4 @@ TELEGRAM_RU
 
 ++++++++++++++++
 TELEGRAM_EN
-Language switched
+The language has been changed.

@@ -1,5 +1,5 @@
 TELEGRAM_RU
-Чтобы разобраться в том, как я работаю, почитайте эти разделы:
+Чтобы разобраться в том, как работает бот, почитайте эти разделы:
 ++++++++++++++++
 TELEGRAM_EN
-This section is not finished yet
+Please read these sections to understand how this bot works:

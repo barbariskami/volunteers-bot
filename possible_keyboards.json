@@ -615,7 +615,7 @@
       "buttons": [
         [
           {
-            "RU": "Отменить и удалить шаблон",
+            "RU": "Отменить и удалить черновик",
             "EN": "Cancel and delete the draft",
             "state": "CREATION_MAIN_MENU",
             "info": {
@@ -646,7 +646,7 @@
         [
           {
             "RU": "Конкретная дата",
-            "EN": "Date",
+            "EN": "Specific Date",
             "state": "CREATION_SET_DATE",
             "info": {
               "actions": [
@@ -693,7 +693,7 @@
         ],
         [
           {
-            "RU": "Отменить и удалить шаблон",
+            "RU": "Отменить и удалить черновик",
             "EN": "Cancel and delete the draft",
             "state": "CREATION_MAIN_MENU",
             "info": {
@@ -723,7 +723,7 @@
       "buttons": [
         [
           {
-            "RU": "Отменить и удалить шаблон",
+            "RU": "Отменить и удалить черновик",
             "EN": "Cancel and delete the draft",
             "state": "CREATION_MAIN_MENU",
             "info": {
@@ -753,7 +753,7 @@
       "buttons": [
         [
           {
-            "RU": "Отменить и удалить шаблон",
+            "RU": "Отменить и удалить черновик",
             "EN": "Cancel and delete the draft",
             "state": "CREATION_MAIN_MENU",
             "info": {
@@ -842,7 +842,7 @@
         ],
         [
           {
-            "RU": "Отменить и удалить шаблон",
+            "RU": "Отменить и удалить черновик",
             "EN": "Cancel and delete the draft",
             "state": "CREATION_MAIN_MENU",
             "info": {
@@ -925,7 +925,7 @@
         ],
         [
           {
-            "RU": "Не отправлять, сохранить шаблон и выйти в главное меню",
+            "RU": "Не отправлять, сохранить черновик и выйти в главное меню",
             "EN": "Cancel and go to main menu",
             "state": "CREATION_MAIN_MENU",
             "info": {}
@@ -1246,7 +1246,7 @@
         [
           {
             "RU": "Тип даты",
-            "EN": "Date type",
+            "EN": "Timeframe",
             "state": "CREATION_EDIT_FIELD_DATE_TYPE",
             "info": {}
           }
@@ -1328,7 +1328,7 @@
         [
           {
             "RU": "Конкретная дата",
-            "EN": "Date",
+            "EN": "Specific Date",
             "state": "CREATION_CHOSE_FIELD_TO_EDIT",
             "info": {
               "actions": [

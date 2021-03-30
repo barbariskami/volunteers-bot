@@ -1,2 +1,5 @@
 TELEGRAM_RU
 Введите текст
+++++++++++++++++
+TELEGRAM_EN
+Enter your test

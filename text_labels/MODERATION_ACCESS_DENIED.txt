@@ -1,8 +1,8 @@
 TELEGRAM_RU
 У вас нет доступа к этому боту.
-Если вы считаете, что произошла ошибка, пожалуйста, обратитесь во внеакадемический департамент.
+Если вы считаете, что произошла ошибка, пожалуйста, свяжитесь с поддержкой по почте letovo_helper@letovo.ru.
 
 ++++++++++++++++
 TELEGRAM_EN
 You do not have access to this bot.
-If you think that there is a mistake, please contact the student development department.
+If you believe there has been a mistake, please contact letovo_helper@letovo.ru.

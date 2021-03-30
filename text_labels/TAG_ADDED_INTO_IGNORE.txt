@@ -1,2 +1,5 @@
 TELEGRAM_RU
 Тег добавлен в игнор-лист
+++++++++++++++++
+TELEGRAM_EN
+The tag has been added to the ignore list.

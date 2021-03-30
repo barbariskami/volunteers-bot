@@ -3,5 +3,5 @@ TELEGRAM_RU
 Создатель просьбы вскоре свяжется с вами для уточнения деталей.
 ++++++++++++++++
 TELEGRAM_EN
-You have volunteered to fulfil the request "{request_name}". You can now see its details in the "My Requests" section.
-The requestor will contact you shortly for details.
+You have volunteered to fulfill the {request_name} request. You can now see the detailed information about it in the My Requests section.
+The creator of the request will contact you shortly for further details.

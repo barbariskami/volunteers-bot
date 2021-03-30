@@ -2,4 +2,4 @@ TELEGRAM_RU
 Ваша просьба "{request_name}" только что была опубликована
 ++++++++++++++++
 TELEGRAM_EN
-Your request "{request_name}" has just been published
+Your request {request_name} has just been posted.

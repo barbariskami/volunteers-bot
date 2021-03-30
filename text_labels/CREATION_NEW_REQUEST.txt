@@ -1,3 +1,7 @@
 TELEGRAM_RU
 Введите название новой просьбы (пока вы не отправили просьбу на модерацию, ее можно будет отредактировать)
 Чтобы отменить создание, нажмите кнопку на клавиатуре.
+++++++++++++++++
+TELEGRAM_EN
+Enter the name of the new request (you can edit it before sending the request for moderation).
+To cancel the creation of a new request, press the Cancel button on the keyboard.

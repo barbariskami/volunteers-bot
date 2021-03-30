@@ -4,6 +4,6 @@ TELEGRAM_RU
 Вы также можете уточнить его контакты в разделе "Мои Просьбы"
 ++++++++++++++++
 TELEGRAM_EN
-A a new performer responded to your request "{request_name}":
+Someone has responded to your "{request_name}" request:
 {contacts}
-You can also find his contact info in "My requests" section
+You can also find their contacts in the My Requests section.

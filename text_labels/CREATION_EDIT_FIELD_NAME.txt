@@ -1,2 +1,5 @@
 TELEGRAM_RU
-Введите название
+Введите название вашей просьбы
+++++++++++++++++
+TELEGRAM_EN
+Enter the name of your request

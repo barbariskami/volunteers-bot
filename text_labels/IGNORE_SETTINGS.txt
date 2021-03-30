@@ -7,3 +7,12 @@ TELEGRAM_RU
 
 Задачи с тэгами из вашего игнор-листа не будут появляться в вашей ленте.
 Выберите следующее действие на клавиатуре
+++++++++++++++++
+Your ignore list now contains the following hashtags:
+{ignored}
+
+Other tags visible in your feed:
+{subscription}
+
+Requests marked with tags from your ignore list won't be shown in your chat.
+Select the next action on the keyboard.

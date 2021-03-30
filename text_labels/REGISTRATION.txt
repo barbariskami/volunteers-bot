@@ -1,6 +1,8 @@
 TELEGRAM_RU
 Для пользования ботом необходимо зарегистрировать ваш телеграм-аккаунт в нашей системе.
-
 Чтобы зарегистрироваться, зайдите в ваш личный кабинет в аналитике (если вы сотрудник) или в стьюденте (если вы ученик). Там вы сможете найти код-пароль (просто отправьте его мне) или перейти по персональной ссылке, чтобы зарегистрироваться автоматически.
-
 Если вы уже регистрировались ранее, просто нажмите команду /start
+
+To use the bot, register your Telegram account in our system.
+To register, open your account on analytics.letovo.ru (if you're an employee) or on students.letovo.ru (if you're a student) . There you can find a unique password (just send it to me) or use a personalized link to register automatically.
+If you have already registered before, press the /start command.

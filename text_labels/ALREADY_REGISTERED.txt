@@ -1,2 +1,5 @@
 TELEGRAM_RU
-Пароль, по которому вы пытаетесь зарегистрироваться, уже был использован с другого telegram-аккаунта. Возможно произошла ошибка, пожалуйста, обратитесь в департамент по развитию учащихся.
+Пароль, по которому вы пытаетесь зарегистрироваться, уже был использован с другого telegram-аккаунта. Возможно произошла ошибка, пожалуйста, напшите в поддержку на почту letovo_helper@letovo.ru
+++++++++++++++++
+TELEGRAM_EN
+The password you are trying to use has already been used with another Telegram account. It can be a mistake; if you think so, please contact us via this email: letovo_helper@letovo.ru

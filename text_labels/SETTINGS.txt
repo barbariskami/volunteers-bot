@@ -1,3 +1,7 @@
 TELEGRAM_RU
 *Настройки*
 Здесь вы можете изменить язык или список заблокированных вами тэгов.
+++++++++++++++++
+TELEGRAM_EN
+*Settings*
+Here you can change the language or the list of tags blocked by you.

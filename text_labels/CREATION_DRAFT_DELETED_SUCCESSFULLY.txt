@@ -1,5 +1,5 @@
 TELEGRAM_RU
-Шаблон успешно удален.
+Черновик успешно удален.
 ++++++++++++++++
 TELEGRAM_EN
-Draft is successfully deleted.
+The draft has been deleted.

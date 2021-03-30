@@ -6,4 +6,4 @@ TELEGRAM_RU
 TELEGRAM_EN
 Are you sure you want to submit this request for moderation?
 This action cannot be undone. If the request is accepted, it will be sent to all the users.
-If the request is denied, you'll be able to edit it and submit it again.
+If your request is denied, you can edit and resubmit it.

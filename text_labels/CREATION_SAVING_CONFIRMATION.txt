@@ -2,4 +2,4 @@ TELEGRAM_RU
 Черновик успешно сохранен.
 ++++++++++++++++
 TELEGRAM_EN
-The draft is successfully saved.
+The draft has been saved.

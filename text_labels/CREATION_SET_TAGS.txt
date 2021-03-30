@@ -3,4 +3,5 @@ TELEGRAM_RU
 Для продолжения нажмите на кнопку "Сохранить"
 ++++++++++++++++
 TELEGRAM_EN
-Chose tags, you want to assign to your request
+Select on the keyboard the tags that you would like to assign to your request.
+To continue, click on the Save button.

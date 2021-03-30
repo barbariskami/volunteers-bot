@@ -3,5 +3,5 @@ TELEGRAM_RU
 (Вы можете переключаться между страницами с помощью кнопок со стрелками; чтобы увидеть подробную информацию о задаче, нажмите на ее название)
 ++++++++++++++++
 TELEGRAM_EN
-Your requests, that are not expired or don't have enough executors yet.
-(...)
+Your requests that aren’t yet completed or with an insufficient number of persons signed up.
+(You can switch between pages using the arrow buttons; to view more information about a request, click on its name).

@@ -3,5 +3,5 @@ TELEGRAM_RU
 После этого, воспользуйтесь командой /start еще раз (просто кликните на нее в этом сообщении)
 ++++++++++++++++
 TELEGRAM_EN
-You haven't attached your telegram account with your account in the system. To do this please complete the registration process in the main bot: @letovo\_volunteers\_bot
-After that run the /start command once again (just click on it in this message)
+You have not linked your Telegram account to your account in the system. To do this, follow the registration procedure in the main bot: @letovo\_helper\_bot
+After that, use the /start command again (just click on it in this message).

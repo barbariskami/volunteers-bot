@@ -5,23 +5,21 @@
 1. Запрещается постить что-либо, кроме задач (например, объявления о передаче товаров)
 2. Задача должна быть выполнимой и реалистичной
 3. Задача не должна нарушать правила школы
-4. В формулировке не должны присутствовать мат, оскорбления, а также пропаганда политических или религиозных людей
+4. В формулировке не должны присутствовать мат, оскорбления, а также пропаганда политических или религиозных идей
 5. Запрещается организовывать мероприятия, предполагаемые массовый поток учеников, без согласования с руководством школы
 
 Описание:
 
-1. Максимально, насколько это возможно, полноценное описание того, что необходимо сделать
+1. Все необходимые детали задачи (пожалуйста, описывайте подробно)
 2. Продолжительность (при фиксированном времени)
 3. Место (если применимо)
 4. Условия (необходимое оборудование, навыки и т. д.)
-5. Вознаграждение (лучше, чтобы было, так больше людей согласятся)
+5. Вознаграждение (не обяхательно, но может помочь привлечь больше помощников)
 
 Количество людей:
-
 Количество  должно быть реалистичным. Пожалуйста, если вы используете другие способы поиска людей, устанавливайте счетчик с учетом этого факта.
 
 Даты:
-
 Если время может каким-то образом отличаться от указанного, об этом необходимо указать в описании.
 
 1. Дедлайн. Пользуйтесь, если есть необходимость выполнить задачу до указанного времени
@@ -29,3 +27,34 @@
 3. Интервал. Эта опция нужна в случае если задачу можно выполнить строго в указанный период
 
 Помните, что редактировать объявления после публикации и прохождения модерации будет невозможно, поэтому аккуратно проверьте все формулировки, а также то, что публикации не анонимны.
+++++++++++++++++
+TELEGRAM_EN
+If your request does not comply with the rules, the moderator will decline it.
+
+Request:
+
+1. It is forbidden to post anything other than requests (for example, announcements about the transfer of products)
+2. The request must be doable and realistic.
+3. The request must not violate the school rules.
+4. The wording must not contain obscenities, insults, as well as political or religious propaganda.
+5. It is forbidden to organize events involving a mass flow of students without the School Administration’s prior consent.
+
+Description must contain:
+
+1. All the important details of the task (please, make sure you didn't forget anything).
+2. Duration (if the time is fixed)
+3. Location (if applicable)
+4. Conditions (required equipment, skill, etc.)
+5. Reward (optional, but can help to engage more people)
+
+Number of helpers:
+The number of people should be realistic. If you use other ways to find people, please set the counter with this fact in mind.
+
+Dates:
+If the timeframe can somehow differ from the one you have specified, this must be indicated in the description.
+
+1. Deadline. Use this timeframe if the request must be completed by a specific time.
+2. Fixed time. Use it if you need help at a specific time in a specific place.
+3. Period. This option is used if the request must be completed strictly within the specified period.
+
+Remember that it will be impossible to edit requests after they’ve passed moderation and gone public, so carefully check the wording, and keep in mind that such postings are not anonymous.

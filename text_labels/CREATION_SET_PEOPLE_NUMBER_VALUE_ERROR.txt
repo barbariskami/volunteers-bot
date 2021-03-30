@@ -2,4 +2,4 @@ TELEGRAM_RU
 Пожалуйста, введите число (оно должно быть большим или равным 1)
 ++++++++++++++++
 TELEGRAM_EN
-Please enter a number (it must be bigger or equal to 1)
+Please enter the number (must be equal to or bigger than 1).

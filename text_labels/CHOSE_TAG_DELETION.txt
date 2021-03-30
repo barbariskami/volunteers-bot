@@ -1,5 +1,9 @@
 TELEGRAM_RU
 Выберите тег, который вы хотите удалить из игнор-листа.
 Воспользуйтесь стрелочками, чтобы просмотреть весь список.
-Нажмите кнопку "Назад", когда завершите настройку.
-
+Нажмите кнопку *Назад*, когда завершите настройку.
+++++++++++++++++
+TELEGRAM_EN
+Select the tag you want to remove from the ignore list.
+Use arrows to view the entire list.
+Click the *Back* button when you’ve finished the set-up.

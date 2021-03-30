@@ -4,6 +4,7 @@ TELEGRAM_RU
 Вы также можете узнать их в разделе "Мои Просьбы"
 ++++++++++++++++
 TELEGRAM_EN
-A sufficient number of performers responded to your request "{request_name}". Here is their contact info:
+A sufficient number of helpers have responded to your {request_name} request. Their contacts:
 {contacts}
-You can also find them in "My requests" section
+You can also find them in the My Requests section.
+

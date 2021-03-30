@@ -3,3 +3,9 @@ TELEGRAM_RU
 Сюда будут приходить запросы, которые отправляют пользователи бота @letovo\_helper\_ask\_bot
 Ваша задача - внимательно прочитывать запросы и проверять их на соответствие правилам бота.
 Если запрос соответствует всем правилам, вы должны нажать кнопку "Одобрить" ПОД этим запросом. Иначе его необходимо отправить на доработку, нажав соответствующую кнопку под запросом.
+++++++++++++++++
+TELEGRAM_EN
+Dear moderator,
+Requests sent by users of the @letovo\_helper\_ask\_bot will be delivered here.
+Your job is to carefully read the requests and check them for compliance with the bot’s rules.
+If a request meets all the rules, you must click on the Approve button UNDER the request. Otherwise, it must be sent back for revision by clicking on the appropriate button under the request.

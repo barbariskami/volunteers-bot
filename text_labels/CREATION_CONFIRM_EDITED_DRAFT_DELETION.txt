@@ -1,2 +1,5 @@
 TELEGRAM_RU
-Вы действительно хотите удалить этот шаблон? Это действие нельзя отменить.
+Вы действительно хотите удалить этот черновик? Это действие нельзя отменить.
+++++++++++++++++
+TELEGRAM_EN
+Are you sure you want to delete this draft? This action cannot be undone.

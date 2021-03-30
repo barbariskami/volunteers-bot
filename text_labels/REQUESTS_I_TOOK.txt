@@ -2,4 +2,4 @@ TELEGRAM_RU
 Выберите, какой список взятых вами запросов вы хотите увидеть (нажмите на название, чтобы увидеть подробную информацию):
 ++++++++++++++++
 TELEGRAM_EN
-Chose, which list of requests you've took you want to see:
+Select which list of the requests you have taken up you want to see:

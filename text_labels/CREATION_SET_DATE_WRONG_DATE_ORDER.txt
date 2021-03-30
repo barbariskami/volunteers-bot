@@ -2,4 +2,4 @@ TELEGRAM_RU
 Дата начала периода не может быть позже даты окончания. Попробуйте еще раз (формат: дд.мм.гг)
 ++++++++++++++++
 TELEGRAM_EN
-The first date can't be later than the second date. Try again (the format: dd.mm.yy)
+The start date of the period cannot be later than the end date. Try again (format: DD.MM.YY)
