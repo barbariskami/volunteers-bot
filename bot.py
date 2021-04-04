@@ -4,8 +4,9 @@ from message import Message
 from exceptions import UserNotFound, AlreadyRegistered, DateFormatError, EarlyDate, WrongDateOrder, OneDateMissing
 from extensions import load_text, tag_into_text, load_features_for_formation, get_action_text_for_creation
 from keyboard import Keyboard
-from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, HashTags, Bots, DateType
+from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, HashTags, Bots, DateType, Media
 import copy
+import telegram_bot.useful_additions as telegram_handlers
 from traceback import print_exc
 
 
@@ -241,6 +242,26 @@ class Bot:
     def connect_message_to_request(media, media_user_id, bot, request_base_id, message_id):
         user = User(media=media, user_id=media_user_id)
         user.add_message_id(media=media, bot=bot, message_id=message_id, request_id=request_base_id)
+
+    @staticmethod
+    def delete_overdue_tasks_from_main(date_to_check):
+        requests = Request.get_overdue_requests(date_to_check=date_to_check)
+        id_list = [i.base_id for i in requests]
+        users = User.get_users_who_received_these_requests_main_bot(requests_id_list=id_list)
+
+        delete_funcs_for_media = {Media.TELEGRAM: telegram_handlers.delete_message}
+        messages_to_delete = {}
+        for r in requests:
+            for media in Media:
+                messages_to_delete[media] = list()
+                for u in users:
+                    message_id = u.__dict__.get(media.name.lower() + '_main_messages_for_requests', dict()).get(r.base_id, None)
+                    if message_id:
+                        message_to_delete = Message(media_id=message_id,
+                                                    user_id=u[media.name.lower() + '_id'],
+                                                    media=media,
+                                                    bot=Bots.MAIN)
+                        delete_funcs_for_media[media](message_to_delete)
 
 
 class ButtonHandler:

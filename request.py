@@ -289,3 +289,9 @@ class Request:
                     elif self.__dict__.get('date_type', None) and self.__dict__.get('date_type', None) != DateType.PERIOD:
                         return True
         return False
+
+    @classmethod
+    def get_overdue_requests(cls, date_to_check):
+        requests_recs = dataBase.get_overdue_requests(date_to_check)
+        requests = [cls(record=i) for i in requests_recs]
+        return requests

@@ -2,6 +2,7 @@ from airtable import Airtable
 from exceptions import UserNotFound
 import enumerates
 import logging
+import datetime
 
 logging.basicConfig(level=logging.INFO,
                     format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s')
@@ -150,3 +151,26 @@ def get_requests_created_by_user(user):
     res = table.get_all(formula=formula)
     logging.info('get_requests_created_by_user')
     return res
+
+
+def get_overdue_requests(date):  # date - datetime.date format
+    table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
+    date_string = date.strftime('%d-%m-%Y')
+    date_formula_string = 'DATETIME_PARSE("{today}", "DD-MM-YYYY")'.format(today=date_string)
+    formula = 'AND(OR(AND(date2, date2<{date_formula}), AND(NOT(date2), date1<{date_formula})), date1)'.format(
+        date_formula=date_formula_string)
+    res = table.get_all(formula=formula)
+    return res
+
+
+def get_users_who_received_these_requests_main_bot(requests_id_list, media):
+    table = Airtable(BASE_ID, USERS_TABLE_NAME, api_key=API_KEY)
+    field_name = media.name.lower() + '_main_messages_for_requests'
+    find_string = 'FIND("{request_id}", {field_name})'
+    find_strings = [find_string.format(request_id=i, field_name=field_name) for i in requests_id_list]
+    formula = 'OR({finds})'.format(finds=', '.join(find_strings))
+
+    users = table.get_all(formula=formula)
+    for i in users:
+        print(i)
+

@@ -381,3 +381,9 @@ class User:
         user.media_id[media] = user_id
         user.update_on_server()
         user.set_link(media, user_contact_link)
+
+    @classmethod
+    def get_users_who_received_these_requests_main_bot(cls, requests_id_list):
+        users_records = dataBase.get_users_who_received_these_requests_main_bot(requests_id_list=requests_id_list)
+        users = [cls(record=i) for i in users_records]
+        return users
