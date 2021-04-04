@@ -35,9 +35,9 @@ class Request:
         else:
             self.tags = [HashTags[i] for i in self.tags]
         if 'creation_time' in self.__dict__.keys():
-            self.creation_time = datetime.strptime(self.creation_time, '%Y-%m-%dT%h:%m:%c.000Z')
+            self.creation_time = datetime.strptime(self.creation_time, '%Y-%m-%dT%H:%M:%S.000Z')
         if 'submission_time' in self.__dict__.keys():
-            self.submission_time = datetime.strptime(self.submission_time, '%Y-%m-%dT%h:%m:%c.000Z')
+            self.submission_time = datetime.strptime(self.submission_time, '%Y-%m-%dT%H:%M:%S.000Z')
 
         self.FEATURES_FOR_READABLE_FORMAT = {'creator': {
             'RU': 'Создатель: {creator}',
