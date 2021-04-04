@@ -1,12 +1,19 @@
 TELEGRAM_RU
 *Главное меню*
 Добро пожаловать! Теперь вы можете узнавать о проектах школы и ее жителей, помогать им в достижении их целей.
-Инструкцию по использованию бота можно найти в разделе "Помощь". Чтобы открыть его, воспользуйтесь клавиатурой (кнопка с четырьмя точками возле поля для сообщения) или командой /help (просто кликните на нее). Если у вас остались вопросы, напишите нам на почту: letovo\_helper@letovo.ru
+
+Инструкцию по использованию бота можно найти в разделе "Помощь". Чтобы открыть его, воспользуйтесь клавиатурой (кнопка с четырьмя точками возле поля для сообщения) или командой /help (просто кликните на нее).
+Если у вас остались вопросы, напишите нам на почту: letovo\_helper@letovo.ru
 Чтобы создать свою задачу перейдите в другой бот: @letovo\_helper\_ask\_bot
+
 To switch the language, use the command /switch\_language or go to settings.
 ++++++++++++++++
 TELEGRAM_EN
 *Main Menu*
 Welcome! Now you can learn about the projects of the school community and help community members achieve their goals.
-The instructions on how to use the bot can be found in the Help section. To open it, use the keyboard or the /help command (just click on it).
+
+The instructions on how to use the bot can be found in the Help section. To open it, use the keyboard (a button with 4 dots near the input field) or the /help command (just click on it).
+If you still have questions, ask them via email: letovo\_helper@letovo.ru
+To create your own request, use another bot: @letovo\_helper\_ask\_bot
+
 To switch the language, use the command /switch\_language or go to settings.
