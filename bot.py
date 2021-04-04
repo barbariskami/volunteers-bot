@@ -988,7 +988,7 @@ class MessageHandler:
         res = handler(message, current_state=state)
         return res
 
-    def ignore_handler(self, message):
+    def ignore_handler(self, message, **kwargs):
         response = dict()
         return response
 

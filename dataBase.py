@@ -79,8 +79,9 @@ def get_request_by_base_id(request_base_id):
 
 
 def new_request(name, creator_record_id):
+    now = datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%S.000Z')
     table = Airtable(BASE_ID, REQUESTS_TABLE_NAME, api_key=API_KEY)
-    record = {'creator': [creator_record_id], 'name': name}
+    record = {'creator': [creator_record_id], 'name': name, 'creation_time': now}
     res_record = table.insert(record)
     logging.info('new_request')
     return res_record

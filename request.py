@@ -34,6 +34,10 @@ class Request:
             self.tags = list()
         else:
             self.tags = [HashTags[i] for i in self.tags]
+        if 'creation_time' in self.__dict__.keys():
+            self.creation_time = datetime.strptime(self.creation_time, '2021-04-01T23:00:00.000Z')
+        if 'submission_time' in self.__dict__.keys():
+            self.submission_time = datetime.strptime(self.submission_time, '2021-04-01T23:00:00.000Z')
 
         self.FEATURES_FOR_READABLE_FORMAT = {'creator': {
             'RU': 'Создатель: {creator}',
@@ -100,6 +104,8 @@ class Request:
                 fields[key] = fields[key].strftime('%Y-%m-%d')
             elif key == 'tags':
                 fields[key] = [i.name for i in fields[key]]
+            elif key == 'creation_time' or key == 'submission_time':
+                fields[key] = fields[key].strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
         record['fields'] = fields
         return record
@@ -236,6 +242,7 @@ class Request:
 
     def set_submission_status(self, status):
         self.was_submited = status
+        self.submisstion_time = datetime.now()
         self.update()
 
     def set_publishing_status(self, status):
@@ -295,3 +302,5 @@ class Request:
         requests_recs = dataBase.get_overdue_requests(date_to_check)
         requests = [cls(record=i) for i in requests_recs]
         return requests
+
+r = Request.new('test', creator_base_id='rec6rFhayi4fSEbaZ')
