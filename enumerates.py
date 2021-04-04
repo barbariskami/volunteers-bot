@@ -184,13 +184,14 @@ class ButtonActions(enum.Enum):
 
 class HashTags(enum.Enum):
     """A list of hash tags that requests can have"""
-    OUTSIDE = 1
-    LIBRARY = 2
-    THEATRE = 3
-    DRAWING = 4
-    BOARDING = 5
-    SCHOOL_OPEN_DAY = 6
-    SELF_GOVERNANCE = 7
+    IT = 1
+    DESIGN = 2
+    PUBLIC_PERFORMANCE = 3
+    TRANSLATION = 4
+    TEXT = 5
+    PHOTO_VIDEO = 6
+    MUSIC = 7
+    VIDEO_EDITING = 8
 
 
 class DateType(enum.Enum):

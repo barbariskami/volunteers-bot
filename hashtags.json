@@ -2,38 +2,43 @@
   "hashtags": [
     {
       "id": 1,
-      "RU": "На улице",
-      "EN": "Outside"
+      "RU": "IT",
+      "EN": "IT"
     },
     {
       "id": 2,
-      "RU": "Библиотека",
-      "EN": "Library"
+      "RU": "Дизайн",
+      "EN": "Design"
     },
     {
       "id": 3,
-      "RU": "Театр",
-      "EN": "Theatre"
+      "RU": "Публичное выступление",
+      "EN": "Public performance"
     },
     {
       "id": 4,
-      "RU": "Рисование",
-      "EN": "Drawing"
+      "RU": "Перевод",
+      "EN": "Translation"
     },
     {
       "id": 5,
-      "RU": "Бординг",
-      "EN": "Boarding"
+      "RU": "Текст",
+      "EN": "Text"
     },
     {
       "id": 6,
-      "RU": "ДОД",
-      "EN": "School Open-day"
+      "RU": "Фото\\видео съемка",
+      "EN": "Photography and video production"
     },
     {
       "id": 7,
-      "RU": "Самоуправление",
-      "EN": "Self-governance"
+      "RU": "Музыка",
+      "EN": "Music"
+    },
+    {
+      "id": 8,
+      "RU": "Монтаж",
+      "EN": "Video editing"
     }
   ]
 }
