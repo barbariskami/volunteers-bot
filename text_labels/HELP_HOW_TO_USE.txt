@@ -1,0 +1,17 @@
+TELEGRAM_RU
+Для того, чтобы получать задачи, вам уже не нужно ничего делать: они сами будут приходить в этот чат.
+Если вы хотите сделать так, чтобы задачи с какими-то тегами вам не показывались, вы можете сделать это в настройках (для этого вернитесь в *Главное меню*)
+
+Если вы готовы взяться за какую-то задачу, нажмите кнопку *Берусь* под сообщением с этой задачей. После этого создателю задачи отправятся ваши контакты и он свяжется с вами самостоятельно.
+Если вы точно знаете, что не будете выполнять какую-то задачу, нажмите на кнопку *Отказываюсь* под сообщением с этой задачей. После этого сообщение с задачей удалится из чата и не будет вам мешать.
+
+Чтобы посмотреть все задачи, на которые вы откликались перейдите в раздел *Мои задачи* (для этого, вернитесь в главное меню)
+++++++++++++++++
+TELEGRAM_EN
+You don't need to do anything to get new requests: you'll receive them in this chat.
+If you don't want requests with some tags to be shown to you, you can set it in the section *Settings* (go to *Main Menu*)
+
+If you want to undertake a certain request, press the button *Take* under the message with this request. Afterwards the creator of the request will receive your contact data and will get in touch with you by himself.
+If you definitely know, that you're not going to undertake a request, press the button *Decline* under the message with this request. Afterwards the message with this request will be deleted from your chat.
+
+To view all the task you've taken, go to the section *My tasks* (to do this go to the *Main menu*)

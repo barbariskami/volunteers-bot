@@ -206,9 +206,9 @@
       "buttons": [
         [
           {
-            "RU": "FAQ",
-            "EN": "FAQ",
-            "state": "HELP_FAQ",
+            "RU": "Как пользоваться ботом?",
+            "EN": "How to use the bot",
+            "state": "HELP_HOW_TO_USE",
             "info": {}
           }
         ],

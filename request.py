@@ -7,6 +7,7 @@ from extensions import tag_into_text, load_text
 from datetime import datetime, date
 from traceback import print_exc
 import user
+import logging
 
 
 class Request:
@@ -108,6 +109,7 @@ class Request:
                 fields[key] = fields[key].strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
         record['fields'] = fields
+        logging.info(record)
         return record
 
     def into_human_readable(self, language, show_creator=True, media=Media.TELEGRAM):
