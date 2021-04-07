@@ -244,7 +244,7 @@ class Request:
 
     def set_submission_status(self, status):
         self.was_submited = status
-        self.submisstion_time = datetime.now()
+        self.submission_time = datetime.now()
         self.update()
 
     def set_publishing_status(self, status):
