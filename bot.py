@@ -325,9 +325,7 @@ class ButtonHandler:
         text = TextLabels[button.info['message_type']]
         message = Message(user_id=self.user.media_id[self.media],
                           text=load_text(text, self.media,
-                                         self.user.language.get(self.media, Languages.RU)),
-                          keyboard=Keyboard(state=button.following_state,
-                                            language=self.user.language.get(self.media, Languages.RU)))
+                                         self.user.language.get(self.media, Languages.RU)))
         new_messages['send'].append(message)
         return new_messages
 
