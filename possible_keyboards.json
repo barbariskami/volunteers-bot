@@ -208,16 +208,28 @@
           {
             "RU": "Как пользоваться ботом?",
             "EN": "How to use the bot",
-            "state": "HELP_HOW_TO_USE",
-            "info": {}
+            "state": "HELP",
+            "info": {
+              "actions": [
+                "SEND_MESSAGE"
+              ],
+              "message_type": "HELP_HOW_TO_USE",
+              "ignore_standard_action": true
+            }
           }
         ],
         [
           {
             "RU": "Все про просьбу",
             "EN": "Everything about requests",
-            "state": "HELP_ABOUT_REQUEST",
-            "info": {}
+            "state": "HELP",
+            "info": {
+              "actions": [
+                "SEND_MESSAGE"
+              ],
+              "message_type": "HELP_ABOUT_REQUEST",
+              "ignore_standard_action": true
+            }
           }
         ],
         [

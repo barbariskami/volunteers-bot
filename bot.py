@@ -255,7 +255,8 @@ class Bot:
             for media in Media:
                 messages_to_delete[media] = list()
                 for u in users:
-                    message_id = u.__dict__.get(media.name.lower() + '_main_messages_for_requests', dict()).get(r.base_id, None)
+                    message_id = u.__dict__.get(media.name.lower() + '_main_messages_for_requests', dict()).get(
+                        r.base_id, None)
                     if message_id:
                         message_to_delete = Message(media_id=message_id,
                                                     user_id=u[media.name.lower() + '_id'],
@@ -286,7 +287,8 @@ class ButtonHandler:
                                       ButtonActions.TAKE_REQUEST: self.take_request,
                                       ButtonActions.DECLINE_REQUEST: self.decline_request,
                                       ButtonActions.CREATION_SET_EDITED_DRAFT: self.creation_set_edited_draft,
-                                      ButtonActions.CREATION_SHOW_REQUEST_AFTER_EDITING: self.show_request_after_editing}
+                                      ButtonActions.CREATION_SHOW_REQUEST_AFTER_EDITING: self.show_request_after_editing,
+                                      ButtonActions.SEND_MESSAGE: self.send_message}
 
     def handle_button(self, button):
         new_messages = dict()
@@ -314,6 +316,19 @@ class ButtonHandler:
                                                 language=self.user.language.get(self.media, Languages.RU)))
 
         new_messages['send'].append(new_message)
+        return new_messages
+
+    def send_message(self, button=None, **kwargs):
+        new_messages = {'send': list()}
+        if not button:
+            return new_messages
+        text = TextLabels[button.message_type]
+        message = Message(user_id=self.user.media_id[self.media],
+                          text=load_text(text, self.media,
+                                         self.user.language.get(self.media, Languages.RU)),
+                          keyboard=Keyboard(state=button.following_state,
+                                            language=self.user.language.get(self.media, Languages.RU)))
+        new_messages['send'].append(message)
         return new_messages
 
     def switch_language(self, button=None, **kwargs):

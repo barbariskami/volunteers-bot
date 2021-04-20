@@ -184,6 +184,7 @@ class ButtonActions(enum.Enum):
     DECLINE_REQUEST = 18
     CREATION_SET_EDITED_DRAFT = 19
     CREATION_SHOW_REQUEST_AFTER_EDITING = 20
+    SEND_MESSAGE = 21
 
 
 class HashTags(enum.Enum):
