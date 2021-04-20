@@ -242,32 +242,6 @@
         ]
       ]
     },
-    "HELP_FAQ": {
-      "type": "REPLY",
-      "buttons": [
-        [
-          {
-            "RU": "Назад",
-            "EN": "Back",
-            "state": "HELP",
-            "info": {}
-          }
-        ]
-      ]
-    },
-    "HELP_ABOUT_REQUEST": {
-      "type": "REPLY",
-      "buttons": [
-        [
-          {
-            "RU": "Назад",
-            "EN": "Back",
-            "state": "HELP",
-            "info": {}
-          }
-        ]
-      ]
-    },
     "SETTINGS": {
       "type": "REPLY",
       "buttons": [
@@ -1431,21 +1405,36 @@
           {
             "RU": "Как создать задачу?",
             "EN": "How to create a request?",
-            "state": "CREATION_HELP_REQUEST"
+            "state": "CREATION_HELP_REQUEST",
+            "info": {
+              "actions": [
+                "SEND_MESSAGE"
+              ],
+              "message_type": "CREATION_HELP_REQUEST",
+              "ignore_standard_action": true
+            }
           }
         ],
         [
           {
             "RU": "Правила создания задачи",
             "EN": "Rules for creating a task",
-            "state": "CREATION_HELP_RULES"
+            "state": "CREATION_HELP_RULES",
+            "info": {
+              "actions": [
+                "SEND_MESSAGE"
+              ],
+              "message_type": "CREATION_HELP_RULES",
+              "ignore_standard_action": true
+            }
           }
         ],
         [
           {
             "RU": "В главное меню",
             "EN": "To the Main Menu",
-            "state": "CREATION_MAIN_MENU"
+            "state": "CREATION_MAIN_MENU",
+            "info": {}
           }
         ]
       ]
