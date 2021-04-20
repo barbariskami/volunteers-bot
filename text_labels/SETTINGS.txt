@@ -4,4 +4,4 @@ TELEGRAM_RU
 ++++++++++++++++
 TELEGRAM_EN
 *Settings*
-Here you can change the language or the list of tags blocked by you.
+Here you can change the language or the list of tags you ignore.
