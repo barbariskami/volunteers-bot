@@ -322,7 +322,7 @@ class ButtonHandler:
         new_messages = {'send': list()}
         if not button:
             return new_messages
-        text = TextLabels[button.message_type]
+        text = TextLabels[button.info['message_type']]
         message = Message(user_id=self.user.media_id[self.media],
                           text=load_text(text, self.media,
                                          self.user.language.get(self.media, Languages.RU)),
