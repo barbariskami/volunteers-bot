@@ -1,5 +1,5 @@
 TELEGRAM_RU
-Letovo Volunteers Bot - это бот, который позволяет любому ученику или работнику Летово обратиться за помощью к другим членам школьного сообщества.
+Letovo Helper - это бот, который позволяет любому ученику или работнику Летово обратиться за помощью к другим членам школьного сообщества.
 Этот бот будет присылать вам просьбы, созданные учениками, учителями, департаментами школы. Вы можете отозваться на эту просьбу, и тогда ее создатель узнает об этом
 Также вы можете сами попросить Летовцев о помощи в каком-то деле через другого бота: @letovo\_helper\_ask\_bot
 
@@ -7,7 +7,7 @@ Letovo Volunteers Bot - это бот, который позволяет люб�
 
 ++++++++++++++++
 TELEGRAM_EN
-Letovo Volunteers Bot is a bot that allows any Letovo student or employee to ask other school community members for help.
+Letovo Helper is a bot that allows any Letovo student or employee to ask other school community members for help.
 This bot will send you requests created by students, teachers, or departments of the school. You can respond to a request, and we will let its creator know about that.
 You can ask the Letovo community for help in some matter through another bot as well: @letovo\_helper\_ask\_bot
 
