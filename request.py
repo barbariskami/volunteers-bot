@@ -1,5 +1,3 @@
-from dataBase import get_request_by_id, get_request_by_base_id
-import dataBase
 from copy import deepcopy
 from enumerates import DateType, HashTags, Media, TextLabels
 import exceptions
@@ -8,14 +6,19 @@ from datetime import datetime, date
 from traceback import print_exc
 import user
 import logging
+from mysql_database import DBAlchemyConnector
+import json
 
 
 class Request:
+    f = open('db_info.json')
+    db_connector = DBAlchemyConnector(**json.load(f))
+
     def __init__(self, request_id=None, request_base_id=None, record=None):
         if request_id:
-            record = get_request_by_id(request_id)
+            record = self.db_connector.get_request_by_id(request_id)
         elif request_base_id:
-            record = get_request_by_base_id(request_base_id)
+            record = self.db_connector.get_request_by_base_id(request_base_id)
 
         self.__dict__ = deepcopy(record['fields'])
 
@@ -175,10 +178,10 @@ class Request:
 
     def update(self):
         record = self.into_record()
-        self.request_elem = dataBase.update_request(record)
+        self.request_elem = self.db_connector.update_request(record)
 
     def delete(self):
-        dataBase.delete_request(self.base_id)
+        self.db_connector.delete_request(self.base_id)
 
     def change_name(self, name):
         self.name = name
@@ -258,7 +261,7 @@ class Request:
 
     @classmethod
     def new(cls, name, creator_base_id):
-        record = dataBase.new_request(name=name, creator_record_id=creator_base_id)
+        record = cls.db_connector.new_request(name=name, creator_record_id=creator_base_id)
         new_request_obj = cls(record=record)
         return new_request_obj
 
@@ -295,14 +298,15 @@ class Request:
                 if self.__dict__.get('date1', None):
                     if self.__dict__.get('date_type', None) == DateType.PERIOD and self.__dict__.get('date2', None):
                         return True
-                    elif self.__dict__.get('date_type', None) and self.__dict__.get('date_type', None) != DateType.PERIOD:
+                    elif self.__dict__.get('date_type', None) and self.__dict__.get('date_type',
+                                                                                    None) != DateType.PERIOD:
                         return True
         return False
 
     @classmethod
     def get_overdue_requests(cls, date_to_check):
-        requests_recs = dataBase.get_overdue_requests(date_to_check)
+        requests_recs = cls.db_connector.get_overdue_requests(date_to_check)
         requests = [cls(record=i) for i in requests_recs]
         return requests
 
-r = Request.new('test', creator_base_id='rec6rFhayi4fSEbaZ')
+

@@ -1,4 +1,4 @@
-import dataBase
+from mysql_database import DBAlchemyConnector
 from enumerates import Media, States, Languages, HashTags, Bots
 from exceptions import AlreadyRegistered
 from extensions import tag_into_text
@@ -15,15 +15,18 @@ class User:
     совпадать с форматом airtable)
     """
 
+    f = open('db_info.json')
+    db_connector = DBAlchemyConnector(**json.load(f))
+
     def __init__(self, media=None, user_id=None, record=None, base_id=None):
         if record:
             # If there is a record given, we use it
             user_elem = record
         elif base_id:
-            user_elem = dataBase.get_user_by_base_id(base_id)
+            user_elem = self.db_connector.get_user_by_base_id(base_id)
         else:
             # Otherwise load the data from the base
-            user_elem = dataBase.get_user_by_id_in_media(media, user_id)
+            user_elem = self.db_connector.get_user_by_id_in_media(media, user_id)
 
         # all the fields from airtable-base turn into class object's fields
         self.__dict__ = self.__class__.transform_from_record_into_variable_dict(user_elem)
@@ -174,7 +177,7 @@ class User:
 
     def update_from_server(self):
         # download the data from server
-        record = dataBase.get_user_by_base_id(self.base_id)
+        record = self.db_connector.get_user_by_base_id(self.base_id)
         new_var_dict = self.__class__.transform_from_record_into_variable_dict(record)
         for key in new_var_dict.keys():
             self.__dict__[key] = new_var_dict[key]
@@ -182,7 +185,7 @@ class User:
     def update_on_server(self):
         # uploads the data on server
         record = self.transform_into_record()
-        self.user_elem = dataBase.update_user_on_server(record)
+        self.user_elem = self.db_connector.update_user_on_server(record)
 
     def get_state(self, media, creation=False):
         self.update_from_server()
@@ -280,14 +283,14 @@ class User:
         self.messages_for_requests[bot][media][request_id] = message_id
         self.update_on_server()
 
-    @staticmethod
-    def get_id_of_all_moderators(media):
-        res_list = dataBase.get_id_of_all_moderators(media)
+    @classmethod
+    def get_id_of_all_moderators(cls, media):
+        res_list = cls.db_connector.get_id_of_all_moderators(media)
         return res_list
 
-    @staticmethod
-    def get_id_of_users_without_ignore_hashtags(media, tags):
-        res_list = dataBase.get_id_of_users_without_ignore_hashtags(media, tags)
+    @classmethod
+    def get_id_of_users_without_ignore_hashtags(cls, media, tags):
+        res_list = cls.db_connector.get_id_of_users_without_ignore_hashtags(media, tags)
         return res_list
 
     def get_message_id_by_request_id(self, media, bot, request_base_id):
@@ -328,10 +331,10 @@ class User:
             text = self.replace
         return text
 
-    @staticmethod
-    def get_ids_of_messages_to_delete_for_enough_executors(request, bot, media):
+    @classmethod
+    def get_ids_of_messages_to_delete_for_enough_executors(cls, request, bot, media):
         res = dict()
-        all_users_records = dataBase.get_all_users()
+        all_users_records = cls.db_connector.get_all_users()
         for user_record in all_users_records:
             user = User(record=user_record)
             try:
@@ -343,11 +346,11 @@ class User:
         return res
 
     def get_taken_requests(self):
-        request_records = [request.Request(record=r) for r in dataBase.get_requests_taken_by_user(self)]
+        request_records = [request.Request(record=r) for r in self.db_connector.get_requests_taken_by_user(self)]
         return self.__class__.sort_request_by_date(request_records)
 
     def get_created_requests(self):
-        request_records = [request.Request(record=r) for r in dataBase.get_requests_created_by_user(self)]
+        request_records = [request.Request(record=r) for r in self.db_connector.get_requests_created_by_user(self)]
         return self.__class__.sort_request_by_date(request_records)
 
     @staticmethod
@@ -363,8 +366,8 @@ class User:
         res = list(sorted(requests_list, key=sort_func))
         return res
 
-    @staticmethod
-    def register(media, user_id, passwords_hash, user_contact_link):
+    @classmethod
+    def register(cls, media, user_id, passwords_hash, user_contact_link):
         """
         This static method is used to register a new user using a unique password given to them by student development
         department (or any other people that regulate the usage of this service). It loads all the information about the
@@ -375,7 +378,7 @@ class User:
         :param user_id:
         :return:
         """
-        user = User(record=dataBase.get_user_by_passwords_hash(passwords_hash))
+        user = User(record=cls.db_connector.get_user_by_passwords_hash(passwords_hash))
         if user.media_id.get(media, None):
             raise AlreadyRegistered
         user.media_id[media] = user_id
@@ -384,6 +387,6 @@ class User:
 
     @classmethod
     def get_users_who_received_these_requests_main_bot(cls, requests_id_list):
-        users_records = dataBase.get_users_who_received_these_requests_main_bot(requests_id_list=requests_id_list)
+        users_records = cls.db_connector.get_users_who_received_these_requests_main_bot(requests_id_list=requests_id_list)
         users = [cls(record=i) for i in users_records]
         return users

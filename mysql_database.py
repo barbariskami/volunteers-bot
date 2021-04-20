@@ -1,4 +1,3 @@
-import traceback
 from sqlalchemy import create_engine, or_, func, not_, and_
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm.session import sessionmaker
@@ -218,19 +217,20 @@ class DBAlchemyConnector:
         if not data_from_requests_table:
             raise UserNotFound
         for k in data_from_requests_table.__dict__.keys():
-            if k in self.REQUEST_ITEMS_NOT_TO_CHANGE:
-                final_res['fields'][k] = data_from_requests_table.__dict__[k]
-            elif k == 'creation_time' or k == 'submission_time':
-                final_res['fields'][k] = data_from_requests_table.__dict__[k].strftime('%Y-%m-%dT%H:%M:%S.000Z')
-            elif k == 'date1' or k == 'date2':
-                final_res['fields'][k] = data_from_requests_table.__dict__[k].strftime('%Y-%m-%d')
-            elif k == 'was_published' or k == 'was_submited' or k == 'was_executed':
-                final_res['fields'][k] = bool(data_from_requests_table.__dict__[k])
-            elif k == 'creator' or k == 'published_by':
-                final_res['fields'][k] = list()
-                final_res['fields'][k].append(data_from_requests_table.__dict__[k])
-            elif k == 'tags':
-                final_res['fields'][k] = list(data_from_requests_table.__dict__[k])
+            if data_from_requests_table.__dict__[k]:
+                if k in self.REQUEST_ITEMS_NOT_TO_CHANGE:
+                    final_res['fields'][k] = data_from_requests_table.__dict__[k]
+                elif k == 'creation_time' or k == 'submission_time':
+                    final_res['fields'][k] = data_from_requests_table.__dict__[k].strftime('%Y-%m-%dT%H:%M:%S.000Z')
+                elif k == 'date1' or k == 'date2':
+                    final_res['fields'][k] = data_from_requests_table.__dict__[k].strftime('%Y-%m-%d')
+                elif k == 'was_published' or k == 'was_submited' or k == 'was_executed':
+                    final_res['fields'][k] = bool(data_from_requests_table.__dict__[k])
+                elif k == 'creator' or k == 'published_by':
+                    final_res['fields'][k] = list()
+                    final_res['fields'][k].append(data_from_requests_table.__dict__[k])
+                elif k == 'tags':
+                    final_res['fields'][k] = list(data_from_requests_table.__dict__[k])
 
         if not data_from_taken_requests_table:
             data_from_requests_table = self.session.query(self.taken_requests).filter(
@@ -309,13 +309,3 @@ class DBAlchemyConnector:
         users = [self.get_user_by_base_id(i) for i in users_id]
         return users
 
-
-connector = DBAlchemyConnector(host='localhost',
-                               user='letovo_helper_admin',
-                               password='PomozhemVsemDa',
-                               database='letovo_helper')
-#
-# connector.get_user_by_id_in_media(Media.TELEGRAM, user_id=282381990)
-# print(connector.get_user_by_base_id(1083))
-
-connector.new_request('aaa', 1083)
