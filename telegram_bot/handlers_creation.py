@@ -38,25 +38,31 @@ def text_message_handler(update, context):
                                                                       media=Media.TELEGRAM),
                                                       creation=True)
         for message in new_messages['send']:
-            if MessageMarks.UNREGISTERED in message.marks:
-                context.user_data['registered'] = False
-            elif MessageMarks.SUCCESSFUL_REGISTRATION in message.marks:
-                context.user_data['registered'] = True
-            if message.keyboard:
-                context.user_data['keyboard'] = message.keyboard
-            context, message_id = send_message(update, context, message)
-            if message.__dict__.get('request_id'):
-                if not message.bot:
-                    message_bot = Bots.CREATION
-                else:
-                    message_bot = message.bot
-                CreationBot.connect_message_to_request(media=Media.TELEGRAM,
-                                                       media_user_id=message.user_id,
-                                                       bot=message_bot,
-                                                       message_id=message_id,
-                                                       request_base_id=message.request_id)
+            try:
+                if MessageMarks.UNREGISTERED in message.marks:
+                    context.user_data['registered'] = False
+                elif MessageMarks.SUCCESSFUL_REGISTRATION in message.marks:
+                    context.user_data['registered'] = True
+                if message.keyboard:
+                    context.user_data['keyboard'] = message.keyboard
+                context, message_id = send_message(update, context, message)
+                if message.__dict__.get('request_id'):
+                    if not message.bot:
+                        message_bot = Bots.CREATION
+                    else:
+                        message_bot = message.bot
+                    CreationBot.connect_message_to_request(media=Media.TELEGRAM,
+                                                           media_user_id=message.user_id,
+                                                           bot=message_bot,
+                                                           message_id=message_id,
+                                                           request_base_id=message.request_id)
+            except Exception:
+                traceback.print_exc()
         for message in new_messages.get('delete', tuple()):
-            delete_message(update, context, message)
+            try:
+                delete_message(update, context, message)
+            except Exception:
+                traceback.print_exc()
     except Exception:
         traceback.print_exc()
 
