@@ -31,10 +31,10 @@ def main(bot_type='main'):
     url = ''
     if bot_type == 'main':
         dp.add_handler(CommandHandler('start', h_main.start))
-        dp.add_handler(CommandHandler('switch_language', h_main.switch_language))
-        dp.add_handler(CommandHandler('help', h_main.help_command))
+        # dp.add_handler(CommandHandler('switch_language', h_main.switch_language))
+        # dp.add_handler(CommandHandler('help', h_main.help_command))
         dp.add_handler(MessageHandler(Filters.text, h_main.text_message_handler))
-        dp.add_handler(CallbackQueryHandler(h_main.callback_query_handler, pass_user_data=True))
+        # dp.add_handler(CallbackQueryHandler(h_main.callback_query_handler, pass_user_data=True))
         url = 'https://letovo-helper.herokuapp.com/'
     elif bot_type == 'creation':
         logging.info(args.bot + 'recognized')
