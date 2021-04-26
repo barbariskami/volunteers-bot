@@ -1,5 +1,6 @@
 TELEGRAM_RU
 Вы должны зарегистрироваться, чтобы иметь возможность использовать эту команду.
 Если вы уже регистрировались в этом боте, просто нажмите команду /start
+
 You must register to be able to use this command.
 If you have already registered in this bot, press the /start command.

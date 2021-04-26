@@ -8,6 +8,7 @@ TELEGRAM_RU
 Задачи с тэгами из вашего игнор-листа не будут появляться в вашей ленте.
 Выберите следующее действие на клавиатуре
 ++++++++++++++++
+TELEGRAM_EN
 Your ignore list now contains the following hashtags:
 {ignored}
 
