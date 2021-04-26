@@ -45,6 +45,8 @@ class DBAlchemyConnector:
         self.taken_requests = self.Base.classes.taken_requests
         self.refused_requests = self.Base.classes.refused_requests
         self.message_for_request = self.Base.classes.message_for_request
+        self.ignored_tags = self.Base.classes.ignored_tags
+        self.request_tags = self.Base.classes.request_tags
 
         Session_class = sessionmaker(bind=self.engine)
         self.session = Session_class()
@@ -74,11 +76,15 @@ class DBAlchemyConnector:
                 final_res['fields'][k] = data_from_users_table.__dict__[k]
             elif k == 'is_moderator':
                 final_res['fields'][k] = bool(data_from_users_table.__dict__[k])
-            elif k == 'ignored_tags':
-                final_res['fields'][k] = list(data_from_users_table.__dict__[k])
+            # elif k == 'ignored_tags':
+            #     final_res['fields'][k] = list(data_from_users_table.__dict__[k])
             elif k == 'telegram_creation_edited_draft':
                 final_res['fields'][k] = list()
                 final_res['fields'][k].append(data_from_users_table.__dict__[k])
+
+        ignored_tags = self.session.query(self.ignored_tags).filter(self.ignored_tags.user_id == base_id).all()
+        tags = [tag.tag for tag in ignored_tags]
+        final_res['fields']['ignored_tags'] = tags
 
         filter_expression = or_(self.requests.creator == base_id, self.requests.published_by == base_id)
         if not data_from_requests_table:
@@ -158,7 +164,16 @@ class DBAlchemyConnector:
                     self.session.add(new_connection)
 
             elif k == 'ignored_tags' and record['fields'][k]:
-                setattr(user_data, k, set(record['fields'][k]))
+                current_tags = self.session.query(self.ignored_tags).filter_by(user_id=record['id'])
+                current_tags_as_strings = set([i.tag for i in current_tags.all()])
+                tags_to_add = set(record['fields'][k]) - current_tags_as_strings
+                tags_to_delete = current_tags_as_strings - set(record['fields'][k])
+                for tag in tags_to_add:
+                    new_connection = self.ignored_tags(id=None, tag=tag, user_id=record['id'])
+                    self.session.add(new_connection)
+                for tag in tags_to_delete:
+                    current_tags.filter_by(tag=tag).delete(synchronize_session=False)
+                # setattr(user_data, k, set(record['fields'][k]))
             elif k == 'telegram_creation_edited_draft' and record['fields'][k]:
                 setattr(user_data, k, record['fields'][k][0])
             elif k == 'taken_requests' or k == 'refused_requests':
