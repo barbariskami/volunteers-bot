@@ -1,5 +1,5 @@
 TELEGRAM_RU
-Взятые вами запросы, которые были выполнены и у которых истек срок действия (нажмите на название, чтобы увидеть подробную информацию):
+{info}
 ++++++++++++++++
 TELEGRAM_EN
-Completed or expired requests you have responded to:
+{info}

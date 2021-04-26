@@ -70,5 +70,25 @@
       "RU": "завершенных запросов",
       "EN": "finished requests"
     }
+  },
+  "REQUESTS_I_TOOK_PENDING": {
+    "not_empty": {
+      "RU": "Взятые вами запросы, ожидающие выполнения (нажмите на название, чтобы увидеть подробную информацию):",
+      "EN": "Pending requests you have responded to:"
+    },
+    "empty": {
+      "RU": "Список пуст",
+      "EN": "The list is empty"
+    }
+  },
+  "REQUESTS_I_TOOK_FULFILLED": {
+    "not_empty": {
+      "RU": "Взятые вами запросы, которые были выполнены и у которых истек срок действия (нажмите на название, чтобы увидеть подробную информацию):",
+      "EN": "Completed or expired requests you have responded to:"
+    },
+    "empty": {
+      "RU": "Список пуст",
+      "EN": "The list is empty"
+    }
   }
 }

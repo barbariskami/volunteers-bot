@@ -1,5 +1,5 @@
 TELEGRAM_RU
-Взятые вами запросы, ожидающие выполнения (нажмите на название, чтобы увидеть подробную информацию):
+{info}
 ++++++++++++++++
 TELEGRAM_EN
-Pending requests you have responded to:
+{info}

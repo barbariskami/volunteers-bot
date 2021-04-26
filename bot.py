@@ -321,7 +321,7 @@ class ButtonHandler:
     def send_message(self, button=None, **kwargs):
         if not button:
             return {'send': list()}
-        text = TextLabels[button.message_type]
+        text = TextLabels[button.info['message_type']]
         message = Message(user_id=self.user.media_id[self.media],
                           text=load_text(text, self.media,
                                          self.user.language.get(self.media, Languages.RU)),
@@ -857,6 +857,7 @@ class MessageBuildingProducer:
 
     def requests_i_took_list(self, button=None, **kwargs):
         res = {'text': dict()}
+
         keyboard = Keyboard.load_keyboard(button.following_state.name)
 
         requests = self.user.get_taken_requests()
@@ -864,6 +865,13 @@ class MessageBuildingProducer:
             requests = list(filter(lambda r: (not r.is_expired()), requests))
         elif button.following_state == States.REQUESTS_I_TOOK_FULFILLED:
             requests = list(filter(lambda r: r.is_expired(), requests))
+
+        if requests:
+            res['text']['info'] = self.get_features_for_formation(button.following_state.name)['not_empty'][
+                self.user.language.get(self.media, Languages.RU).name]
+        else:
+            res['text']['info'] = self.get_features_for_formation(button.following_state.name)['empty'][
+                self.user.language.get(self.media, Languages.RU).name]
 
         if len(requests) > 5:
             right_border = (button.info['page'] + 1) * 5
