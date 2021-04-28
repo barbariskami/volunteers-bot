@@ -1,6 +1,6 @@
 from telegram import ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton, ParseMode, Bot, \
     ReplyKeyboardRemove
-from enumerates import KeyboardTypes, Media
+from enumerates import KeyboardTypes
 import logging
 import traceback
 

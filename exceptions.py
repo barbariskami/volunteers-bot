@@ -52,11 +52,14 @@ class OneDateMissing(DateError):
 class TagNotFound(DataBaseException):
     pass
 
+
 class TagCodeValueError(ValueError):
     pass
 
+
 class TagNotAllLanguages(ValueError):
     pass
+
 
 class TagDuplicateValue(ValueError):
     pass

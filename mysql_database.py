@@ -6,7 +6,6 @@ import json
 import enumerates
 from datetime import datetime
 from exceptions import UserNotFound, TagDuplicateValue
-import traceback
 
 
 class DBAlchemyConnector:
@@ -79,8 +78,6 @@ class DBAlchemyConnector:
                 final_res['fields'][k] = data_from_users_table.__dict__[k]
             elif k == 'is_moderator' or k == 'is_admin':
                 final_res['fields'][k] = bool(data_from_users_table.__dict__[k])
-            # elif k == 'ignored_tags':
-            #     final_res['fields'][k] = list(data_from_users_table.__dict__[k])
             elif k == 'telegram_creation_edited_draft':
                 final_res['fields'][k] = list()
                 final_res['fields'][k].append(data_from_users_table.__dict__[k])
@@ -176,7 +173,6 @@ class DBAlchemyConnector:
                     self.session.add(new_connection)
                 for tag in tags_to_delete:
                     current_tags.filter_by(tag=tag).delete(synchronize_session=False)
-                # setattr(user_data, k, set(record['fields'][k]))
             elif k == 'telegram_creation_edited_draft' and record['fields'][k]:
                 setattr(user_data, k, record['fields'][k][0])
             elif k == 'taken_requests' or k == 'refused_requests':
@@ -219,7 +215,6 @@ class DBAlchemyConnector:
                     self.session.add(new_connection)
                 for t in tags_to_delete:
                     current_tags.filter_by(tag=t).delete(synchronize_session=False)
-                # setattr(request_data, k, set(record['fields'][k]))
         self.session.commit()
 
     def get_request_by_id(self, request_id):
@@ -250,9 +245,7 @@ class DBAlchemyConnector:
                     final_res['fields'][k] = bool(data_from_requests_table.__dict__[k])
                 elif k == 'creator' or k == 'published_by':
                     final_res['fields'][k] = list()
-                    final_res['fields'][k].append(data_from_requests_table.__dict__[k])
-                # elif k == 'tags':
-                #     final_res['fields'][k] = list(data_from_requests_table.__dict__[k])
+                    self.append = final_res['fields'][k].append(data_from_requests_table.__dict__[k])
 
         tags = self.session.query(self.request_tags).filter_by(request_id=request_base_id).all()
         final_res['fields']['tags'] = [i.tag for i in tags]

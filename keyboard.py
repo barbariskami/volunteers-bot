@@ -4,7 +4,8 @@ from enumerates import KeyboardTypes, States, ButtonActions, DateType, Languages
 
 
 class Keyboard:
-    def __init__(self, language=Languages.RU, buttons=None, board_type=None, state=None, text_label=None, json_set=None, delete_keyboard=False):
+    def __init__(self, language=Languages.RU, buttons=None, board_type=None, state=None, text_label=None, json_set=None,
+                 delete_keyboard=False):
         self.DELETE = delete_keyboard
         if self.DELETE:
             return

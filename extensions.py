@@ -10,7 +10,6 @@ def load_text(label, media, language=Languages.RU):
         os.chdir('/'.join(cwd[:-1]))
     DIRECTIRY_NAME = 'text_labels/'
     file_name = label.name + '.txt'
-    text_heading = media.name + '_' + language.name
     full_path = DIRECTIRY_NAME + file_name
     file = open(full_path, mode='r')
     file_text = file.read()
@@ -48,28 +47,6 @@ def load_language_apologies(language):
     text = text[position:].split('\n\n')[0]
     text = '\n'.join(text.split('\n')[1:])
     return text
-
-
-# def load_hashtags_json():
-#     FILE_PATH = "hashtags.json"
-#     cwd = os.getcwd().split('/')
-#     if cwd[-1] == 'telegram_bot':
-#         os.chdir('/'.join(cwd[:-1]))
-#     file = open(FILE_PATH)
-#     data = json.load(file)
-#     return data
-
-
-# def tag_into_text(tags_list, language):
-#     tags_json = load_hashtags_json()
-#     res_list = list()
-#     for tag in tags_list:
-#         tag_id = tag.value
-#         list_copy = list(tags_json['hashtags']).copy()
-#         list_copy = list(filter(lambda x: x['id'] == tag_id, list_copy))
-#         tag_translation = list_copy[0][language.name]
-#         res_list.append(tag_translation)
-#     return res_list
 
 
 def load_features_for_formation():
