@@ -1,0 +1,2 @@
+TELEGRAM_RU
+Теперь тэг {code} {state} пользователю

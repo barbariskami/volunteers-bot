@@ -1,8 +1,8 @@
 TELEGRAM_RU
-У вас нет доступа к этому боту.
+У вас нет прав на использование этой функции.
 Если вы считаете, что произошла ошибка, пожалуйста, свяжитесь с поддержкой по почте letovo\_helper@letovo.ru.
 
 ++++++++++++++++
 TELEGRAM_EN
-You do not have access to this bot.
+You do not rights to use this function.
 If you believe there has been a mistake, please contact letovo\_helper@letovo.ru.

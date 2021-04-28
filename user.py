@@ -1,11 +1,13 @@
 from mysql_database import DBAlchemyConnector
-from enumerates import Media, States, Languages, HashTags, Bots
+from enumerates import Media, States, Languages, Bots
 from exceptions import AlreadyRegistered
-from extensions import tag_into_text
 from copy import deepcopy
 import request
 import json
-from datetime import date
+from datetime import date, datetime
+from tag import Tag
+import csv
+import io
 
 
 class User:
@@ -17,6 +19,20 @@ class User:
 
     f = open('db_info.json')
     db_connector = DBAlchemyConnector(**json.load(f))
+
+    INDEXES_FOR_CSV = [
+        'id',
+        'analytics_id',
+        'name',
+        'email',
+        'ignored_tags',
+        'created_requests',
+        'is_moderator',
+        'is_admin',
+        'taken_requests',
+        'refused_requests',
+        'moderated_requests',
+    ]
 
     def __init__(self, media=None, user_id=None, record=None, base_id=None):
         if record:
@@ -97,7 +113,7 @@ class User:
             res_dict['is_moderator'] = False
         res_dict['ignored_tags'] = list()
         for tag in record['fields'].get('ignored_tags', tuple()):
-            res_dict['ignored_tags'].append(HashTags[tag])
+            res_dict['ignored_tags'].append(Tag(code=tag))
 
         # Deletion of needless (or inconvenient) fields
         for media in Media:
@@ -219,21 +235,21 @@ class User:
     def get_ignored_hashtags_text(self, media):
         self.update_from_server()
         ignored = self.ignored_tags
-        return tag_into_text(ignored, self.language[media])
+        return [t.get_text(self.language[media]) for t in ignored]
 
     def get_subscription_hashtags_text(self, media):
         self.update_from_server()
-        all_tags = list(HashTags)
+        all_tags = Tag.get_all_tags()
         ignored = self.ignored_tags
         for tag in ignored:
             index = all_tags.index(tag)
             if index >= 0:
                 del all_tags[index]
-        return tag_into_text(all_tags, self.language[media])
+        return [t.get_text(self.language[media]) for t in all_tags]
 
     def subscription_hashtags(self):
         self.update_from_server()
-        all_tags = list(HashTags)
+        all_tags = Tag.get_all_tags()
         ignored = self.ignored_tags
         for tag in ignored:
             index = all_tags.index(tag)
@@ -390,3 +406,53 @@ class User:
         users_records = cls.db_connector.get_users_who_received_these_requests_main_bot(requests_id_list=requests_id_list)
         users = [cls(record=i) for i in users_records]
         return users
+
+    def assign_moderator(self):
+        self.update_from_server()
+        self.is_moderator = True
+        self.update_on_server()
+
+    def assign_admin(self):
+        self.update_from_server()
+        self.is_admin = True
+        self.update_on_server()
+
+    def withdraw_moderator(self):
+        self.update_from_server()
+        self.is_moderator = False
+        self.update_on_server()
+
+    def withdraw_admin(self):
+        self.update_from_server()
+        self.is_admin = False
+        self.update_on_server()
+
+    @classmethod
+    def create_csv_file(cls):
+        users = cls.db_connector.get_all_users()
+        file = ','.join(cls.INDEXES_FOR_CSV) + '\n'
+        users_sets = list()
+        for u in users:
+            fields = u['fields']
+            keys = tuple(fields.keys())
+            for i in keys:
+                if i not in cls.INDEXES_FOR_CSV:
+                    del fields[i]
+                elif not fields[i]:
+                    fields[i] = ''
+                elif type(fields[i]) == list:
+                    fields[i] = ';'.join([str(i) for i in fields[i]])
+                else:
+                    fields[i] = str(fields[i])
+            users_sets.append(fields)
+        for i in range(len(users_sets)):
+            users_sets[i] = [users_sets[i][k] for k in cls.INDEXES_FOR_CSV]
+        file = file + '\n'.join([','.join(i) for i in users_sets])
+        name = 'users-' + datetime.now().strftime('%d-%m-%yT%H.%M') + '.csv'
+        res = bytes(file, 'utf-8')
+        file_obj = io.BytesIO(res)
+        file_obj.name = name
+        return file_obj
+
+
+

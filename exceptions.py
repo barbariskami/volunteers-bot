@@ -44,5 +44,19 @@ class EarlyDate(DateError):
 class WrongDateOrder(DateError):
     pass
 
+
 class OneDateMissing(DateError):
+    pass
+
+
+class TagNotFound(DataBaseException):
+    pass
+
+class TagCodeValueError(ValueError):
+    pass
+
+class TagNotAllLanguages(ValueError):
+    pass
+
+class TagDuplicateValue(ValueError):
     pass

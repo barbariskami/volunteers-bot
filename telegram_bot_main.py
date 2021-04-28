@@ -44,6 +44,17 @@ def main(bot_type='main'):
         url = 'https://letovo-helper-ask.herokuapp.com/'
     elif bot_type == 'moderation':
         dp.add_handler(CommandHandler('start', h_moderation.start))
+        dp.add_handler(CommandHandler('all_tags', h_moderation.get_all_tags))
+        dp.add_handler(CommandHandler('tag_info', h_moderation.get_tag_info, pass_args=True))
+        dp.add_handler(CommandHandler('new_tag', h_moderation.new_tag, pass_args=True))
+        dp.add_handler(CommandHandler('delete_tag', h_moderation.delete_tag, pass_args=True))
+        dp.add_handler(CommandHandler('assign_moderator', h_moderation.assign_moderator, pass_args=True))
+        dp.add_handler(CommandHandler('assign_admin', h_moderation.assign_admin, pass_args=True))
+        dp.add_handler(CommandHandler('change_tag_condition', h_moderation.change_tag_condition, pass_args=True))
+        dp.add_handler(CommandHandler('withdraw_moderator', h_moderation.withdraw_moderator, pass_args=True))
+        dp.add_handler(CommandHandler('withdraw_admin', h_moderation.withdraw_admin, pass_args=True))
+        dp.add_handler(CommandHandler('get_all_users_csv', h_moderation.get_all_users_csv))
+        dp.add_handler(CommandHandler('get_all_requests_csv', h_moderation.get_all_requests_csv))
         dp.add_handler(MessageHandler(Filters.text, h_moderation.text_message_handler))
         dp.add_handler(CallbackQueryHandler(h_moderation.callback_query_handler, pass_user_data=True))
         url = 'https://letovo-helper-moderation.herokuapp.com/'
@@ -52,10 +63,8 @@ def main(bot_type='main'):
                           port=int(port),
                           url_path=token)
     updater.bot.setWebhook(url + token)
-    logging.info('here now')
 
     updater.idle()
-    logging.info('and finally here')
 
 
 if __name__ == '__main__':

@@ -1,16 +1,37 @@
 from copy import deepcopy
-from enumerates import DateType, HashTags, Media, TextLabels
+from enumerates import DateType, Media, TextLabels
 import exceptions
-from extensions import tag_into_text, load_text
+from extensions import load_text
 from datetime import datetime, date
 from traceback import print_exc
 import user
 import logging
 from mysql_database import DBAlchemyConnector
 import json
+from tag import Tag
+import io
 
 
 class Request:
+    INDEXES_FOR_CSV = [
+        'id',
+        'creation_time',
+        'was_published',
+        'was_submited',
+        'submission_time',
+        'was_executed',
+        'creator',
+        'published_by',
+        'name',
+        'text',
+        'date1',
+        'date2',
+        'date_type',
+        'people_number',
+        'taken_by',
+        'refused_by',
+        'tags'
+    ]
     f = open('db_info.json')
     db_connector = DBAlchemyConnector(**json.load(f))
 
@@ -34,10 +55,10 @@ class Request:
             self.date2 = datetime.strptime(self.date2, '%Y-%m-%d').date()
         else:
             self.date2 = None
-        if 'tags' not in self.__dict__.keys():
+        if 'tags' not in self.__dict__.keys() or not self.tags:
             self.tags = list()
         else:
-            self.tags = [HashTags[i] for i in self.tags]
+            self.tags = [Tag(code=i) for i in self.tags]
         if 'creation_time' in self.__dict__.keys():
             self.creation_time = datetime.strptime(self.creation_time, '%Y-%m-%dT%H:%M:%S.000Z')
         if 'submission_time' in self.__dict__.keys():
@@ -131,7 +152,7 @@ class Request:
 
         lines.append(self.FEATURES_FOR_READABLE_FORMAT['people_number'][language.name].format(
             people_number=str(self.people_number)))
-        hashtags_list = tag_into_text(self.tags, language)
+        hashtags_list = [t.get_text(language) for t in self.tags]
         if hashtags_list:
             lines.append(self.FEATURES_FOR_READABLE_FORMAT['tags'][language.name].format(tags=', '.join(hashtags_list)))
         res_text = '\n'.join(lines)
@@ -155,7 +176,7 @@ class Request:
         else:
             date = not_stated
         if self.__dict__.get('tags', None):
-            tags = ', '.join(tag_into_text(self.tags, language))
+            tags = ', '.join([t.get_text(language) for t in self.tags])
         else:
             tags = not_stated
         data = {'name': self.name if self.__dict__.get('name', None) else not_stated,
@@ -309,4 +330,29 @@ class Request:
         requests = [cls(record=i) for i in requests_recs]
         return requests
 
-
+    @classmethod
+    def create_csv_file(cls):
+        requests = cls.db_connector.get_all_requests()
+        file = ','.join(cls.INDEXES_FOR_CSV) + '\n'
+        requests_sets = list()
+        for r in requests:
+            fields = r['fields']
+            keys = tuple(fields.keys())
+            for i in keys:
+                if i not in cls.INDEXES_FOR_CSV:
+                    del fields[i]
+                elif not fields[i]:
+                    fields[i] = ''
+                elif type(fields[i]) == list:
+                    fields[i] = ';'.join([str(i) for i in fields[i]])
+                else:
+                    fields[i] = str(fields[i])
+            requests_sets.append(fields)
+        for i in range(len(requests_sets)):
+            requests_sets[i] = [requests_sets[i].get(k, '') for k in cls.INDEXES_FOR_CSV]
+        file = file + '\n'.join([','.join(i) for i in requests_sets])
+        name = 'requests-' + datetime.now().strftime('%d-%m-%yT%H.%M') + '.csv'
+        res = bytes(file, 'utf-8')
+        file_obj = io.BytesIO(res)
+        file_obj.name = name
+        return file_obj

@@ -1,10 +1,12 @@
 from sqlalchemy import create_engine, or_, func, not_, and_
+import sqlalchemy.exc as sqlExc
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm.session import sessionmaker
 import json
 import enumerates
 from datetime import datetime
-from exceptions import UserNotFound
+from exceptions import UserNotFound, TagDuplicateValue
+import traceback
 
 
 class DBAlchemyConnector:
@@ -45,6 +47,7 @@ class DBAlchemyConnector:
         self.taken_requests = self.Base.classes.taken_requests
         self.refused_requests = self.Base.classes.refused_requests
         self.message_for_request = self.Base.classes.message_for_request
+        self.tags = self.Base.classes.tags
         self.ignored_tags = self.Base.classes.ignored_tags
         self.request_tags = self.Base.classes.request_tags
 
@@ -74,7 +77,7 @@ class DBAlchemyConnector:
         for k in data_from_users_table.__dict__.keys():
             if k in self.USER_ITEMS_NOT_TO_CHANGE:
                 final_res['fields'][k] = data_from_users_table.__dict__[k]
-            elif k == 'is_moderator':
+            elif k == 'is_moderator' or k == 'is_admin':
                 final_res['fields'][k] = bool(data_from_users_table.__dict__[k])
             # elif k == 'ignored_tags':
             #     final_res['fields'][k] = list(data_from_users_table.__dict__[k])
@@ -140,7 +143,7 @@ class DBAlchemyConnector:
         for k in record['fields'].keys():
             if k in self.USER_ITEMS_NOT_TO_CHANGE and record['fields'][k]:
                 setattr(user_data, k, record['fields'][k])
-            elif k == 'is_moderator' and record['fields'][k]:
+            elif (k == 'is_moderator' or k == 'is_admin') and record['fields'][k]:
                 setattr(user_data, k, int(record['fields'][k]))
             elif (
                     k == 'telegram_main_messages_for_requests' or k == 'telegram_moderation_messages_for_requests' or k == 'telegram_creation_messages_for_requests') and \
@@ -206,7 +209,17 @@ class DBAlchemyConnector:
             elif (k == 'date1' or k == 'date2') and record['fields'][k]:
                 setattr(request_data, k, datetime.strptime(record['fields'][k], '%Y-%m-%d').date())
             elif k == 'tags' and record['fields'][k]:
-                setattr(request_data, k, set(record['fields'][k]))
+                current_tags = self.session.query(self.request_tags).filter_by(request_id=record['id'])
+                current_tags_list = [i.tag for i in current_tags.all()]
+                tags_to_add = set(record['fields'][k]) - set(current_tags_list)
+                tags_to_delete = set(current_tags_list) - set(record['fields'][k])
+
+                for t in tags_to_add:
+                    new_connection = self.request_tags(id=None, request_id=record['id'], tag=t)
+                    self.session.add(new_connection)
+                for t in tags_to_delete:
+                    current_tags.filter_by(tag=t).delete(synchronize_session=False)
+                # setattr(request_data, k, set(record['fields'][k]))
         self.session.commit()
 
     def get_request_by_id(self, request_id):
@@ -238,8 +251,11 @@ class DBAlchemyConnector:
                 elif k == 'creator' or k == 'published_by':
                     final_res['fields'][k] = list()
                     final_res['fields'][k].append(data_from_requests_table.__dict__[k])
-                elif k == 'tags':
-                    final_res['fields'][k] = list(data_from_requests_table.__dict__[k])
+                # elif k == 'tags':
+                #     final_res['fields'][k] = list(data_from_requests_table.__dict__[k])
+
+        tags = self.session.query(self.request_tags).filter_by(request_id=request_base_id).all()
+        final_res['fields']['tags'] = [i.tag for i in tags]
 
         if not data_from_taken_requests_table:
             data_from_taken_requests_table = self.session.query(self.taken_requests).filter(
@@ -318,3 +334,50 @@ class DBAlchemyConnector:
         users = [self.get_user_by_base_id(i) for i in users_id]
         return users
 
+    def get_tag(self, code):
+        tag = self.session.query(self.tags).filter_by(code=code).first()
+        if not tag:
+            return None
+        data_set = {'code': tag.code,
+                    'RU': tag.ru,
+                    'EN': tag.en,
+                    'is_shown': tag.is_shown}
+        return data_set
+
+    def get_all_tags(self, only_shown=False):
+        tags = self.session.query(self.tags)
+        if only_shown:
+            tags = tags.filter_by(is_shown=True)
+        tags = tags.all()
+        res = [{'code': tag.code,
+                'RU': tag.ru,
+                'EN': tag.en,
+                'is_shown': tag.is_shown} for tag in tags]
+        return res
+
+    def change_tags_state(self, code):
+        tag = self.session.query(self.tags).filter_by(code=code).first()
+        tag.is_shown = not tag.is_shown
+        self.session.commit()
+
+    def add_tag(self, code, languages):
+        try:
+            tag = self.tags(code=code, **{l.name.lower(): languages[l] for l in languages.keys()}, is_shown=True)
+            self.session.add(tag)
+            self.session.commit()
+        except sqlExc.IntegrityError:
+            raise TagDuplicateValue
+        data_set = {'code': tag.code,
+                    'RU': tag.ru,
+                    'EN': tag.en,
+                    'is_shown': tag.is_shown}
+        return data_set
+
+    def delete_tag(self, code):
+        self.session.query(self.tags).filter_by(code=code).delete(synchronize_session=False)
+        self.session.commit()
+
+    def get_all_requests(self):
+        requests = self.session.query(self.requests).all()
+        res = [self.get_request_by_base_id(request_base_id=i.id, data_from_requests_table=i) for i in requests]
+        return res

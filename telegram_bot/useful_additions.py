@@ -15,11 +15,14 @@ def send_message(update, context, message):
     else:
         telegram_bot = context.bot
 
-    new_message = telegram_bot.send_message(chat_id=message.user_id,
-                                            text=message.text,
-                                            reply_markup=convert_keyboard(
-                                                message.keyboard) if message.keyboard else None,
-                                            parse_mode=ParseMode.MARKDOWN)
+    if message.file:
+        new_message = telegram_bot.send_document(message.user_id, message.file)
+    else:
+        new_message = telegram_bot.send_message(chat_id=message.user_id,
+                                                text=message.text,
+                                                reply_markup=convert_keyboard(
+                                                    message.keyboard) if message.keyboard else None,
+                                                parse_mode=ParseMode.MARKDOWN)
     context.dispatcher.user_data[message.user_id]['last_message_id'] = new_message.message_id
     return context, new_message.message_id
 
@@ -65,11 +68,12 @@ def delete_message(update=None, context=None, message=None):
                     bot_name=telegram_bot.name,
                     media_name='Telegram'))
             else:
-                logging.info('Message {m_id} has NOT been edited by user {u_id}, bot {bot_name}, media {media_name}'.format(
-                    m_id=str(message.media_id),
-                    u_id=str(message.user_id),
-                    bot_name=telegram_bot.name,
-                    media_name='Telegram'))
+                logging.info(
+                    'Message {m_id} has NOT been edited by user {u_id}, bot {bot_name}, media {media_name}'.format(
+                        m_id=str(message.media_id),
+                        u_id=str(message.user_id),
+                        bot_name=telegram_bot.name,
+                        media_name='Telegram'))
 
     except Exception as ex:
         logging.error(ex)

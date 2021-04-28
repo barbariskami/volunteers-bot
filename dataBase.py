@@ -165,6 +165,8 @@ def get_overdue_requests(date):  # date - datetime.date format
 
 
 def get_users_who_received_these_requests_main_bot(requests_id_list, media):
+    # Метод не дописан, но, вероятно, уже не будет использоваться (написала аналог под mysql)
+    # Поэтому пока доделывать не буду
     table = Airtable(BASE_ID, USERS_TABLE_NAME, api_key=API_KEY)
     field_name = media.name.lower() + '_main_messages_for_requests'
     find_string = 'FIND("{request_id}", {field_name})'
@@ -174,4 +176,3 @@ def get_users_who_received_these_requests_main_bot(requests_id_list, media):
     users = table.get_all(formula=formula)
     for i in users:
         print(i)
-

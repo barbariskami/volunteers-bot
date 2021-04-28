@@ -1,7 +1,6 @@
 import traceback
-from enumerates import Media, MessageMarks, Bots
+from enumerates import Media, MessageMarks, Bots, Languages
 from telegram_bot.useful_additions import send_message, delete_message
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 import telegram
 from bot_moderation import ModerationBot
 from message import Message
@@ -105,5 +104,294 @@ def callback_query_handler(update, context):
                 traceback.print_exc()
         for message in new_messages.get('delete', tuple()):
             delete_message(update, context, message)
+    except Exception:
+        traceback.print_exc()
+
+
+def get_all_tags(update, context):
+    try:
+        if not context.user_data.get('registered', None):
+            new_messages = ModerationBot.unregistered(Media.TELEGRAM, update.effective_user.id)
+        else:
+            new_messages = ModerationBot.get_all_tags(media=Media.TELEGRAM,
+                                                      user_id=update.effective_user.id)
+        for message in new_messages['send']:
+            try:
+                if MessageMarks.UNREGISTERED in message.marks:
+                    context.user_data['registered'] = False
+                elif MessageMarks.SUCCESSFUL_REGISTRATION in message.marks:
+                    context.user_data['registered'] = True
+                if MessageMarks.NO_ACCESS in message.marks:
+                    context.user_data['access'] = False
+                context, message_id = send_message(update, context, message)
+            except telegram.error.BadRequest:
+                traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
+
+
+def get_tag_info(update, context):
+    try:
+        if not context.user_data.get('registered', None):
+            new_messages = ModerationBot.unregistered(Media.TELEGRAM, update.effective_user.id)
+        else:
+            if len(context.args):
+                code = context.args[0]
+            else:
+                code = None
+            new_messages = ModerationBot.get_tag_info(media=Media.TELEGRAM,
+                                                      user_id=update.effective_user.id,
+                                                      code=code)
+        for message in new_messages['send']:
+            try:
+                if MessageMarks.UNREGISTERED in message.marks:
+                    context.user_data['registered'] = False
+                elif MessageMarks.SUCCESSFUL_REGISTRATION in message.marks:
+                    context.user_data['registered'] = True
+                if MessageMarks.NO_ACCESS in message.marks:
+                    context.user_data['access'] = False
+                context, message_id = send_message(update, context, message)
+            except telegram.error.BadRequest:
+                traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
+
+
+def change_tag_condition(update, context):
+    try:
+        if not context.user_data.get('registered', None):
+            new_messages = ModerationBot.unregistered(Media.TELEGRAM, update.effective_user.id)
+        else:
+            if len(context.args):
+                code = context.args[0]
+            else:
+                code = None
+            new_messages = ModerationBot.change_tag_condition(media=Media.TELEGRAM,
+                                                              user_id=update.effective_user.id,
+                                                              code=code)
+        for message in new_messages['send']:
+            try:
+                if MessageMarks.UNREGISTERED in message.marks:
+                    context.user_data['registered'] = False
+                elif MessageMarks.SUCCESSFUL_REGISTRATION in message.marks:
+                    context.user_data['registered'] = True
+                if MessageMarks.NO_ACCESS in message.marks:
+                    context.user_data['access'] = False
+                context, message_id = send_message(update, context, message)
+            except telegram.error.BadRequest:
+                traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
+
+
+def new_tag(update, context):
+    try:
+        if not context.user_data.get('registered', None):
+            new_messages = ModerationBot.unregistered(Media.TELEGRAM, update.effective_user.id)
+        else:
+            try:
+                code, *languages_list = context.args
+                languages = {Languages.RU: languages_list[0],
+                             Languages.EN: languages_list[1]}
+            except (ValueError, IndexError) as ex:
+                code = languages = None
+            new_messages = ModerationBot.add_tag(media=Media.TELEGRAM,
+                                                 user_id=update.effective_user.id,
+                                                 code=code,
+                                                 languages=languages)
+        for message in new_messages['send']:
+            try:
+                if MessageMarks.UNREGISTERED in message.marks:
+                    context.user_data['registered'] = False
+                elif MessageMarks.SUCCESSFUL_REGISTRATION in message.marks:
+                    context.user_data['registered'] = True
+                if MessageMarks.NO_ACCESS in message.marks:
+                    context.user_data['access'] = False
+                context, message_id = send_message(update, context, message)
+            except telegram.error.BadRequest:
+                traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
+
+
+def delete_tag(update, context):
+    try:
+        if not context.user_data.get('registered', None):
+            new_messages = ModerationBot.unregistered(Media.TELEGRAM, update.effective_user.id)
+        else:
+            if len(context.args):
+                code = context.args[0]
+            else:
+                code = None
+            new_messages = ModerationBot.delete_tag(media=Media.TELEGRAM,
+                                                    user_id=update.effective_user.id,
+                                                    code=code)
+        for message in new_messages['send']:
+            try:
+                if MessageMarks.UNREGISTERED in message.marks:
+                    context.user_data['registered'] = False
+                elif MessageMarks.SUCCESSFUL_REGISTRATION in message.marks:
+                    context.user_data['registered'] = True
+                if MessageMarks.NO_ACCESS in message.marks:
+                    context.user_data['access'] = False
+                context, message_id = send_message(update, context, message)
+            except telegram.error.BadRequest:
+                traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
+
+
+def assign_moderator(update, context):
+    try:
+        if not context.user_data.get('registered', None):
+            new_messages = ModerationBot.unregistered(Media.TELEGRAM, update.effective_user.id)
+        else:
+            if len(context.args):
+                new_moderator_id = context.args[0]
+            else:
+                new_moderator_id = None
+            new_messages = ModerationBot.assign_status(media=Media.TELEGRAM,
+                                                       user_id=update.effective_user.id,
+                                                       new_moderator_id=new_moderator_id,
+                                                       moderator=True)
+        for message in new_messages['send']:
+            try:
+                if MessageMarks.UNREGISTERED in message.marks:
+                    context.user_data['registered'] = False
+                elif MessageMarks.SUCCESSFUL_REGISTRATION in message.marks:
+                    context.user_data['registered'] = True
+                if MessageMarks.NO_ACCESS in message.marks:
+                    context.user_data['access'] = False
+                context, message_id = send_message(update, context, message)
+            except telegram.error.BadRequest:
+                traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
+
+
+def assign_admin(update, context):
+    try:
+        if not context.user_data.get('registered', None):
+            new_messages = ModerationBot.unregistered(Media.TELEGRAM, update.effective_user.id)
+        else:
+            if len(context.args):
+                new_admin_id = context.args[0]
+            else:
+                new_admin_id = None
+            new_messages = ModerationBot.assign_status(media=Media.TELEGRAM,
+                                                       user_id=update.effective_user.id,
+                                                       new_moderator_id=new_admin_id,
+                                                       admin=True)
+        for message in new_messages['send']:
+            try:
+                if MessageMarks.UNREGISTERED in message.marks:
+                    context.user_data['registered'] = False
+                elif MessageMarks.SUCCESSFUL_REGISTRATION in message.marks:
+                    context.user_data['registered'] = True
+                if MessageMarks.NO_ACCESS in message.marks:
+                    context.user_data['access'] = False
+                context, message_id = send_message(update, context, message)
+            except telegram.error.BadRequest:
+                traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
+
+
+def withdraw_moderator(update, context):
+    try:
+        if not context.user_data.get('registered', None):
+            new_messages = ModerationBot.unregistered(Media.TELEGRAM, update.effective_user.id)
+        else:
+            if len(context.args):
+                user_to_withdraw = context.args[0]
+            else:
+                user_to_withdraw = None
+            new_messages = ModerationBot.withdraw_status(media=Media.TELEGRAM,
+                                                         user_id=update.effective_user.id,
+                                                         user_to_withdraw=user_to_withdraw,
+                                                         moderator=True)
+        for message in new_messages['send']:
+            try:
+                if MessageMarks.UNREGISTERED in message.marks:
+                    context.user_data['registered'] = False
+                elif MessageMarks.SUCCESSFUL_REGISTRATION in message.marks:
+                    context.user_data['registered'] = True
+                if MessageMarks.NO_ACCESS in message.marks:
+                    context.user_data['access'] = False
+                context, message_id = send_message(update, context, message)
+            except telegram.error.BadRequest:
+                traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
+
+
+def withdraw_admin(update, context):
+    try:
+        if not context.user_data.get('registered', None):
+            new_messages = ModerationBot.unregistered(Media.TELEGRAM, update.effective_user.id)
+        else:
+            if len(context.args):
+                user_to_withdraw = context.args[0]
+            else:
+                user_to_withdraw = None
+            new_messages = ModerationBot.withdraw_status(media=Media.TELEGRAM,
+                                                         user_id=update.effective_user.id,
+                                                         user_to_withdraw=user_to_withdraw,
+                                                         admin=True)
+        for message in new_messages['send']:
+            try:
+                if MessageMarks.UNREGISTERED in message.marks:
+                    context.user_data['registered'] = False
+                elif MessageMarks.SUCCESSFUL_REGISTRATION in message.marks:
+                    context.user_data['registered'] = True
+                if MessageMarks.NO_ACCESS in message.marks:
+                    context.user_data['access'] = False
+                context, message_id = send_message(update, context, message)
+            except telegram.error.BadRequest:
+                traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
+
+
+def get_all_users_csv(update, context):
+    try:
+        if not context.user_data.get('registered', None):
+            new_messages = ModerationBot.unregistered(Media.TELEGRAM, update.effective_user.id)
+        else:
+            new_messages = ModerationBot.get_all_users_csv(media=Media.TELEGRAM,
+                                                           user_id=update.effective_user.id)
+        for message in new_messages['send']:
+            try:
+                if MessageMarks.UNREGISTERED in message.marks:
+                    context.user_data['registered'] = False
+                elif MessageMarks.SUCCESSFUL_REGISTRATION in message.marks:
+                    context.user_data['registered'] = True
+                if MessageMarks.NO_ACCESS in message.marks:
+                    context.user_data['access'] = False
+                context, message_id = send_message(update, context, message)
+            except telegram.error.BadRequest:
+                traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
+
+
+def get_all_requests_csv(update, context):
+    try:
+        if not context.user_data.get('registered', None):
+            new_messages = ModerationBot.unregistered(Media.TELEGRAM, update.effective_user.id)
+        else:
+            new_messages = ModerationBot.get_all_requests_csv(media=Media.TELEGRAM,
+                                                              user_id=update.effective_user.id)
+        for message in new_messages['send']:
+            try:
+                if MessageMarks.UNREGISTERED in message.marks:
+                    context.user_data['registered'] = False
+                elif MessageMarks.SUCCESSFUL_REGISTRATION in message.marks:
+                    context.user_data['registered'] = True
+                if MessageMarks.NO_ACCESS in message.marks:
+                    context.user_data['access'] = False
+                context, message_id = send_message(update, context, message)
+            except telegram.error.BadRequest:
+                traceback.print_exc()
     except Exception:
         traceback.print_exc()

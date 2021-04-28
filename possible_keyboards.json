@@ -1264,7 +1264,14 @@
             "RU": "Тэги",
             "EN": "Tags",
             "state": "CREATION_EDIT_FIELD_TAGS",
-            "info": {}
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "page": 0,
+              "message_type": "CREATION_EDIT_FIELD_TAGS",
+              "ignore_standard_action": true
+            }
           }
         ],
         [
@@ -1391,9 +1398,70 @@
       "buttons": [
         [
           {
-            "RU": "Отменить",
-            "EN": "Cancel",
-            "state": "CREATION_CHOSE_FIELD_TO_EDIT"
+            "RU": "добавить тэг",
+            "EN": "add tag",
+            "state": "CREATION_EDIT_FIELD_TAGS",
+            "info": {
+              "actions": [
+                "ADD_TAG_TO_DRAFT",
+                "FORM_MESSAGE"
+              ],
+              "tag": "HASHTAG.TAG_NAME",
+              "page": 0,
+              "message_type": "CREATION_TAG_ADDED_TO_DRAFT",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "удалить тэг",
+            "EN": "delete tag",
+            "state": "CREATION_EDIT_FIELD_TAGS",
+            "info": {
+              "actions": [
+                "DELETE_TAG_FROM_DRAFT",
+                "FORM_MESSAGE"
+              ],
+              "tag": "HASHTAG.TAG_NAME",
+              "page": 0,
+              "message_type": "CREATION_TAG_DELETED_FROM_DRAFT",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "<---",
+            "EN": "<---",
+            "state": "CREATION_EDIT_FIELD_TAGS",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "CREATION_EDIT_FIELD_TAGS",
+              "ignore_standard_action": true
+            }
+          },
+          {
+            "RU": "--->",
+            "EN": "--->",
+            "state": "CREATION_EDIT_FIELD_TAGS",
+            "info": {
+              "actions": [
+                "FORM_MESSAGE"
+              ],
+              "message_type": "CREATION_EDIT_FIELD_TAGS",
+              "ignore_standard_action": true
+            }
+          }
+        ],
+        [
+          {
+            "RU": "Назад",
+            "EN": "Back",
+            "state": "CREATION_CHOSE_FIELD_TO_EDIT",
+            "info": {}
           }
         ]
       ]

@@ -2,12 +2,13 @@ from request import Request
 from user import User
 from message import Message
 from exceptions import UserNotFound, AlreadyRegistered, DateFormatError, EarlyDate, WrongDateOrder, OneDateMissing
-from extensions import load_text, tag_into_text, load_features_for_formation, get_action_text_for_creation
+from extensions import load_text, load_features_for_formation, get_action_text_for_creation
 from keyboard import Keyboard
-from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, HashTags, Bots, DateType, Media
+from enumerates import TextLabels, States, MessageMarks, Languages, ButtonActions, Bots, DateType, Media
 import copy
 import telegram_bot.useful_additions as telegram_handlers
 from traceback import print_exc
+from tag import Tag
 
 
 class Bot:
@@ -391,13 +392,16 @@ class ButtonHandler:
         return dict()
 
     def add_tag_to_draft(self, button=None, **kwargs):
-        tag = button.info['tag']
+        if type(button.info['tag']) == str:
+            tag = Tag(button.info['tag'])
+        else:
+            tag = button.info['tag']
         request = self.user.get_edited_draft(self.media)
         request.add_tag(tag)
         return dict()
 
     def delete_tag_from_draft(self, button=None, **kwargs):
-        tag = button.info['tag']
+        tag = Tag(button.info['tag'])
         request = self.user.get_edited_draft(self.media)
         request.delete_tag(tag)
         return dict()
@@ -411,7 +415,6 @@ class ButtonHandler:
         return new_messages
 
     def creation_show_request_text(self, button=None, draft_type=None, **kwargs):
-        print('here')
         new_messages = {'send': list()}
         message_builder = MessageBuildingProducer(self.user, self.media)
 
@@ -645,7 +648,8 @@ class MessageBuildingProducer:
                                         TextLabels.REQUEST_INFO: self.show_request_info,
                                         TextLabels.CREATION_EDIT_OR_SEND_SAVED_DRAFT: self.creation_edit_or_send_saved_draft,
                                         TextLabels.CREATION_REQUEST_AFTER_EDITING: self.creation_request_after_editing,
-                                        TextLabels.CREATION_EDIT_FIELD_DATE: self.creation_set_date}
+                                        TextLabels.CREATION_EDIT_FIELD_DATE: self.creation_set_date,
+                                        TextLabels.CREATION_EDIT_FIELD_TAGS: self.creation_set_tags}
 
     @staticmethod
     def get_features_for_formation(type_of_features):
@@ -724,7 +728,7 @@ class MessageBuildingProducer:
             new_button = copy.deepcopy(button_template)
 
             for l in list(Languages):
-                new_button[l.name] = '–' + tag_into_text([tag], l)[0] + '–'
+                new_button[l.name] = '–' + tag.get_text(l) + '–'
             new_button['state'] = new_button_state
             new_button['info']['tag'] = tag
             keyboard['buttons'].insert(0, [new_button])
@@ -749,16 +753,16 @@ class MessageBuildingProducer:
 
     def creation_set_tags(self, button=None, following_state=None, **kwargs):
         request = self.user.get_edited_draft(self.media)
-        tags = list(HashTags)
-        tags.sort(key=lambda x: (x in request.tags))
+        tags = Tag.get_all_tags(only_shown=True)
+        tags.sort(key=lambda x: (x not in request.tags))
 
         if button:
             keyboard = Keyboard.load_keyboard(button.following_state.name)
         elif following_state:
             keyboard = Keyboard.load_keyboard(following_state.name)
         else:
-            keyboard = None  # This should never happen, but just in case
-        if len(tags) > 10:
+            keyboard = None # This should never happen, but just in case
+        if len(tags) > 7:
             if button:
                 page = button.info['page']
             else:
@@ -781,6 +785,7 @@ class MessageBuildingProducer:
         button_deletion_template = keyboard['buttons'][1][0]
         del keyboard['buttons'][0:2]
         action_texts = get_action_text_for_creation()
+        tags.reverse()
         for tag in tags:
             if tag in request.tags:
                 new_button = copy.deepcopy(button_deletion_template)
@@ -788,7 +793,7 @@ class MessageBuildingProducer:
                 new_button = copy.deepcopy(button_addition_template)
             for l in list(Languages):
                 action_text = action_texts[new_button['info']['actions'][0]][l.name]
-                new_button[l.name] = '–- ' + action_text + '"' + tag_into_text([tag], l)[0] + '"' + ' -–'
+                new_button[l.name] = '–- ' + action_text + '"' + tag.get_text(l) + '"' + ' -–'
             new_button['info']['tag'] = tag
             keyboard['buttons'].insert(0, [new_button])
 
@@ -799,7 +804,7 @@ class MessageBuildingProducer:
 
     def creation_tag_added_or_deleted(self, button=None, **kwargs):
         tag = button.info['tag']
-        tag_text = tag_into_text([tag], self.user.language[self.media])[0]
+        tag_text = tag.get_text(self.user.language[self.media])
         text = {'tag': tag_text}
         keyboard = self.creation_set_tags(button=button)['keyboard']
         return {'text': text, 'keyboard': keyboard}
